@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Silver A extraction output — financial_fact",
   "description": "Hợp đồng giữa skill A (doc-extract) và mọi thứ phía sau. Một dòng JSONL = một ô số trong một bảng của một tài liệu. Ba trường provenance là bắt buộc tuyệt đối: thiếu source_ref thì dòng bị loại, không có ngoại lệ.",
+  "$comment": "schema_version 1.1 (19.09.2026): period_start nullable · thêm document_uniform vào scale_source/currency_source · thêm section_source · bbox đầu ra chuyển về TOPLEFT 4 số (row 1.0 mang 5 phần tử, sai contract). Chỉ nới, không thu — row 1.0 vẫn hợp lệ.",
   "type": "object",
   "required": [
     "fact_id",
@@ -53,6 +54,15 @@
         "other_note"
       ]
     },
+    "section_source": {
+      "enum": [
+        "heading",
+        "profile_page_map",
+        "continuation",
+        null
+      ],
+      "description": "cách extractor xác định statement. continuation = bảng bị ngắt trang, kế thừa báo cáo của bảng liền trước có cùng bộ cột năm."
+    },
     "line_item_reported": {
       "type": "string",
       "minLength": 1
@@ -82,8 +92,12 @@
       "description": "điểm của bước canonicalization — TÁCH RIÊNG khỏi extraction_confidence"
     },
     "period_start": {
-      "type": "string",
-      "format": "date"
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date",
+      "description": "null với fact tại một thời điểm (bảng cân đối) — không có ngày bắt đầu. Key vẫn bắt buộc có mặt."
     },
     "period_end": {
       "type": "string",
@@ -138,9 +152,10 @@
         "column_header",
         "footnote",
         "row_label",
+        "document_uniform",
         "inferred"
       ],
-      "description": "inferred PHẢI bị coi là mùi lỗi và gắn cờ review"
+      "description": "inferred PHẢI bị coi là mùi lỗi và gắn cờ review. document_uniform = cả tài liệu khai đúng một cặp scale/tiền tệ duy nhất, dùng khi caption đơn vị rơi sang trang khác với bảng."
     },
     "currency": {
       "type": "string",
@@ -152,6 +167,7 @@
         "column_header",
         "footnote",
         "row_label",
+        "document_uniform",
         "inferred",
         null
       ]
@@ -191,7 +207,8 @@
             "type": "number"
           },
           "minItems": 4,
-          "maxItems": 4
+          "maxItems": 4,
+          "description": "[x0, y0, x1, y1], gốc trên-trái (y0 < y1). Tầng parse giữ hệ BOTTOMLEFT của Docling; chuyển hệ ở đầu ra, xem shared/bbox.py."
         },
         "verbatim_span": {
           "type": "string",

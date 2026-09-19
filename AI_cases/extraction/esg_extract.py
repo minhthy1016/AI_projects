@@ -26,6 +26,7 @@ import argparse, hashlib, json, pathlib, re, sys
 from decimal import Decimal
 
 from parsing import docling_io
+from shared import bbox as bbox_norm
 from shared.numbers import is_number_token, parse_number as _parse_number
 from shared.tables import YEAR_ANYWHERE as YEAR, header_columns
 
@@ -234,7 +235,7 @@ def extract_emissions(d, prof, company_id, doc_hash, run_id):
                     "decimal_separator": prof["decimal_separator"],
                     "extractor_version": "esg-extract@2.0.0-docling",
                     "model_id": f"docling-{d['meta']['parser_version']}",
-                    "prompt_hash": "-", "schema_version": "1.0",
+                    "prompt_hash": "-", "schema_version": "1.1",
                 })
         stats["table"] += 1 if used else 0
     return out, stats
@@ -334,7 +335,7 @@ def extract_targets_paired(d, prof, company_id, doc_hash, run_id):
                 "decimal_separator": prof["decimal_separator"],
                 "extractor_version": "esg-extract@2.0.0-docling",
                 "model_id": f"docling-{d['meta']['parser_version']}",
-                "prompt_hash": "-", "schema_version": "1.0",
+                "prompt_hash": "-", "schema_version": "1.1",
             })
     return out
 
@@ -360,6 +361,10 @@ if __name__ == "__main__":
             continue
         seen.add(k); uniq.append(r)
     uniq = unify_keys(uniq)
+    # bbox về TOPLEFT 4 số chỉ ở đầu ra — việc ghép tiêu đề–bảng ở trên cần
+    # hệ BOTTOMLEFT gốc, xem shared/bbox.py.
+    if bbox_norm.normalize_rows(uniq, bbox_norm.page_heights(a.parsed)):
+        print("    [esg-extract v2] có bbox không chuyển được hệ toạ độ -> null", file=sys.stderr)
     pathlib.Path(a.out).write_text(
         "\n".join(json.dumps(r, ensure_ascii=False) for r in uniq) + "\n", encoding="utf-8")
     print(f"    [esg-extract v2] {st['table']} bảng, {st['row']} dòng khớp nhãn, "

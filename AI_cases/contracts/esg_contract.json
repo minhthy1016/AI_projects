@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Silver B extraction output — esg_claim",
   "description": "Hợp đồng cho tầng trích xuất ESG. Grain KHÁC Silver A: một dòng là một disclosure hoặc một claim, và giá trị có thể không phải số (mục tiêu, mô tả phương pháp, một ô trong content index). Đó là lý do hai bảng không dùng chung contract — dùng chung sẽ buộc esg_claim mang những trường vô nghĩa với nó (statement, sign_rule_applied) và bỏ mất những trường quyết định (scope, boundary, baseline_year).",
+  "$comment": "schema_version 1.1 (19.09.2026): source_ref.bbox siết về đúng 4 số, gốc TOPLEFT — giống Silver A. Row 1.0 mang 5 phần tử [l,t,r,b,\"BOTTOMLEFT\"].",
   "type": "object",
   "required": [
     "claim_id",
@@ -322,7 +323,13 @@
           "type": [
             "array",
             "null"
-          ]
+          ],
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4,
+          "description": "[x0, y0, x1, y1], gốc trên-trái (y0 < y1). Tầng parse giữ hệ BOTTOMLEFT của Docling; chuyển hệ ở đầu ra, xem shared/bbox.py."
         },
         "verbatim_span": {
           "type": "string",
