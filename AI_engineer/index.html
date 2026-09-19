@@ -1,0 +1,1512 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ôn phỏng vấn — Senior AI/LLM Engineer</title>
+
+<style>
+/* ─────────────────────────────────────────────────────────────
+   Design plan
+   Subject: eval engineering — graders, gates, telemetry, scorecards.
+   Color:  cool green-biased neutrals; accent = deep pine (Tier 1,
+           deterministic, "hard"); secondary = brass (Tier 2, advisory,
+           "soft"); clay = FAIL. Saturation encodes authority.
+   Type:   system sans for Vietnamese diacritic safety; mono carries
+           the instrument voice (eyebrows, tags, metrics, code).
+   Layout: sticky index rail + single 68ch measure; diagrams sit on a
+           printed "plate" that stays light in both themes.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --paper:      #EDF0EE;
+  --surface:    #FFFFFF;
+  --surface-2:  #F5F7F5;
+  --ink:        #161D1B;
+  --ink-2:      #3A4744;
+  --muted:      #63726E;
+  --rule:       #D6DDDA;
+  --rule-soft:  #E4E9E6;
+  --accent:     #0B6152;
+  --accent-ink: #084A3F;
+  --accent-wash:#E2EDE9;
+  --brass:      #7C6A38;
+  --brass-wash: #F0EADC;
+  --clay:       #9C3D2B;
+  --clay-wash:  #F5E4DF;
+  --shadow:     0 1px 2px rgba(22,29,27,.05), 0 8px 24px -16px rgba(22,29,27,.22);
+
+  --plate:      #F1F4F1;
+  --plate-rule: #DBE2DD;
+
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "Helvetica Neue", Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:      #0E1413;
+    --surface:    #151D1B;
+    --surface-2:  #1B2422;
+    --ink:        #E2E9E6;
+    --ink-2:      #B7C3BF;
+    --muted:      #8A9995;
+    --rule:       #2A3532;
+    --rule-soft:  #222C2A;
+    --accent:     #4FB39A;
+    --accent-ink: #7FCCB7;
+    --accent-wash:#14312B;
+    --brass:      #C4A96A;
+    --brass-wash: #2C2718;
+    --clay:       #DE8E79;
+    --clay-wash:  #331E19;
+    --shadow:     0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"] {
+  --paper:      #0E1413;
+  --surface:    #151D1B;
+  --surface-2:  #1B2422;
+  --ink:        #E2E9E6;
+  --ink-2:      #B7C3BF;
+  --muted:      #8A9995;
+  --rule:       #2A3532;
+  --rule-soft:  #222C2A;
+  --accent:     #4FB39A;
+  --accent-ink: #7FCCB7;
+  --accent-wash:#14312B;
+  --brass:      #C4A96A;
+  --brass-wash: #2C2718;
+  --clay:       #DE8E79;
+  --clay-wash:  #331E19;
+  --shadow:     0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16.5px;
+  line-height: 1.68;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Shell ─────────────────────────────────────────────────── */
+.shell {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 clamp(1.1rem, 4vw, 2.5rem) 6rem;
+  display: grid;
+  grid-template-columns: 214px minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: start;
+}
+main { min-width: 0; display: flex; flex-direction: column; gap: 4.5rem; }
+
+/* ── Rail ──────────────────────────────────────────────────── */
+.rail { position: sticky; top: 0; padding: 2.6rem 0; }
+.rail-label {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .13em;
+  text-transform: uppercase; color: var(--muted);
+  padding-bottom: .8rem; border-bottom: 1px solid var(--rule);
+  display: block;
+}
+.rail ol { list-style: none; margin: 0; padding: .9rem 0 0; display: flex; flex-direction: column; gap: .1rem; }
+.rail a {
+  display: grid; grid-template-columns: 1.7rem 1fr; align-items: baseline;
+  padding: .34rem 0; color: var(--ink-2); text-decoration: none;
+  font-size: .875rem; line-height: 1.35; border-radius: 3px;
+}
+.rail a span:first-child { font-family: var(--mono); font-size: .7rem; color: var(--muted); }
+.rail a:hover { color: var(--accent); }
+.rail a:hover span:first-child { color: var(--accent); }
+.rail .sub { padding-left: 1.7rem; font-size: .8rem; color: var(--muted); grid-template-columns: 1fr; }
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .rail {
+    position: sticky; top: 0; z-index: 20; padding: .55rem 0;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+    margin: 0 calc(-1 * clamp(1.1rem, 4vw, 2.5rem));
+    padding-inline: clamp(1.1rem, 4vw, 2.5rem);
+  }
+  .rail-label { display: none; }
+  .rail ol { flex-direction: row; overflow-x: auto; gap: .35rem; padding: 0; scrollbar-width: none; }
+  .rail ol::-webkit-scrollbar { display: none; }
+  .rail a { grid-template-columns: 1fr; white-space: nowrap; padding: .35rem .6rem; border: 1px solid var(--rule); border-radius: 999px; font-size: .78rem; }
+  .rail a span:first-child { display: none; }
+  .rail .sub { display: none; }
+}
+
+/* ── Hero ──────────────────────────────────────────────────── */
+.hero { padding: clamp(3rem, 8vw, 5.5rem) 0 0; display: flex; flex-direction: column; gap: 1.5rem; }
+.eyebrow {
+  font-family: var(--mono); font-size: .7rem; letter-spacing: .15em;
+  text-transform: uppercase; color: var(--accent);
+}
+h1 {
+  margin: 0; font-size: clamp(2rem, 5.2vw, 3.05rem); line-height: 1.06;
+  letter-spacing: -.028em; font-weight: 800; text-wrap: balance; max-width: 16ch;
+}
+.hero .lede { margin: 0; font-size: clamp(1.02rem, 2vw, 1.16rem); color: var(--ink-2); max-width: 60ch; }
+
+.pitch {
+  margin: .4rem 0 0; padding: 1.15rem 1.35rem;
+  border-left: 3px solid var(--accent); background: var(--accent-wash);
+  border-radius: 0 6px 6px 0; color: var(--accent-ink);
+  font-size: 1.02rem; max-width: 62ch;
+}
+
+/* ── Stat row ──────────────────────────────────────────────── */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; margin-top: .8rem; }
+.stat { background: var(--surface); padding: 1.05rem 1.2rem; display: flex; flex-direction: column; gap: .3rem; }
+.stat b { font-size: 1.5rem; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.stat .k { font-family: var(--mono); font-size: .66rem; letter-spacing: .11em; text-transform: uppercase; color: var(--muted); }
+.stat .d { font-size: .84rem; color: var(--ink-2); line-height: 1.45; }
+
+/* ── Sections ──────────────────────────────────────────────── */
+section { scroll-margin-top: 4.5rem; display: flex; flex-direction: column; gap: 1.6rem; }
+.sec-head { display: flex; flex-direction: column; gap: .55rem; border-top: 2px solid var(--ink); padding-top: 1.1rem; }
+.sec-num { font-family: var(--mono); font-size: .7rem; letter-spacing: .13em; text-transform: uppercase; color: var(--muted); }
+h2 { margin: 0; font-size: clamp(1.5rem, 3.4vw, 2.05rem); line-height: 1.14; letter-spacing: -.022em; font-weight: 750; text-wrap: balance; }
+.sec-head p { margin: 0; color: var(--ink-2); max-width: 66ch; }
+h3 { margin: 0; font-size: 1.12rem; line-height: 1.3; letter-spacing: -.012em; font-weight: 700; text-wrap: balance; }
+h4 { margin: 0 0 .1rem; font-family: var(--mono); font-size: .72rem; letter-spacing: .11em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+
+/* ── Cards ─────────────────────────────────────────────────── */
+.card {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 9px;
+  padding: 1.4rem clamp(1.1rem, 3vw, 1.6rem); box-shadow: var(--shadow);
+  display: flex; flex-direction: column; gap: 1rem;
+}
+.card-head { display: flex; flex-direction: column; gap: .45rem; }
+.card-top { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.q-num {
+  font-family: var(--mono); font-size: .7rem; font-weight: 600; letter-spacing: .06em;
+  color: var(--accent); background: var(--accent-wash);
+  padding: .18rem .45rem; border-radius: 4px; flex: none;
+}
+.stack { display: flex; flex-direction: column; gap: 1.1rem; }
+.stack-tight { display: flex; flex-direction: column; gap: .55rem; }
+
+/* ── Chips ─────────────────────────────────────────────────── */
+.chip {
+  font-family: var(--mono); font-size: .66rem; letter-spacing: .07em; text-transform: uppercase;
+  padding: .2rem .5rem; border-radius: 4px; border: 1px solid; white-space: nowrap;
+}
+.chip.pass  { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 35%, transparent); background: var(--accent-wash); }
+.chip.tier2 { color: var(--brass);  border-color: color-mix(in srgb, var(--brass) 35%, transparent);  background: var(--brass-wash); }
+.chip.fail  { color: var(--clay);   border-color: color-mix(in srgb, var(--clay) 35%, transparent);   background: var(--clay-wash); }
+.chip.plain { color: var(--muted);  border-color: var(--rule); background: var(--surface-2); }
+
+/* ── Lists ─────────────────────────────────────────────────── */
+ul, ol.body { margin: 0; padding-left: 1.15rem; max-width: 68ch; display: flex; flex-direction: column; gap: .42rem; }
+li { padding-left: .15rem; }
+li::marker { color: var(--muted); }
+
+.say { display: flex; flex-direction: column; gap: .55rem; padding: 1.05rem 1.2rem; background: var(--surface-2); border: 1px solid var(--rule-soft); border-radius: 7px; }
+.say ol { margin: 0; padding-left: 1.15rem; display: flex; flex-direction: column; gap: .45rem; font-size: .95rem; }
+.say ol li::marker { font-family: var(--mono); font-size: .8rem; color: var(--accent); }
+
+.trap { border-left: 3px solid var(--clay); background: var(--clay-wash); padding: .85rem 1.1rem; border-radius: 0 6px 6px 0; display: flex; flex-direction: column; gap: .4rem; }
+.trap h4 { color: var(--clay); }
+.trap ul { gap: .3rem; font-size: .95rem; }
+
+.note { border-left: 3px solid var(--brass); background: var(--brass-wash); padding: .85rem 1.1rem; border-radius: 0 6px 6px 0; font-size: .95rem; }
+.note strong { color: var(--brass); }
+
+/* ── Answer toggle ─────────────────────────────────────────── */
+details { border-top: 1px solid var(--rule-soft); padding-top: .9rem; }
+details > summary {
+  cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: .5rem;
+  font-family: var(--mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--accent); padding: .3rem .1rem; border-radius: 4px;
+}
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before {
+  content: "+"; display: grid; place-items: center; width: 1.15rem; height: 1.15rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); border-radius: 3px;
+  font-size: .85rem; line-height: 1;
+}
+details[open] > summary::before { content: "−"; }
+details[open] > summary { color: var(--muted); }
+details > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.answer { display: flex; flex-direction: column; gap: 1rem; padding-top: 1rem; }
+
+/* ── Tables ────────────────────────────────────────────────── */
+.tw { overflow-x: auto; border: 1px solid var(--rule); border-radius: 7px; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; min-width: 460px; }
+th, td { text-align: left; padding: .6rem .8rem; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+thead th { background: var(--surface-2); font-family: var(--mono); font-size: .67rem; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600; white-space: nowrap; }
+tbody tr:last-child td { border-bottom: none; }
+td code { white-space: nowrap; }
+
+/* ── Code + diagrams ───────────────────────────────────────── */
+code { font-family: var(--mono); font-size: .87em; background: var(--surface-2); border: 1px solid var(--rule-soft); padding: .08em .3em; border-radius: 3px; }
+pre { margin: 0; overflow-x: auto; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 7px; padding: .95rem 1.1rem; }
+pre code { background: none; border: none; padding: 0; font-size: .82rem; line-height: 1.6; white-space: pre; }
+
+.plate {
+  background: var(--plate); border: 1px solid var(--plate-rule); border-radius: 8px;
+  padding: 1rem; overflow-x: auto;
+}
+.plate pre.mermaid { background: none; border: none; padding: 0; display: block; text-align: center; }
+.plate-cap { font-family: var(--mono); font-size: .66rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: .7rem; }
+
+/* ── Footer ────────────────────────────────────────────────── */
+footer { border-top: 2px solid var(--ink); padding-top: 1.3rem; display: flex; flex-direction: column; gap: .9rem; }
+footer p { font-size: .9rem; color: var(--muted); }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  a, .rail a, details > summary { transition: color .14s ease; }
+}
+</style>
+
+<div class="shell">
+
+<nav class="rail" aria-label="Mục lục">
+  <span class="rail-label">Mục lục</span>
+  <ol>
+    <li><a href="#dinh-vi"><span>00</span><span>Định vị &amp; lộ trình</span></a></li>
+    <li><a href="#mindmap"><span>01</span><span>Mind map kiến trúc</span></a></li>
+    <li><a href="#ly-thuyet"><span>02</span><span>Câu hỏi lý thuyết</span></a></li>
+    <li><a href="#tinh-huong"><span>03</span><span>Câu hỏi tình huống</span></a></li>
+    <li><a href="#coding"><span>04</span><span>Coding challenge</span></a></li>
+    <li><a class="sub" href="#nhac-nhanh"><span>Nhắc nhanh 30 phút</span></a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════════════════ HERO ══════════ -->
+<header class="hero">
+  <span class="eyebrow">Bộ ôn phỏng vấn · Senior AI/LLM Engineer</span>
+  <h1>Đo trước khi tin</h1>
+  <p class="lede">Soạn riêng theo CV 2026 và các dự án thật: eval harness, scorer, agent evaluation trên nền tảng dữ liệu production. Mind map · lý thuyết · tình huống · coding — mỗi phần 5 câu.</p>
+
+  <blockquote class="pitch">
+    “Tôi là AI engineer làm ở phần <strong>quyết định xem một AI agent có đáng tin không, trước khi có người dựa vào nó</strong>. Tôi xây eval harness, scorer, và nền dữ liệu để chứng minh điều đó — trên chính nền tảng dữ liệu production mà tôi cũng là người xây.”
+  </blockquote>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="k">NL-to-SQL · BEAVER</span>
+      <b>0.14 → 0.93</b>
+      <span class="d">Composite pass rate qua 33 vòng diagnose → fix → re-test. 209 câu hỏi, 7 scorer tự động.</span>
+    </div>
+    <div class="stat">
+      <span class="k">Coding-agent harness</span>
+      <b>5 × 3</b>
+      <span class="d">5 task × 3 trial, grader ẩn. Null + cheater control đều phải ra 0/5.</span>
+    </div>
+    <div class="stat">
+      <span class="k">Analytics end-to-end</span>
+      <b>65 + 20</b>
+      <span class="d">65 dbt models, 20+ Cube models, Airbyte → Taipy + chat agent, orchestrate bằng Dagster. Một mình.</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════ PHẦN 00 ══════════ -->
+<section id="dinh-vi">
+  <div class="sec-head">
+    <span class="sec-num">Phần 00 — Nền tảng</span>
+    <h2>Định vị, lộ trình, và ba khung trả lời</h2>
+    <p>Rất nhiều ứng viên biết build RAG và agent. Rất ít người chứng minh được nó đúng. Mọi câu trả lời nên kéo về trục đó.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Lộ trình ôn 7 ngày</h3></div>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Ngày</th><th>Việc</th><th>Kết quả cần đạt</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Đọc phần mind map, vẽ lại <strong>MAP 1 (RAG)</strong> và <strong>MAP 3 (Eval)</strong> từ trí nhớ</td><td>Vẽ được 2 map không nhìn tài liệu</td></tr>
+          <tr><td>2</td><td>Code bài 1 + bài 2, không xem lời giải trước 30 phút</td><td>Hiểu RRF, MMR, ngân sách token</td></tr>
+          <tr><td>3</td><td>Lý thuyết câu 1–3, nói to đáp án 30 giây, bấm giờ</td><td>Trả lời trôi, không đọc</td></tr>
+          <tr><td>4</td><td>Code bài 3 + bài 4</td><td>Nói được “retry ≠ repair” và taxonomy lỗi SQL</td></tr>
+          <tr><td>5</td><td>Viết 6 story STAR ra giấy, mỗi story một con số</td><td>Kể được 90 giây mỗi story</td></tr>
+          <tr><td>6</td><td>Code bài 5, vẽ lại MAP 2 + MAP 4</td><td>Liệt kê đủ các <code>stop_reason</code></td></tr>
+          <tr><td>7</td><td>Mock: 1 system design 45′ + 1 coding 45′ + 3 behavioral</td><td>Ghi âm, nghe lại, cắt chỗ lan man</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Ba khung dùng được cho mọi câu hỏi</h3></div>
+    <div class="stack">
+      <div class="stack-tight">
+        <h4>Khung 1 · System design</h4>
+        <p>Clarify → <strong>định nghĩa metric TRƯỚC kiến trúc</strong> → happy path → eval &amp; observability → failure modes &amp; guardrail → trade-off.</p>
+        <p class="note">Việc đề xuất metric trước khi vẽ kiến trúc là <strong>chữ ký riêng của bạn</strong>. Dùng nó ngay câu đầu.</p>
+      </div>
+      <div class="stack-tight">
+        <h4>Khung 2 · Sự cố production</h4>
+        <p>Đo trước → khoanh vùng theo tầng → sửa nhỏ nhất → <strong>chặn tái diễn bằng regression gate</strong> → ghi lại.</p>
+      </div>
+      <div class="stack-tight">
+        <h4>Khung 3 · Behavioral, STAR 90 giây</h4>
+        <p><strong>S</strong> 10s bối cảnh · <strong>T</strong> 10s trách nhiệm <em>của bạn</em> · <strong>A</strong> 50s quyết định + đánh đổi, nói “tôi” không nói “team” · <strong>R</strong> 20s <strong>con số</strong> + bài học.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Câu hỏi bạn nên hỏi ngược lại</h3>
+      <p>Hỏi được những câu này nghĩa là bạn đang phỏng vấn họ — và nó thể hiện đúng chuyên môn của bạn.</p>
+    </div>
+    <ol class="body">
+      <li>Hiện tại team quyết định một thay đổi về prompt hay model là <em>cải thiện</em> dựa vào cái gì?</li>
+      <li>Có golden set và regression gate trước khi ship không, hay eval chạy sau khi ship?</li>
+      <li>Ai được quyền nói “không ship”? Grader hay con người?</li>
+      <li>Cost per request có được đo như một SLI không, hay chỉ nhìn ở hóa đơn cuối tháng?</li>
+      <li>Khi agent trả lời sai cho khách, mất bao lâu để dựng lại đúng cái nó đã thấy lúc đó?</li>
+    </ol>
+    <p class="note">Nếu họ không trả lời được câu 1 và 2 — <strong>đó chính là công việc của bạn ở đó</strong>, và bạn nên nói thẳng điều đó.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ PHẦN 01 ══════════ -->
+<section id="mindmap">
+  <div class="sec-head">
+    <span class="sec-num">Phần 01 — Mind map</span>
+    <h2>Năm khung xương vẽ được trên whiteboard trong 3 phút</h2>
+    <p>Cách ôn: che map lại → vẽ lại từ trí nhớ → mở ra so → chỉ học lại nhánh bị thiếu. Phần “Nói được 5 câu này” mới là thứ interviewer thực sự chấm.</p>
+  </div>
+
+  <!-- MAP 1 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">MAP 1</span><h3>RAG System</h3></div>
+    </div>
+    <div class="plate">
+<pre class="mermaid">
+mindmap
+  root((RAG))
+    1 · Ingestion
+      Parse
+        Docling · Marker
+        Tika · GROBID
+        layout + table fidelity
+      Chunk
+        theo section, không theo ký tự
+        512 token · overlap 15%
+        parent-child retrieval
+      Enrich
+        title + section path
+        metadata để filter
+    2 · Index
+      Vector
+        embedding model + dim
+        HNSW · IVF-PQ
+      Lexical BM25
+      Hybrid → RRF fusion
+      Isolation
+        namespace mỗi tenant
+        metadata filter là ACL
+    3 · Retrieval
+      Query understanding
+        rewrite · decompose
+        HyDE · multi-query
+      Search
+        top-k lớn rồi rerank
+        cross-encoder
+        MMR chống trùng
+      Context assembly
+        token budget
+        dedupe
+        gắn cite id
+    4 · Generation
+      Prompt contract
+        chỉ trả lời từ evidence
+      Structured output
+        JSON schema + validate
+      Citation
+        span-grounded
+        refuse khi thiếu evidence
+    5 · Evaluation
+      Retrieval
+        recall@k · MRR · nDCG
+      Generation
+        faithfulness
+        answer relevance
+      E2E
+        golden set + regression
+      Online
+        thumbs · no-answer rate
+    6 · Ops
+      Cache
+        exact · semantic · prompt
+      Cost và latency
+        p50 p95 · dollar mỗi query
+      Freshness
+        reindex · TTL · CDC
+      Guardrail
+        PII · injection · refusal
+</pre>
+      <div class="plate-cap">Map 1 — sáu tầng, đọc từ ingestion xuống ops</div>
+    </div>
+    <div class="say">
+      <h4>Nói được 5 câu này</h4>
+      <ol>
+        <li>RAG hỏng ở retrieval nhiều hơn ở generation — nên tôi đo recall@k trước khi động vào prompt.</li>
+        <li>Hybrid = BM25 + vector, fuse bằng RRF, vì vector chết ở exact match: mã lỗi, part number.</li>
+        <li>Chunk theo layout/section, không theo ký tự — parse layer quyết định chất lượng RAG. Tôi đã benchmark Docling/Marker/Tika/GROBID trên 13 PDF có gold JSON.</li>
+        <li>Không có evidence thì phải từ chối. <strong>No-answer rate là metric, không phải bug.</strong></li>
+        <li>Isolation bằng namespace/metadata filter ở tầng index, không lọc sau khi truy hồi.</li>
+      </ol>
+    </div>
+  </article>
+
+  <!-- MAP 2 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">MAP 2</span><h3>Agent &amp; Tool-Use — NL-to-SQL / Analytics</h3></div>
+    </div>
+    <div class="plate">
+<pre class="mermaid">
+mindmap
+  root((Agent))
+    Contract
+      Task spec
+      Success criteria
+      Stop condition
+    Planning
+      ReAct single loop
+      Planner và Executor
+      Decompose thành subtask
+      Reflection
+    Tools
+      Definition
+        tên + docstring + JSON schema
+        ít tool, mô tả rõ
+      Registry
+        MCP server, versioned
+      Semantic layer
+        Cube measures và dimensions
+        query DSL thay raw SQL
+      Safety
+        read-only role
+        row limit + timeout
+        cost guard
+    Memory và Context
+      Short-term là turn history
+      Long-term là vector store
+      Scratchpad state file
+      Context compaction
+    Execution
+      Retry + backoff
+      Parallel tool calls
+      Idempotency
+      Sandbox workspace
+    Observability
+      Trace mỗi turn
+        tool · args · latency · token
+      Opik · LangSmith
+      Cost mỗi task
+      Failure taxonomy
+    Guardrails
+      Input là prompt injection
+      Output là schema validate
+      Human-in-the-loop cho write
+      Circuit breaker
+    Failure modes
+      Sai tool
+      Đúng tool sai args
+      Vòng lặp vô hạn
+      Trả lời không grounded
+      Grain mismatch trong SQL
+</pre>
+      <div class="plate-cap">Map 2 — tool contract, budget, telemetry là ba trụ</div>
+    </div>
+    <div class="say">
+      <h4>Nói được 5 câu này</h4>
+      <ol>
+        <li>Tôi cho agent query semantic layer (Cube) chứ không sinh raw SQL — nó loại bỏ cả một lớp hallucination về join và grain.</li>
+        <li><strong>Tool description chính là prompt.</strong> Sai tool thường là lỗi mô tả tool, không phải lỗi model.</li>
+        <li>Mỗi turn phải có trace: tool nào, args gì, bao nhiêu token, hết bao nhiêu tiền — không có telemetry thì không debug được agent.</li>
+        <li>Agent phải có stop condition và budget; loop vô hạn là failure mode phổ biến nhất trong production.</li>
+        <li>Write action luôn qua human-in-the-loop hoặc dry-run; read dùng role read-only + LIMIT + timeout.</li>
+      </ol>
+    </div>
+  </article>
+
+  <!-- MAP 3 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">MAP 3</span><h3>Eval Harness — LAAF</h3><span class="chip pass">Thế mạnh của bạn</span></div>
+    </div>
+    <div class="plate">
+<pre class="mermaid">
+mindmap
+  root((Eval))
+    Dataset
+      Golden set
+        curated · versioned
+        schema-validated JSONL
+      Coverage
+        happy · edge · adversarial
+      Anti-leak
+        hidden test suite
+        gold không lộ cho agent
+    Tier 1 · Deterministic
+      execution equivalence
+      rowset compare
+      structural check
+      safety gate G bằng 0 hoặc 1
+      QUYẾT ĐỊNH PASS hoặc FAIL
+    Tier 2 · LLM Judge
+      rubric tuyệt đối + anchor
+      temperature 0
+      judge model cố định, cross-family
+      CHỈ LÀ ADVISORY
+    Invariant
+      judge không lật được deterministic
+    Controls
+      Null agent phải ra 0 điểm
+      Cheater agent phải ra 0 điểm
+      Mutant impl thì test phải fail
+    Protocol
+      tối thiểu 3 trial
+      pass@1 và pass@k
+      giữ model và prompt cố định
+      fingerprint scorer code
+    Metrics
+      Correctness
+      Cost · token · turn
+      Latency p50 p95
+      Variance giữa các trial
+    Failure analysis
+      Taxonomy
+        Grain Mismatch
+        Contract Violation
+        Logic Error
+      Recovery loop
+        grader reason thành tag
+        re-prompt có định hướng
+        pass@Round2
+    Trust
+      Reproducibility
+      Quarantine kết quả nhiễu
+      Regression gate trong CI
+</pre>
+      <div class="plate-cap">Map 3 — hai tier, và cái ranh giới không được vượt qua</div>
+    </div>
+    <div class="say">
+      <h4>Nói được 5 câu này</h4>
+      <ol>
+        <li>Kiến trúc 2 tier: code quyết định PASS/FAIL, LLM judge chỉ advisory. <strong>Grader là source of truth.</strong></li>
+        <li>Null agent và cheater agent là bắt buộc — chúng chứng minh grader bắt được cả việc <em>không làm gì</em> lẫn việc <em>gian lận</em>.</li>
+        <li>Chạy 3 trial mỗi task vì một lần pass không phải là reliability; tôi báo cáo cả variance của cost.</li>
+        <li>Tôi từng phát hiện kết quả eval bị sai do infra hỏng và resource contention → quarantine và republish lịch sử, vì quyết định engineering phải dựa trên đo lường tái lập được.</li>
+        <li>Recovery controller map lỗi grader → taxonomy → re-prompt có định hướng, nhưng <strong>không bao giờ inject gold answer</strong>.</li>
+      </ol>
+    </div>
+  </article>
+
+  <!-- MAP 4 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">MAP 4</span><h3>LLMOps — Serving, Cost &amp; Reliability</h3></div>
+    </div>
+    <div class="plate">
+<pre class="mermaid">
+mindmap
+  root((LLMOps))
+    Gateway
+      LiteLLM proxy
+      Multi-provider routing
+      Fallback chain
+      Rate limit và quota
+      Key management
+    Model strategy
+      Task và model fit
+        model rẻ để classify và route
+        model mạnh để reasoning
+      Router · cascade
+      Fine-tune vs RAG vs prompt
+    Cost control
+      Prompt caching
+        prefix ổn định lên đầu
+      Context compression
+      Output token cap
+      Batch API
+      Semantic cache
+      Dashboard chi phí mỗi request
+    Latency
+      Streaming · TTFT
+      Parallel tool calls
+      Small model trước
+      Timeout · hedging
+    Reliability
+      Retry + backoff + jitter
+      Circuit breaker
+      Idempotency key
+      Graceful degradation
+    Observability
+      Trace prompt · response · token · cost
+      Opik · OTel
+      Drift monitor
+      Online eval sampling
+    Deployment
+      Prompt registry versioned
+      Canary · shadow
+      Regression gate trước khi ship
+      Rollback là đổi version prompt
+    Security
+      PII redaction
+      Prompt injection defense
+      Tenant isolation
+      Audit log
+</pre>
+      <div class="plate-cap">Map 4 — prompt là artifact có version, không phải string trong code</div>
+    </div>
+    <div class="say">
+      <h4>Nói được 5 câu này</h4>
+      <ol>
+        <li>Prompt là artifact có version, nằm trong registry (tôi dùng Opik) — rollback nghĩa là đổi version, không phải sửa code.</li>
+        <li>Gateway (LiteLLM) cho tôi đổi model mà không đổi app code, và cho tôi một chỗ duy nhất để đo cost/latency.</li>
+        <li>Đặt phần prefix ổn định lên đầu prompt để ăn prompt cache — cách giảm cost dễ nhất mà không đụng chất lượng.</li>
+        <li>Không ship prompt mới nếu chưa qua regression gate trên golden set.</li>
+        <li>Degradation phải có kịch bản: model chính chết → fallback model yếu hơn <em>và báo cho user</em>, chứ không trả lời sai im lặng.</li>
+      </ol>
+    </div>
+  </article>
+
+  <!-- MAP 5 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">MAP 5</span><h3>Document Intelligence — Doc → Structured</h3></div>
+    </div>
+    <div class="plate">
+<pre class="mermaid">
+mindmap
+  root((Doc AI))
+    Layer 1 · Parse
+      Docling
+      Marker
+      Apache Tika
+      GROBID
+      Đầu ra là text + layout + table
+      Đo với ground truth
+        table fidelity
+        reading order
+    Layer 2 · Schema extraction
+      Approach
+        LLM + JSON schema
+        span-grounded với bbox
+        structural không dùng LLM
+      Validate bằng Pydantic
+      Đo
+        field-level precision và recall
+        extract-bench
+        Ragas · DeepEval grounding
+    Layer 3 · Knowledge graph
+      Entity và relation
+      AutoSchemaKG
+      Neo4j load
+      Đánh giá KG-native còn khó
+    Cross-cutting
+      Dual-judge architecture
+      LiteLLM gateway
+      Lưu raw parse ở object store
+        để re-project không parse lại
+      Cost mỗi trang
+      Human review cho low-confidence
+    Quyết định
+      Không có tool tốt nhất
+      Chọn theo loại tài liệu
+      Benchmark trước khi cam kết roadmap
+</pre>
+      <div class="plate-cap">Map 5 — ba tầng riêng biệt, không phải ba tool thay thế nhau</div>
+    </div>
+    <div class="say">
+      <h4>Nói được 5 câu này</h4>
+      <ol>
+        <li>Ingestion tài liệu là 3 tầng riêng biệt — parse → extract → graph — không phải một tool thay thế lẫn nhau. Đánh giá phải theo từng tầng.</li>
+        <li>Tôi lưu raw parse vào object storage để re-project sang schema mới mà không phải parse lại — parse là phần đắt nhất.</li>
+        <li>Span-grounded extraction, mỗi giá trị link về bounding box trong PDF, là cách rẻ nhất để audit hallucination.</li>
+        <li>Tôi dùng dual-judge để giảm bias một model, và Ragas/DeepEval cho grounding metric.</li>
+        <li>Kết luận benchmark của tôi trực tiếp đổi roadmap ingestion — đó là mục đích của eval, không phải để có dashboard đẹp.</li>
+      </ol>
+    </div>
+  </article>
+
+  <div class="card">
+    <div class="card-head"><h3>Khi được hỏi “Design a system that…”</h3></div>
+    <ol class="body">
+      <li><strong>Clarify</strong> — user là ai? volume? latency SLA? độ chính xác cần bao nhiêu? có được sai không?</li>
+      <li><strong>Đề xuất metric TRƯỚC kiến trúc</strong> — “trước hết tôi định nghĩa thế nào là đúng, rồi mới thiết kế.”</li>
+      <li><strong>Vẽ happy path</strong> — ingestion → index → retrieve → generate → serve.</li>
+      <li><strong>Thêm eval + observability</strong> — golden set, regression gate, trace, cost.</li>
+      <li><strong>Nói failure modes &amp; guardrail</strong> — hallucination, injection, cost blowup, model outage.</li>
+      <li><strong>Trade-off</strong> — chỗ nào bạn chọn đơn giản, và điều kiện nào sẽ khiến bạn đổi ý.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ PHẦN 02 ══════════ -->
+<section id="ly-thuyet">
+  <div class="sec-head">
+    <span class="sec-num">Phần 02 — Lý thuyết</span>
+    <h2>Năm câu lõi cho vòng technical screen</h2>
+    <p>Thử tự trả lời trước khi mở đáp án. Nguyên tắc: senior không kể tên tool — senior nói <strong>trade-off</strong> và <strong>cách đo</strong>.</p>
+  </div>
+
+  <!-- Q1 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">LT 1</span><h3>RAG hoạt động thế nào, và nó hỏng ở đâu?</h3></div>
+    </div>
+    <details>
+      <summary>Hiện đáp án</summary>
+      <div class="answer">
+        <div class="stack-tight">
+          <h4>Trả lời 30 giây</h4>
+          <p>“RAG có hai nửa: retrieval và generation. Phần lớn lỗi production nằm ở retrieval — nếu evidence sai thì prompt giỏi mấy cũng vô nghĩa. Nên tôi luôn đo hai tầng riêng: recall@k cho retrieval, faithfulness cho generation. Chỉ khi recall đủ tốt tôi mới tối ưu prompt.”</p>
+        </div>
+        <div class="stack-tight">
+          <h4>Các điểm hỏng, theo tần suất thực tế</h4>
+          <div class="tw"><table>
+            <thead><tr><th>Điểm hỏng</th><th>Triệu chứng</th><th>Cách sửa</th></tr></thead>
+            <tbody>
+              <tr><td>Parse kém — bảng vỡ, sai reading order</td><td>Số liệu sai dù chunk “có chứa”</td><td>Đổi parser theo loại doc; benchmark có ground truth</td></tr>
+              <tr><td>Chunk cắt giữa ngữ nghĩa</td><td>Câu trả lời cụt, thiếu điều kiện</td><td>Chunk theo section; parent-child retrieval</td></tr>
+              <tr><td>Vector miss exact term</td><td>Hỏi mã lỗi <code>E-4021</code> không ra</td><td>Hybrid BM25 + vector, fuse bằng RRF</td></tr>
+              <tr><td>Top-k nhỏ / không rerank</td><td>Evidence đúng nằm ở rank 12</td><td>Lấy top-50 rồi cross-encoder rerank xuống top-5</td></tr>
+              <tr><td>Context nhiễu, trùng lặp</td><td>Model “lost in the middle”</td><td>MMR dedupe, nén context, xếp evidence quan trọng ở đầu và cuối</td></tr>
+              <tr><td>Không có đường từ chối</td><td>Bịa khi không có dữ liệu</td><td>Prompt contract bắt buộc cite; không cite được thì refuse</td></tr>
+              <tr><td>Index cũ</td><td>Trả lời theo dữ liệu tuần trước</td><td>CDC/TTL, reindex có lịch, hiển thị as-of date</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="stack-tight">
+          <h4>Metrics phải tách bạch</h4>
+          <ul>
+            <li><strong>Retrieval:</strong> recall@k, MRR, nDCG — cần golden set ánh xạ query → chunk id đúng.</li>
+            <li><strong>Generation:</strong> faithfulness/groundedness (mỗi claim có evidence không), answer relevance.</li>
+            <li><strong>E2E:</strong> exact/semantic match với gold answer + no-answer rate + citation precision.</li>
+          </ul>
+          <p><strong>Khi nào KHÔNG dùng RAG:</strong> khi câu hỏi cần tổng hợp toàn corpus — đó là bài toán aggregation, không phải top-k; hoặc khi dữ liệu là structured, lúc đó semantic layer tốt hơn.</p>
+        </div>
+        <div class="stack-tight">
+          <h4>Follow-up sẽ bị hỏi</h4>
+          <ul>
+            <li><em>“Chunk size bao nhiêu?”</em> → Không có con số cố định; bắt đầu 512 token / overlap 15% rồi sweep trên golden set. Quan trọng hơn size là <strong>boundary</strong> — cắt theo heading.</li>
+            <li><em>“Recall@k thấp thì làm gì trước?”</em> → Query rewrite + hybrid trước; đổi embedding model sau, vì đắt hơn nhiều.</li>
+            <li><em>“Rerank có đáng không?”</em> → Đáng, thường ROI cao nhất; đổi lại +50–200ms latency.</li>
+          </ul>
+        </div>
+        <div class="trap">
+          <h4>Bẫy</h4>
+          <ul>
+            <li>Nói “tôi tăng chunk overlap để tăng accuracy” mà không có số đo.</li>
+            <li>Quên nói tenant isolation khi RAG multi-tenant — filter phải ở tầng index, không lọc sau.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q2 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">LT 2</span><h3>LLM-as-a-judge: khi nào tin được, khi nào không?</h3><span class="chip tier2">Câu bạn nên chờ</span></div>
+    </div>
+    <details>
+      <summary>Hiện đáp án</summary>
+      <div class="answer">
+        <div class="stack-tight">
+          <h4>Trả lời 30 giây</h4>
+          <p>“LLM judge là công cụ đo có noise, nên tôi coi nó như một scorer cần được calibrate và không cho nó quyền quyết định cuối. Trong hệ tôi xây, deterministic grader quyết định PASS/FAIL, judge chỉ advisory — vì một quyết định ship/no-ship phải giải thích được trước bất kỳ ai.”</p>
+        </div>
+        <div class="stack-tight">
+          <h4>Khi nào dùng, khi nào không</h4>
+          <p><strong>Phù hợp:</strong> output tự do (tóm tắt, tư vấn, viết), tiêu chí mờ (helpfulness, tone), hoặc khi không thể viết assertion.</p>
+          <p><strong>KHÔNG dùng:</strong> khi tồn tại ground truth kiểm được bằng code — SQL trả đúng rowset, JSON đúng schema, test suite pass. Lúc đó dùng judge là tự thêm noise.</p>
+        </div>
+        <div class="stack-tight">
+          <h4>Các bias phải gọi được tên</h4>
+          <div class="tw"><table>
+            <thead><tr><th>Bias</th><th>Mô tả</th><th>Cách chống</th></tr></thead>
+            <tbody>
+              <tr><td>Position</td><td>Ưu tiên đáp án đứng trước trong pairwise</td><td>Swap thứ tự, chấm 2 chiều, lấy trung bình</td></tr>
+              <tr><td>Verbosity</td><td>Dài bị tưởng là tốt hơn</td><td>Rubric phạt độ dài thừa; normalize</td></tr>
+              <tr><td>Self-preference</td><td>Thiên vị output cùng family</td><td><strong>Judge cross-family</strong></td></tr>
+              <tr><td>Sycophancy / format</td><td>Bị dẫn dắt bởi prompt hoặc bởi giọng tự tin</td><td>Rubric tuyệt đối thay vì pairwise; ẩn metadata</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="stack-tight">
+          <h4>Checklist làm judge đáng tin</h4>
+          <ol class="body">
+            <li><strong>Rubric tuyệt đối + anchor examples</strong> (mẫu điểm 1/3/5 cụ thể), không hỏi “cái nào hay hơn”.</li>
+            <li><code>temperature = 0</code>, judge model pin cứng version, rubric có <code>rubric_version</code>.</li>
+            <li>Đưa judge model + rubric version vào <strong>fingerprint</strong> của experiment — đổi judge là invalidate kết quả cũ.</li>
+            <li><strong>Calibrate với human labels:</strong> đo Cohen’s kappa / agreement trên 50–100 mẫu. Dưới ngưỡng thì rubric sai, không phải model sai.</li>
+            <li>Yêu cầu judge xuất <strong>lý do + trích dẫn evidence trước khi cho điểm</strong>.</li>
+            <li>Đo <strong>variance</strong>: chạy lại cùng input nhiều lần. Judge dao động lớn thì không được dùng để gate.</li>
+          </ol>
+        </div>
+        <div class="stack-tight">
+          <h4>Kiến trúc 2 tier — nên vẽ ra khi trả lời</h4>
+<pre><code>Tier 1 — Deterministic: safety gate G ∈ {0,1}
+                        × (execution equivalence, structural check, non-regression)
+Tier 2 — LLM judge:     chất lượng / diễn giải → ADVISORY
+
+Invariant: judge KHÔNG BAO GIỜ lật được kết quả deterministic.
+Total = G × (W1·JudgeScore + W2·ExecScore)</code></pre>
+          <p><strong>G nhân, không cộng:</strong> vi phạm safety là 0 tuyệt đối, không “bù điểm” được.</p>
+        </div>
+        <div class="stack-tight">
+          <h4>Follow-up</h4>
+          <ul>
+            <li><em>“Đo judge tốt bằng gì?”</em> → agreement với human (kappa), độ ổn định khi lặp, và <strong>khả năng phân biệt</strong> — nếu judge cho mọi thứ 4/5 thì nó vô dụng, phải kiểm phân phối điểm.</li>
+            <li><em>“Model nhỏ làm judge được không?”</em> → Được cho tiêu chí hẹp + rubric chặt, rẻ hơn nhiều, nhưng phải calibrate lại.</li>
+          </ul>
+        </div>
+        <div class="trap">
+          <h4>Bẫy</h4>
+          <ul>
+            <li>Trả lời “tôi dùng GPT chấm, thấy khá ổn” — chết ngay. Phải có <strong>con số agreement</strong>.</li>
+            <li>Quên control: null/cheater để chứng minh scorer bắt được failure.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q3 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">LT 3</span><h3>Context engineering, prompt caching và bài toán cost/latency</h3></div>
+    </div>
+    <details>
+      <summary>Hiện đáp án</summary>
+      <div class="answer">
+        <div class="stack-tight">
+          <h4>Trả lời 30 giây</h4>
+          <p>“Context là tài nguyên có ngân sách, không phải chỗ nhét càng nhiều càng tốt. Tôi thiết kế prompt theo layout cố định-trước/động-sau để ăn prompt cache, cắt context theo budget token, và đo <code>$</code>/request như một SLI.”</p>
+        </div>
+        <div class="stack-tight">
+          <h4>Cấu trúc prompt tối ưu cache</h4>
+<pre><code>[STATIC — cache được]   system + tool definitions + few-shot + policy
+[SEMI   — ít đổi]       schema / mô tả semantic layer
+[DYNAMIC— đổi mỗi call] retrieved evidence + user turn</code></pre>
+          <p>Cache hoạt động theo <strong>prefix</strong>: đổi một ký tự ở đầu là mất toàn bộ cache phía sau. Nên: <strong>không bao giờ để timestamp/UUID/random ở đầu prompt.</strong></p>
+        </div>
+        <div class="stack-tight">
+          <h4>Đòn bẩy cost, xếp theo ROI</h4>
+          <ol class="body">
+            <li>Prompt caching — giảm mạnh chi phí input với prompt dài lặp lại.</li>
+            <li>Chọn đúng model cho đúng task; cascade: chạy model rẻ trước, escalate khi confidence thấp.</li>
+            <li>Giới hạn <code>max_tokens</code> — output token đắt hơn input đáng kể.</li>
+            <li>Semantic cache cho query lặp. <strong>Cẩn thận:</strong> cache key phải gồm tenant + version dữ liệu.</li>
+            <li>Batch API cho workload offline: eval, backfill.</li>
+            <li>Nén context: summarize lịch sử cũ, bỏ chunk trùng, chỉ giữ field cần.</li>
+          </ol>
+        </div>
+        <div class="stack-tight">
+          <h4>Latency</h4>
+          <ul>
+            <li><strong>TTFT</strong> quan trọng hơn total cho UX → stream.</li>
+            <li>Parallel tool calls thay vì tuần tự.</li>
+            <li>Hedging: gửi request thứ hai khi vượt p95, lấy cái về trước — đổi cost lấy tail latency.</li>
+            <li>Đo p50/p95/p99, <strong>không đo trung bình</strong> — trung bình che tail.</li>
+          </ul>
+          <p><strong>Context rot:</strong> chất lượng giảm khi context quá dài, thông tin ở giữa dễ bị bỏ qua. Đặt thứ quan trọng ở đầu và cuối; ít evidence chất lượng cao thắng nhiều evidence.</p>
+        </div>
+        <div class="stack-tight">
+          <h4>Follow-up</h4>
+          <ul>
+            <li><em>“Cache invalidation khi nào?”</em> → khi đổi prompt version, đổi model, hoặc dữ liệu nguồn đổi. Gắn data version vào cache key.</li>
+            <li><em>“Semantic cache có rủi ro gì?”</em> → false hit: hai câu hỏi gần nhau về ngữ nghĩa nhưng khác đáp án (khác kỳ, khác entity). Ngưỡng phải cao và key phải gồm tenant/filters.</li>
+          </ul>
+        </div>
+        <div class="trap">
+          <h4>Bẫy</h4>
+          <ul><li>Nhầm “context window lớn thì bỏ RAG được”. Không: cost, latency và context rot vẫn còn; RAG còn cho bạn citation và ACL.</li></ul>
+        </div>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q4 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">LT 4</span><h3>Prompting vs RAG vs Fine-tuning: chọn cái nào?</h3></div>
+    </div>
+    <details>
+      <summary>Hiện đáp án</summary>
+      <div class="answer">
+        <div class="stack-tight">
+          <h4>Trả lời 30 giây</h4>
+          <p>“Ba thứ này giải ba vấn đề khác nhau: prompting sửa <em>hành vi</em>, RAG sửa <em>kiến thức</em>, fine-tuning sửa <em>phong cách, định dạng, độ chuyên biệt và cost</em>. Tôi luôn đi từ rẻ đến đắt và chỉ leo thang khi có số đo chứng minh tầng trước hết dư địa.”</p>
+        </div>
+        <div class="tw"><table>
+          <thead><tr><th></th><th>Giải quyết</th><th>Chi phí</th><th>Cập nhật kiến thức</th><th>Khi nào chọn</th></tr></thead>
+          <tbody>
+            <tr><td>Prompt / context eng.</td><td>hành vi, format, reasoning</td><td>thấp nhất</td><td>tức thì</td><td>luôn thử trước</td></tr>
+            <tr><td>RAG</td><td>kiến thức riêng, mới, có citation</td><td>trung bình</td><td>tức thì, reindex</td><td>dữ liệu đổi, cần trích nguồn, cần ACL</td></tr>
+            <tr><td>Fine-tune LoRA/QLoRA</td><td>phong cách, tuân thủ format, task hẹp lặp lại</td><td>cao</td><td>phải train lại</td><td>prompt đã dài và đắt, có ≥ vài nghìn mẫu tốt</td></tr>
+            <tr><td>Distillation</td><td>rẻ hóa: model nhỏ bắt chước model lớn</td><td>cao một lần</td><td>—</td><td>volume lớn, task ổn định</td></tr>
+          </tbody>
+        </table></div>
+        <div class="stack-tight">
+          <h4>Điểm senior</h4>
+          <ul>
+            <li>Fine-tune <strong>không</strong> dạy được fact mới đáng tin — nó dạy phân phối, không dạy tra cứu. Fact mới thì dùng RAG.</li>
+            <li><strong>LoRA/QLoRA:</strong> chỉ train adapter rank thấp (r=8–64) thay vì toàn bộ weight → rẻ, nhiều adapter trên một base model, dễ rollback. QLoRA thêm quantize base xuống 4-bit để vừa GPU.</li>
+            <li>Chất lượng data thắng số lượng: 1000 mẫu sạch, đa dạng, đúng distribution production thắng 100k mẫu scrape.</li>
+            <li>Phải giữ <strong>held-out eval set</strong> trước khi train, và đo cả regression trên năng lực chung — fine-tune hẹp dễ gây catastrophic forgetting.</li>
+            <li>Chi phí thật của fine-tune là <strong>vận hành</strong>: versioning, retrain khi drift, serving adapter.</li>
+          </ul>
+        </div>
+        <div class="stack-tight">
+          <h4>Follow-up</h4>
+          <ul>
+            <li><em>“RAG + fine-tune cùng lúc?”</em> → Có, và là combo phổ biến: fine-tune để model tuân thủ format/tool contract, RAG cấp fact.</li>
+            <li><em>“Khi nào biết prompt hết dư địa?”</em> → khi error analysis cho thấy lỗi là <em>thiếu kiến thức</em> (→RAG) hoặc <em>không tuân thủ format dù đã few-shot</em> (→fine-tune), chứ không phải lỗi diễn đạt.</li>
+          </ul>
+        </div>
+        <div class="trap">
+          <h4>Bẫy</h4>
+          <ul><li>Đề xuất fine-tune ngay từ đầu — dấu hiệu rõ nhất của thiếu kinh nghiệm production.</li></ul>
+        </div>
+      </div>
+    </details>
+  </article>
+
+  <!-- Q5 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">LT 5</span><h3>Thiết kế agent: kiến trúc, failure modes, guardrails</h3></div>
+    </div>
+    <details>
+      <summary>Hiện đáp án</summary>
+      <div class="answer">
+        <div class="stack-tight">
+          <h4>Trả lời 30 giây</h4>
+          <p>“Agent = LLM + tools + vòng lặp + điều kiện dừng. Phần khó không phải làm nó chạy, mà là làm nó <em>dừng đúng lúc</em> và <em>sai một cách an toàn</em>. Nên tôi thiết kế agent quanh ba thứ: tool contract chặt, budget và stop condition, và telemetry đủ để dựng lại mọi turn.”</p>
+        </div>
+        <div class="stack-tight">
+          <h4>Kiến trúc — chọn cái đơn giản nhất đủ dùng</h4>
+          <ol class="body">
+            <li><strong>Single-call + tools</strong> — đủ cho 70% use case.</li>
+            <li><strong>ReAct loop</strong> — think → act → observe, cho task nhiều bước.</li>
+            <li><strong>Planner–Executor</strong> — dễ audit hơn, tốt cho task dài.</li>
+            <li><strong>Multi-agent</strong> — chỉ khi thật sự cần chuyên môn hóa và song song hóa. Chi phí: coordination, mất context giữa agent, khó debug. <em>Đừng đề xuất multi-agent nếu chưa bị bắt buộc.</em></li>
+          </ol>
+        </div>
+        <div class="stack-tight">
+          <h4>Tool design — nơi quyết định thành bại</h4>
+          <ul>
+            <li>Ít tool, tên rõ nghĩa, docstring viết cho <em>người mới vào</em> đọc; JSON schema chặt với enum thay vì free-text.</li>
+            <li>Tool trả về lỗi <strong>có hướng dẫn sửa</strong> — “column <code>revenu</code> không tồn tại; các cột hợp lệ: …” — agent phục hồi tốt hơn nhiều so với stack trace.</li>
+            <li>Idempotent khi có thể; write tool cần dry-run.</li>
+            <li>Với analytics: cho agent gọi <strong>semantic layer</strong> thay vì sinh raw SQL → loại bỏ lỗi join/grain.</li>
+          </ul>
+        </div>
+        <div class="stack-tight">
+          <h4>Failure taxonomy — nên có sẵn để đọc ra</h4>
+          <div class="tw"><table>
+            <thead><tr><th>Loại</th><th>Ví dụ</th><th>Guardrail</th></tr></thead>
+            <tbody>
+              <tr><td>Wrong tool</td><td>dùng search khi cần query DB</td><td>mô tả tool rõ + few-shot routing</td></tr>
+              <tr><td>Right tool, wrong args</td><td>sai granularity, sai filter</td><td>schema enum + validate + error message hướng dẫn</td></tr>
+              <tr><td>Grain mismatch</td><td>count row thay vì count distinct</td><td>deterministic check rowcount với gold</td></tr>
+              <tr><td>Contract violation</td><td>trả text khi cần JSON</td><td>structured output + retry có sửa</td></tr>
+              <tr><td>Loop / no progress</td><td>lặp cùng tool 5 lần</td><td>max turns, phát hiện lặp state, budget</td></tr>
+              <tr><td>Ungrounded answer</td><td>bịa số</td><td>bắt buộc cite từ tool output</td></tr>
+              <tr><td>Unsafe action</td><td><code>DROP TABLE</code></td><td>read-only role, allowlist, human-in-the-loop</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="stack-tight">
+          <h4>Guardrail theo tầng</h4>
+          <p>input (injection, PII) → tool layer (permission, limit, timeout) → output (schema, grounding) → system (budget, circuit breaker, kill switch).</p>
+          <p><strong>Prompt injection qua tool output</strong> là mối nguy hay bị quên: dữ liệu truy hồi có thể chứa lệnh. Chống bằng cách đánh dấu rõ evidence là <em>dữ liệu không phải chỉ thị</em>, không cho tool output tự kích hoạt tool có side-effect, và luôn kiểm quyền ở tầng tool chứ không tin model.</p>
+        </div>
+        <div class="stack-tight">
+          <h4>Follow-up</h4>
+          <ul>
+            <li><em>“Đo agent thế nào?”</em> → task success bằng deterministic grader, tool-call correctness, số turn, cost/task, pass@k qua nhiều trial.</li>
+            <li><em>“Agent non-deterministic thì test kiểu gì?”</em> → chạy N trial, báo cáo tỉ lệ + variance; assert lên <strong>kết quả cuối</strong> (state của workspace/DB), không assert lên chuỗi hành động.</li>
+          </ul>
+        </div>
+        <div class="trap">
+          <h4>Bẫy</h4>
+          <ul><li>Nói “tôi thêm reflection để nó tự sửa” mà không có grader — reflection không có tín hiệu ngoài thì chỉ là model tự thuyết phục mình.</li></ul>
+        </div>
+      </div>
+    </details>
+  </article>
+
+  <!-- rapid fire -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">BONUS</span><h3>Mười hai câu phải trả lời được trong một câu</h3></div>
+    </div>
+    <details>
+      <summary>Hiện đáp án</summary>
+      <div class="answer">
+        <ol class="body">
+          <li><strong>Temperature vs top-p</strong> — temperature làm phẳng/nhọn phân phối; top-p cắt đuôi theo xác suất tích lũy. Chỉnh một cái thôi.</li>
+          <li><strong>Embedding vs completion model</strong> — embedding cho retrieval/similarity; đừng dùng cosine của LLM output làm metric chất lượng.</li>
+          <li><strong>Tại sao cosine chứ không Euclid</strong> — vector thường được normalize; hướng mang ngữ nghĩa, độ dài thì không.</li>
+          <li><strong>HNSW vs IVF-PQ</strong> — HNSW nhanh, recall cao, tốn RAM; IVF-PQ nén, rẻ RAM, mất chút recall.</li>
+          <li><strong>Cross-encoder vs bi-encoder</strong> — bi-encoder embed độc lập nên index được; cross-encoder đọc cặp query–doc, chính xác hơn nhưng chậm, dùng để rerank.</li>
+          <li><strong>Structured output đảm bảo thế nào</strong> — JSON schema / constrained decoding + validate + retry kèm lỗi validation.</li>
+          <li><strong>Hallucination về mặt kỹ thuật</strong> — model sinh token có xác suất cao nhưng không có cơ sở trong evidence; chống bằng grounding + refusal path, không bằng câu “đừng bịa”.</li>
+          <li><strong>Quantization</strong> — giảm precision weight để rẻ RAM và nhanh; đổi lại mất chút chất lượng, phải đo lại.</li>
+          <li><strong>KV cache</strong> — cache attention key/value của token đã sinh để không tính lại; lý do prefix ổn định lại rẻ.</li>
+          <li><strong>pass@k</strong> — xác suất có ít nhất 1 trong k lần chạy đạt; đo reliability của hệ non-deterministic.</li>
+          <li><strong>Guardrail vs eval</strong> — guardrail chặn tại runtime, eval đo trước khi ship. Cần cả hai.</li>
+          <li><strong>MCP</strong> — chuẩn giao thức expose tool/resource cho model, để tool dùng lại được giữa các agent thay vì hardcode mỗi nơi một kiểu.</li>
+        </ol>
+      </div>
+    </details>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════ PHẦN 03 ══════════ -->
+<section id="tinh-huong">
+  <div class="sec-head">
+    <span class="sec-num">Phần 03 — Tình huống</span>
+    <h2>Năm tình huống production, có story thật để gắn vào</h2>
+    <p>Khung chung cho mọi tình huống: <strong>Đo trước → Khoanh vùng → Sửa nhỏ nhất → Chặn tái diễn → Ghi lại</strong>. Câu trả lời có số liệu thật luôn thắng câu trả lời chung chung.</p>
+  </div>
+
+  <!-- S1 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">TH 1</span><h3>“Agent NL-to-SQL đang chạy tốt, tuần này khách báo trả lời sai. Bạn làm gì?”</h3></div>
+      <p><strong>Interviewer muốn thấy:</strong> bạn có phương pháp debug hệ non-deterministic không, hay chỉ đoán và sửa prompt.</p>
+    </div>
+    <details>
+      <summary>Hiện đáp án</summary>
+      <div class="answer">
+        <p><strong>Bước 0 — không sửa prompt vội.</strong> Câu đầu tiên tôi hỏi: “sai theo nghĩa nào, và có tái lập được không?”</p>
+        <ol class="body">
+          <li><strong>Tái lập</strong> — lấy đúng trace của các câu hỏi khách báo: prompt version, model version, tool call, SQL sinh ra, rowset trả về, thời điểm.</li>
+          <li><strong>Khoanh vùng theo tầng</strong> — <em>routing</em> (sai tool/datasource?), <em>query construction</em> (sai measure/dimension/filter/granularity?), <em>data</em> (query đúng nhưng mart sai hoặc trễ?), <em>answer</em> (số đúng nhưng diễn giải sai?). Cách nhanh: chạy lại cùng câu hỏi, so <strong>tool-call args</strong> với gold. Args đúng mà số sai thì là lỗi data, không phải lỗi LLM.</li>
+          <li><strong>Kiểm cái gì đã thay đổi</strong> — prompt version? model version của provider? schema mart mới? dữ liệu mới có NULL hoặc category lạ? <em>Đa số “model tự nhiên dở đi” thật ra là schema hoặc data đổi.</em></li>
+          <li><strong>Đưa ca lỗi vào golden set ngay</strong>, kể cả trước khi sửa được.</li>
+          <li><strong>Sửa ở tầng rẻ nhất</strong> — thường là thêm mô tả cho dimension trong semantic layer, hoặc siết enum trong tool schema, chứ không phải viết lại prompt.</li>
+          <li><strong>Chạy regression</strong> trên toàn bộ golden set để chắc chắn không đánh đổi ca khác.</li>
+          <li><strong>Chặn tái diễn</strong> — thêm deterministic check cho lớp lỗi đó vào CI.</li>
+        </ol>
+        <div class="say">
+          <h4>Story để gắn vào</h4>
+          <p>“Ở Fabrion tôi vận hành eval end-to-end cho một NL-to-SQL agent doanh nghiệp trên benchmark BEAVER 209 câu, với 7 scorer tự động — trong đó có SQL execution equivalence, tool-call correctness, answer grounding và rowset semantics. Chính vì có bộ scorer đó nên khi có ca sai tôi không phải đoán: tôi biết ngay lỗi nằm ở routing, ở query, hay ở data. Qua 33 vòng diagnose → fix → re-test, composite pass rate đi từ 0.14 lên 0.93.”</p>
+        </div>
+        <p class="note"><strong>Câu chốt:</strong> “Điểm mấu chốt không phải là tôi sửa được, mà là tôi <em>biết mình đã sửa được</em> — vì có phép đo tái lập.”</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- S2 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">TH 2</span><h3>“Kết quả eval của team đang bị nghi ngờ — hai lần chạy ra hai kết quả khác nhau.”</h3><span class="chip pass">Lợi thế lớn nhất</span></div>
+      <p><strong>Interviewer muốn thấy:</strong> sự chính trực về mặt kỹ thuật.</p>
+    </div>
+    <details>
+      <summary>Hiện đáp án</summary>
+      <div class="answer">
+        <ol class="body">
+          <li><strong>Phân tách nguồn variance</strong> — ba nguồn phải tách: <em>LLM variance</em> (đo bằng N trial cùng input); <em>harness variance</em> (thứ tự chạy, cache, state rò rỉ giữa test → workspace sạch mỗi trial); <em>infra variance</em> (resource contention, timeout, rate limit, OOM) — đây là thủ phạm hay bị nhầm thành “model dở”.</li>
+          <li><strong>Kiểm bằng control</strong> — null agent và cheater agent <em>phải</em> ra 0 điểm. Nếu không, grader đang hỏng chứ không phải model.</li>
+          <li><strong>Không đáng tin thì quarantine, không im lặng</strong> — đánh dấu run là invalid, công bố lý do, chạy lại trên infra sạch, republish lịch sử đã sửa.</li>
+          <li><strong>Làm cho tái lập được</strong> — fingerprint mọi thứ ảnh hưởng kết quả: scorer source hash, prompt version, model + version, dataset version, rubric version. Đổi bất kỳ cái nào là invalidate, không so trực tiếp.</li>
+          <li><strong>Báo cáo có khoảng tin cậy</strong> — không bao giờ báo một con số trần trụi từ một lần chạy.</li>
+        </ol>
+        <div class="say">
+          <h4>Story để gắn vào</h4>
+          <p>“Tôi từng phát hiện một loạt kết quả eval gây hiểu nhầm do hạ tầng hỏng và resource contention, cộng với variance của LLM. Tôi quarantine chúng và republish lại lịch sử eval đã sửa, để quyết định engineering dựa trên đo lường tái lập được chứ không dựa trên cải thiện giả. Với tôi, eval là một kỷ luật kỹ thuật, không phải một cái dashboard.”</p>
+        </div>
+        <p class="note"><strong>Câu chốt:</strong> “Một eval mà không ai dám phản biện thì không phải eval. Tôi thiết kế để bất kỳ ai cũng chạy lại được và ra cùng kết quả.”</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- S3 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">TH 3</span><h3>“Lãnh đạo muốn adopt một coding agent / vendor AI. Chứng minh nên hay không nên thế nào?”</h3></div>
+      <p><strong>Interviewer muốn thấy:</strong> bạn biến quyết định mua-hay-không thành bằng chứng, và bạn nghĩ về fairness của phép so sánh.</p>
+    </div>
+    <details>
+      <summary>Hiện đáp án</summary>
+      <div class="answer">
+        <ol class="body">
+          <li><strong>Định nghĩa “tốt” trước khi thử</strong> — 5 task đại diện công việc thật, có một kết quả đúng rõ ràng, chấm bằng <strong>grader ẩn</strong> mà agent chưa từng thấy.</li>
+          <li><strong>Fairness</strong> — giữ cùng model, cùng task, cùng workspace sạch cho mọi agent; chỉ đổi đúng một biến là agent. Adapter layer để mỗi agent chỉ là một seam thay được.</li>
+          <li><strong>Chống gaming</strong> — grader chạy độc lập với config của agent (ví dụ pytest với <code>-c /dev/null --noconftest</code> để agent không nhét conftest ép pass). Dùng <strong>mutant implementation</strong> để chứng minh test agent tự viết là có răng.</li>
+          <li><strong>Control bắt buộc</strong> — null agent và cheater agent phải ra 0/5.</li>
+          <li><strong>Đo nhiều chiều</strong> — outcome, cost, token, số turn, wall-time, và <strong>reliability qua 3 trial</strong>. Rất thường gặp: hai agent cùng 100% outcome nhưng cost/turn chênh 3–5 lần — đó mới là quyết định.</li>
+          <li><strong>Kết luận có điều kiện</strong> — không nói “tốt/xấu”, nói <strong>“adopt-with-guardrails”</strong>: dùng cho task loại A, không dùng cho loại B, kèm giới hạn ngân sách và review bắt buộc.</li>
+        </ol>
+        <div class="say">
+          <h4>Story để gắn vào</h4>
+          <p>“Tôi thiết kế một harness vendor-agnostic: 5 task lập trình × 3 trial, grader ẩn là pytest suite + structural check. Tôi thêm cả positive và negative control — một agent không làm gì và một agent cố gian lận grader — để chứng minh harness bắt được cả việc thiếu việc lẫn việc gian lận. Rồi tôi viết adapter để chạy pi.dev và OpenAI Codex CLI trên <em>đúng</em> cùng bộ task, với telemetry cost/token/turn. Khuyến nghị của tôi là adopt-with-guardrails, và lãnh đạo đã theo.”</p>
+        </div>
+        <p class="note"><strong>Câu chốt:</strong> “Tôi không đưa ý kiến về vendor, tôi đưa bằng chứng — và bằng chứng đó chạy lại được với vendor tiếp theo mà không phải viết lại harness.”</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- S4 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">TH 4</span><h3>“Chi phí LLM tháng này gấp 4 lần dự kiến, nhưng không được giảm chất lượng.”</h3></div>
+      <p><strong>Interviewer muốn thấy:</strong> tư duy vận hành — đo trước, cắt theo ROI, bảo vệ chất lượng bằng eval chứ không bằng cảm giác.</p>
+    </div>
+    <details>
+      <summary>Hiện đáp án</summary>
+      <div class="answer">
+        <ol class="body">
+          <li><strong>Attribute trước khi cắt</strong> — breakdown theo endpoint/feature, tenant, model, input vs output token, retry/lỗi. Rất hay gặp: 80% chi phí đến từ một feature hoặc từ retry storm.</li>
+          <li><strong>Chốt baseline chất lượng</strong> — snapshot điểm golden set hiện tại. Mọi tối ưu sau đó phải re-run bộ này; giảm quá ngưỡng thì revert.</li>
+          <li><strong>Cắt theo thứ tự ROI</strong> — loại lãng phí trước (retry vô ích, gọi LLM cho việc code làm được: regex, lookup, validation) → prompt caching → cắt context (bớt top-k, dedupe, nén lịch sử) → giới hạn output token → model routing/cascade → semantic cache → batch API cho offline.</li>
+          <li><strong>Chặn tái diễn</strong> — budget alert theo feature/tenant, rate limit, circuit breaker, và cost hiển thị trong trace như một SLI bình thường.</li>
+          <li><strong>Đóng vòng lặp</strong> — sau mỗi thay đổi: cost mới + điểm eval mới, trình cả hai cạnh nhau.</li>
+        </ol>
+        <div class="say">
+          <h4>Story để gắn vào</h4>
+          <p>“Trong các harness tôi xây, cost và token là first-class metric ngang với accuracy — tôi capture cost/token/turn/wall-time từ telemetry của chính agent cho từng trial. Nên khi cần tối ưu, tôi có sẵn đường cơ sở để nói ‘giảm 40% chi phí, điểm eval giảm 1 điểm’ thay vì đoán.”</p>
+        </div>
+        <p class="note"><strong>Câu chốt:</strong> “Cost mà không kèm điểm eval là con số vô nghĩa — phải luôn trình theo cặp.”</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- S5 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">TH 5</span><h3>“Hệ thống trả lời sai cho khách hàng lớn, có yếu tố tuân thủ. Xử lý 24h đầu?”</h3></div>
+      <p><strong>Interviewer muốn thấy:</strong> thứ tự ưu tiên đúng — chặn thiệt hại → điều tra → sửa → phòng ngừa — và trung thực trong giao tiếp.</p>
+    </div>
+    <details>
+      <summary>Hiện đáp án</summary>
+      <div class="answer">
+        <div class="stack-tight">
+          <h4>Giờ 0–1 · Chặn thiệt hại</h4>
+          <ul>
+            <li>Xác định phạm vi: bao nhiêu câu trả lời, khách nào, từ khi nào — query theo trace + prompt version.</li>
+            <li>Giảm rủi ro ngay: bật chế độ thận trọng (bắt buộc citation, hạ ngưỡng refuse), hoặc tắt feature/rollback về prompt version trước. <strong>Rollback trước, tìm nguyên nhân sau.</strong></li>
+            <li>Báo stakeholder với sự thật đang có, kèm mốc cập nhật tiếp theo.</li>
+          </ul>
+        </div>
+        <div class="stack-tight">
+          <h4>Giờ 1–6 · Điều tra</h4>
+          <ul>
+            <li>Tái lập lỗi từ trace; xác định tầng lỗi: retrieval / query / data / generation.</li>
+            <li>Kiểm cái gì đã đổi: prompt, model version, schema, dữ liệu nguồn, index.</li>
+            <li>Xác định blast radius — chạy lại hàng loạt lớp câu hỏi tương tự.</li>
+          </ul>
+        </div>
+        <div class="stack-tight">
+          <h4>Giờ 6–24 · Sửa &amp; xác nhận</h4>
+          <ul>
+            <li>Sửa nhỏ nhất giải quyết được nguyên nhân gốc.</li>
+            <li>Chạy full golden set + bộ ca lỗi mới; chỉ ship khi cả hai xanh.</li>
+            <li>Nếu là lỗi grounding: thêm hard constraint — không có evidence thì không trả lời — không chỉ sửa câu chữ prompt.</li>
+          </ul>
+        </div>
+        <div class="stack-tight">
+          <h4>Sau đó · Phòng ngừa</h4>
+          <ul>
+            <li>Ca lỗi vào golden set vĩnh viễn + regression gate trong CI.</li>
+            <li>Thêm deterministic check cho lớp lỗi này.</li>
+            <li>Postmortem không đổ lỗi: nêu lỗ hổng hệ thống — thiếu check nào — không nêu ai gõ sai.</li>
+            <li>Có yếu tố compliance: giữ audit trail đầy đủ (input, evidence, output, version). Nếu chưa có, đó là action item số 1.</li>
+          </ul>
+        </div>
+        <p class="note"><strong>Nguyên tắc phát ngôn:</strong> không nói “AI đôi khi sai vậy đó”. Nói: “hệ thống thiếu một guardrail cụ thể; đây là guardrail đó và đây là cách chúng tôi chứng minh nó hoạt động.”</p>
+      </div>
+    </details>
+  </article>
+
+  <!-- STAR -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">BONUS</span><h3>Sáu câu behavioral phải có sẵn story</h3></div>
+      <p>Mỗi câu 90 giây, ít nhất một con số.</p>
+    </div>
+    <div class="tw"><table>
+      <thead><tr><th>Câu hỏi</th><th>Story nên dùng</th></tr></thead>
+      <tbody>
+        <tr><td>“Kể về lúc bạn không đồng ý với leader”</td><td>Kết quả eval gây hiểu nhầm → bạn quarantine thay vì báo cáo con số đẹp</td></tr>
+        <tr><td>“Dự án khó nhất bạn từng làm”</td><td>LAAF — kiến trúc 2 tier + recovery controller + failure taxonomy</td></tr>
+        <tr><td>“Lúc bạn làm hỏng gì đó / học từ thất bại”</td><td>Composite pass rate 0.14 lúc đầu — nói về chuỗi 33 vòng diagnose → fix → re-test</td></tr>
+        <tr><td>“Bạn tự chủ tới đâu”</td><td>Analytics product end-to-end một mình: Airbyte → 65 dbt models → 20+ Cube models → Taipy + chat agent → Dagster</td></tr>
+        <tr><td>“Thuyết phục người khác bằng dữ liệu”</td><td>Benchmark 4 PDF parser × 3 approach → đổi roadmap ingestion</td></tr>
+        <tr><td>“Làm việc với ambiguity”</td><td>Chuyển coding-agent-eval từ POC một lần thành framework LAAF cho toàn lifecycle</td></tr>
+      </tbody>
+    </table></div>
+  </article>
+</section>
+
+<!-- ═══════════════════════════════════════ PHẦN 04 ══════════ -->
+<section id="coding">
+  <div class="sec-head">
+    <span class="sec-num">Phần 04 — Coding</span>
+    <h2>Năm bài, lời giải chạy được, chỉ dùng stdlib</h2>
+    <p>Cách ôn hiệu quả nhất: đọc đề → tự code 25–40 phút → mới mở phần phân tích. Lời giải đầy đủ nằm ở <code>~/Desktop/Interview/code/</code>; cả 5 file đều tự chạy self-test và <strong>đều PASS</strong>.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Chạy toàn bộ</h3></div>
+<pre><code>cd ~/Desktop/Interview/code &amp;&amp; for f in *.py; do python3 "$f"; done</code></pre>
+    <div class="tw"><table>
+      <thead><tr><th>#</th><th>Bài</th><th>File</th><th>Thời gian</th><th>Kỹ năng lõi</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Hybrid retrieval: BM25 + vector + RRF + MMR</td><td><code>01_hybrid_retrieval.py</code></td><td>40′</td><td>RAG internals</td></tr>
+        <tr><td>2</td><td>Chunking + context budget packer</td><td><code>02_context_packer.py</code></td><td>30′</td><td>Token economics</td></tr>
+        <tr><td>3</td><td>LLM client: structured output + retry + repair + breaker</td><td><code>03_llm_client.py</code></td><td>40′</td><td>Production reliability</td></tr>
+        <tr><td>4</td><td>SQL execution-equivalence scorer</td><td><code>04_sql_exec_scorer.py</code></td><td>35′</td><td>Evaluation</td></tr>
+        <tr><td>5</td><td>Agent loop: tool registry, budget, loop detection</td><td><code>05_agent_loop.py</code></td><td>45′</td><td>Agent engineering</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- C1 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">CODE 1</span><h3>Hybrid Retrieval</h3><span class="chip pass">verified pass</span></div>
+      <p><strong>Đề:</strong> Cho một corpus, implement BM25, dense retrieval bằng cosine, gộp hai ranking bằng Reciprocal Rank Fusion, rồi chọn top-k đa dạng bằng MMR. Không dùng thư viện ngoài.</p>
+    </div>
+    <details>
+      <summary>Hiện phân tích</summary>
+      <div class="answer">
+        <div class="stack-tight">
+          <h4>Bạn phải tự nghĩ ra</h4>
+<pre><code>BM25   idf(t) · (f·(k1+1)) / (f + k1·(1 − b + b·dl/avgdl))     k1≈1.5  b=0.75
+RRF    score(d) = Σᵢ 1 / (k + rankᵢ(d))                         k=60
+MMR    argmax [ λ·sim(q,d) − (1−λ)·max_{s∈đã chọn} sim(d,s) ]</code></pre>
+        </div>
+        <div class="stack-tight">
+          <h4>Điều interviewer thực sự chấm</h4>
+          <ol class="body">
+            <li><strong>Tại sao RRF fuse theo rank chứ không theo score?</strong> Vì BM25 không chặn trên, cosine chặn trong [−1,1]; fuse theo rank thì khỏi normalize. Đây là câu tách senior khỏi junior.</li>
+            <li><strong>Vì sao cần lexical khi đã có vector?</strong> Exact-match token: mã lỗi <code>E-4021</code>, part number, tên riêng hiếm.</li>
+            <li><strong>Ngưỡng từ chối.</strong> Vector search luôn trả về k doc gần nhất <em>kể cả khi corpus không có câu trả lời</em> — thiếu <code>min_sim</code> là một nguồn hallucination chính. Và ngưỡng đó phải <strong>calibrate trên golden set</strong>, không phải đoán.</li>
+            <li><strong>Độ phức tạp:</strong> BM25 <code>O(|q|·N)</code> khi quét thẳng, production dùng inverted index → <code>O(|q|·df)</code>; MMR <code>O(k·|pool|)</code>.</li>
+          </ol>
+        </div>
+        <div class="stack-tight">
+          <h4>Follow-up</h4>
+          <ul>
+            <li><em>“Scale 10 triệu doc?”</em> → ANN index (HNSW/IVF-PQ) cho dense, inverted index cho lexical; RRF giữ nguyên vì nó chỉ cần rank.</li>
+            <li><em>“Rerank ở đâu?”</em> → giữa fuse và MMR: pool ~50 → cross-encoder → top-10 → MMR → top-3.</li>
+            <li><em>“Multi-tenant?”</em> → pre-filter ở tầng index; lọc sau khi truy hồi làm hụt recall và rò rỉ dữ liệu.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+  </article>
+
+  <!-- C2 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">CODE 2</span><h3>Chunking + Context Budget Packer</h3><span class="chip pass">verified pass</span></div>
+      <p><strong>Đề:</strong> (a) Cắt tài liệu thành chunk ≤ <code>max_tokens</code>, không cắt giữa câu, có overlap. (b) Cho các chunk đã truy hồi kèm score và một ngân sách token, chọn tập tối ưu: khử trùng lặp, không vượt ngân sách, sắp xếp chống “lost in the middle”.</p>
+    </div>
+    <details>
+      <summary>Hiện phân tích</summary>
+      <div class="answer">
+        <div class="stack-tight">
+          <h4>Ba cái bẫy trong đề</h4>
+          <ol class="body">
+            <li><strong>Câu dài hơn cả chunk</strong> — bảng, log, code. Phải có đường cắt cứng, nếu không chunk tràn.</li>
+            <li><strong>Overlap có hạt là câu.</strong> Nếu <code>overlap_ratio × max_tokens</code> nhỏ hơn một câu thì sao? (Lời giải: vẫn giữ đúng một câu, nhưng chặn trần ở nửa chunk.) Interviewer sẽ hỏi đúng chỗ này.</li>
+            <li><strong>Quên trừ <code>reserved_output</code></strong> khỏi ngân sách → prompt vừa nhét vào context window nhưng không còn chỗ để model sinh. Bug production kinh điển.</li>
+          </ol>
+<pre><code>budget = window − system − output − safety_margin</code></pre>
+        </div>
+        <div class="stack-tight">
+          <h4>Điều interviewer thực sự chấm</h4>
+          <ul>
+            <li>Trade-off chunk nhỏ/lớn và giải pháp <strong>parent-child retrieval</strong> — match trên chunk nhỏ để chính xác, trả về parent lớn để đủ ngữ cảnh.</li>
+            <li>Biết <strong>“lost in the middle”</strong>: chunk điểm cao nhất ở đầu, cao nhì ở cuối.</li>
+            <li>Biết đếm token là <strong>xấp xỉ</strong> và phải có safety margin.</li>
+            <li>Prompt contract đánh dấu evidence là <em>dữ liệu, không phải chỉ thị</em> — phòng thủ đầu tiên chống prompt injection qua nội dung truy hồi.</li>
+          </ul>
+        </div>
+        <div class="stack-tight">
+          <h4>Follow-up hay nhất</h4>
+          <p><em>“Chọn chunk trong ngân sách là knapsack — sao dùng greedy?”</em> → Greedy theo score đủ tốt trong thực tế và giữ được thứ tự ưu tiên chất lượng; DP tối ưu theo <em>tổng score</em> có thể chọn nhiều chunk kém thay vì một chunk tốt, thường tệ hơn về chất lượng câu trả lời. Nêu được nhận xét này là điểm cộng lớn.</p>
+        </div>
+      </div>
+    </details>
+  </article>
+
+  <!-- C3 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">CODE 3</span><h3>Production LLM Client</h3><span class="chip pass">verified pass</span></div>
+      <p><strong>Đề:</strong> Viết hàm gọi LLM bắt buộc trả JSON đúng schema, có tự sửa, retry lỗi tạm thời, circuit breaker, và theo dõi cost.</p>
+    </div>
+    <details>
+      <summary>Hiện phân tích</summary>
+      <div class="answer">
+        <div class="note">
+          <strong>Ý tưởng then chốt — đây là toàn bộ bài này: RETRY ≠ REPAIR.</strong><br>
+          <em>Retry</em>: lỗi hạ tầng (429/5xx/timeout) → gửi lại <strong>y nguyên</strong>, có backoff + jitter.<br>
+          <em>Repair</em>: lỗi nội dung (JSON hỏng / sai schema) → gửi request <strong>mới kèm thông báo lỗi</strong>.<br>
+          Gộp hai cái là bug: retry một prompt sinh JSON hỏng thì nó sẽ hỏng tiếp.
+        </div>
+        <div class="stack-tight">
+          <h4>Checklist phải có</h4>
+          <ul>
+            <li>Phân loại transient vs permanent — <strong>không retry 401/400</strong>, fail nhanh.</li>
+            <li>Exponential backoff + <strong>full jitter</strong>; không jitter thì thundering herd khi provider hồi phục.</li>
+            <li>Thông báo lỗi validation <strong>nói rõ cách sửa</strong> (<code>must be one of […], got 'happy'</code>), vì chính nó được đưa lại cho model.</li>
+            <li>Trần số lần repair — prompt tồi có thể đốt tiền vô hạn.</li>
+            <li>Circuit breaker CLOSED → OPEN → HALF_OPEN.</li>
+            <li>Bóc JSON khỏi code fence / lời dẫn thừa, quét ngoặc <strong>cân bằng có xét trạng thái chuỗi</strong> — dấu <code>}</code> nằm trong string không được coi là đóng object.</li>
+            <li>Đếm token + cost cho <strong>cả lần thất bại</strong> — repair và retry đều tốn tiền thật.</li>
+          </ul>
+        </div>
+        <div class="stack-tight">
+          <h4>Follow-up</h4>
+          <ul>
+            <li><em>“Có JSON mode rồi thì cần validate không?”</em> → Có. JSON mode đảm bảo <em>cú pháp</em>, không đảm bảo <em>ngữ nghĩa</em>: enum sai, field thiếu, giá trị ngoài khoảng.</li>
+            <li><em>“Idempotency?”</em> → Gắn idempotency key cho thao tác có side-effect, để retry không tạo bản ghi trùng.</li>
+            <li><em>“Breaker mở thì làm gì?”</em> → fallback provider, hoặc trả lời degraded <strong>có báo cho người dùng</strong> — tuyệt đối không im lặng trả kết quả kém.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+  </article>
+
+  <!-- C4 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">CODE 4</span><h3>SQL Execution-Equivalence Scorer</h3><span class="chip pass">verified pass</span><span class="chip tier2">khả năng cao bị hỏi</span></div>
+      <p><strong>Đề:</strong> Chấm SQL do agent sinh so với gold SQL. Không so chuỗi. Phải xử lý alias khác, thứ tự dòng, dòng trùng lặp, sai số float, NULL, lỗi thực thi, và SQL không an toàn.</p>
+    </div>
+    <details>
+      <summary>Hiện phân tích</summary>
+      <div class="answer">
+        <p>Bài này khớp trực tiếp với kinh nghiệm trong CV của bạn — 7 scorer, BEAVER 209 câu. Nếu công ty làm về data/analytics agent thì gần như chắc chắn đây là bài họ hỏi.</p>
+        <div class="stack-tight">
+          <h4>Các quyết định thiết kế phải nói ra được</h4>
+          <div class="tw"><table>
+            <thead><tr><th>Quyết định</th><th>Lựa chọn đúng</th><th>Vì sao</th></tr></thead>
+            <tbody>
+              <tr><td>So chuỗi hay chạy?</td><td>Chạy rồi so kết quả</td><td>Hai câu SQL khác hẳn nhau vẫn có thể tương đương</td></tr>
+              <tr><td>Thứ tự dòng</td><td>Chỉ bắt buộc khi <strong>gold</strong> có <code>ORDER BY</code></td><td>Agent thêm ORDER BY thừa không phải lỗi</td></tr>
+              <tr><td>Set hay multiset?</td><td><strong>Multiset</strong></td><td>Mất <code>DISTINCT</code> là lỗi thật; so theo set sẽ bỏ sót</td></tr>
+              <tr><td>Tên cột</td><td>Bỏ qua, so theo vị trí</td><td>Alias khác nhau không phải lỗi</td></tr>
+              <tr><td>Float</td><td>So với dung sai</td><td><code>0.1+0.2 ≠ 0.3</code> trong dấu phẩy động</td></tr>
+              <tr><td>Gold SQL lỗi</td><td><strong>Raise, không fail agent</strong></td><td>Lỗi của dataset, không phải của agent</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="stack-tight">
+          <h4>Phần làm bạn khác biệt: taxonomy + recovery</h4>
+          <p>Grader không chỉ nói “sai”, nó nói <strong>sai loại gì</strong>:</p>
+<pre><code>WRONG_ROWCOUNT  → Grain Mismatch      thiếu GROUP BY / DISTINCT / sai join
+EXECUTION_ERROR → Contract Violation   sai schema hoặc cú pháp
+WRONG_VALUES    → Logic Error          sai filter hoặc phép tính
+WRONG_ORDER     → thiếu hoặc sai ORDER BY</code></pre>
+          <p>Từ taxonomy đó sinh gợi ý re-prompt cho vòng 2 — và <strong>không bao giờ inject gold answer</strong>, làm thế là rò rỉ đáp án và eval mất hết giá trị. Đây chính là recovery controller.</p>
+        </div>
+        <div class="stack-tight">
+          <h4>Safety gate — nói được cả hai tầng</h4>
+          <ul>
+            <li>Whitelist <code>^SELECT|WITH</code>, chặn stacked query <code>;</code>, và <strong>bỏ comment trước khi kiểm</strong> — nếu không, <code>-- \nDELETE</code> lách được.</li>
+            <li>Nhưng guardrail ứng dụng <strong>không bao giờ là hàng phòng thủ duy nhất</strong> — connection phải chạy bằng <strong>role read-only</strong> ở tầng database.</li>
+            <li>Thêm timeout / giới hạn số phép toán, để một query xấu không treo cả suite eval.</li>
+          </ul>
+        </div>
+        <div class="stack-tight">
+          <h4>Follow-up</h4>
+          <ul>
+            <li><em>“Không có gold SQL, chỉ có gold answer?”</em> → so kết quả cuối, và bổ sung tool-call correctness ở tầng semantic layer: measures/dimensions/filters/granularity khớp không.</li>
+            <li><em>“Query trả 1 triệu dòng?”</em> → so checksum của rowset đã sắp xếp + so aggregate, thay vì nạp hết vào bộ nhớ.</li>
+            <li><em>“Muốn partial credit?”</em> → chấm theo từng thành phần: measures / dimensions / filters / time-grain / order-limit / result-shape — chính là bộ scorer theo trường bạn đã xây.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+  </article>
+
+  <!-- C5 -->
+  <article class="card">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">CODE 5</span><h3>Agent Loop có kiểm soát</h3><span class="chip pass">verified pass</span></div>
+      <p><strong>Đề:</strong> Vòng lặp agent production: tool registry có schema, validate args trước khi chạy, chạy song song tool độc lập, timeout mỗi tool, lỗi tool thành observation, và các điều kiện dừng — max_turns, budget, loop detection. Có trace đầy đủ.</p>
+    </div>
+    <details>
+      <summary>Hiện phân tích</summary>
+      <div class="answer">
+        <div class="note">
+          <strong>Câu nói mở đầu nên dùng:</strong> “Làm agent chạy thì dễ; làm nó <em>dừng đúng lúc</em> và <em>sai một cách an toàn</em> mới là việc khó. Nên tôi thiết kế quanh ba thứ: tool contract chặt, budget + stop condition, và telemetry đủ để dựng lại mọi turn.”
+        </div>
+        <div class="stack-tight">
+          <h4>Checklist phải có</h4>
+          <ul>
+            <li><strong>Validate args trước khi gọi tool</strong> — đừng để model quyết định cái gì hợp lệ.</li>
+            <li><strong>Lỗi tool → observation, không phải exception.</strong> Agent chỉ phục hồi được nếu nó <em>đọc</em> được lỗi. Và lỗi phải hướng dẫn cách sửa: <code>'period' phải thuộc [daily, weekly, monthly]</code> chứ không phải stack trace.</li>
+            <li><strong>Song song hóa</strong> tool độc lập trong cùng turn — cắt latency thẳng.</li>
+            <li><strong>Timeout mỗi tool</strong> — một tool treo không được treo cả agent.</li>
+            <li><strong>Loop detection</strong>: hash <code>(tool, args)</code>; lặp quá N lần là không tiến triển → dừng. <em>Failure mode đắt tiền nhất ở production.</em></li>
+            <li><strong>Budget check trước khi gọi</strong>, không phải sau.</li>
+            <li><strong>Grounding check ở câu trả lời cuối</strong>: trích dẫn phải trỏ tới tool result có thật; không có thì từ chối trả lời.</li>
+            <li><strong>Tool mutating cần human approval.</strong></li>
+            <li><strong>Trace</strong>: tool, args, latency, ok/err, token, cost, <code>stop_reason</code>.</li>
+          </ul>
+        </div>
+        <div class="stack-tight">
+          <h4>Liệt kê được danh sách này là dấu hiệu rõ nhất bạn từng vận hành agent thật</h4>
+<pre><code>stop_reason ∈ { COMPLETED · LOOP_DETECTED · BUDGET_EXCEEDED
+                MAX_TURNS · UNGROUNDED · NO_ACTION }</code></pre>
+        </div>
+        <div class="stack-tight">
+          <h4>Follow-up</h4>
+          <ul>
+            <li><em>“Test agent non-deterministic kiểu gì?”</em> → assert lên <strong>trạng thái cuối</strong> (workspace/DB), không assert lên chuỗi hành động; chạy N trial, báo cáo pass@k + variance.</li>
+            <li><em>“Khi nào cần multi-agent?”</em> → chỉ khi thật sự cần chuyên môn hóa và song song hóa được. Chi phí là coordination + mất context + khó debug. Đừng đề xuất mặc định.</li>
+            <li><em>“Streaming?”</em> → stream token cho UX (TTFT), nhưng chỉ commit side-effect <strong>sau khi</strong> tool call được validate xong.</li>
+          </ul>
+        </div>
+      </div>
+    </details>
+  </article>
+
+  <!-- quick recall -->
+  <article class="card" id="nhac-nhanh">
+    <div class="card-head">
+      <div class="card-top"><span class="q-num">30′</span><h3>Nhắc nhanh trước khi vào phòng</h3></div>
+      <p>Mười dòng. Nếu chỉ còn 30 phút, đọc đúng mười dòng này.</p>
+    </div>
+    <ol class="body">
+      <li>RRF fuse theo <strong>rank</strong>, không theo score — khỏi normalize hai thang điểm.</li>
+      <li>Vector search không có ngưỡng thì luôn trả về gì đó → <strong>hallucination</strong>.</li>
+      <li><code>budget = window − system − <strong>output</strong> − margin</code>.</li>
+      <li><strong>Retry ≠ repair.</strong></li>
+      <li>Thông báo lỗi là prompt: phải <strong>nói cách sửa</strong>.</li>
+      <li>Có ground truth kiểm được bằng code → <strong>không dùng LLM judge</strong>.</li>
+      <li>Multiset, không phải set — <strong>mất DISTINCT là lỗi thật</strong>.</li>
+      <li>Gold hỏng thì <strong>raise</strong>, đừng đổ lỗi cho agent.</li>
+      <li>Lỗi tool → <strong>observation</strong>, không phải exception.</li>
+      <li>Loop detection + budget = hai thứ cứu bạn khỏi hóa đơn 10.000 USD.</li>
+    </ol>
+  </article>
+</section>
+
+<footer>
+  <p>Soạn theo CV 2026 và các dự án thật trong <code>~/Desktop/Fabrion</code> — coding-agent-eval / LAAF, fabrion-extraction-evaluation, fabrion-use-cases, DataFabric, fabrion-medallion.</p>
+  <p>Tài liệu nguồn và lời giải: <code>~/Desktop/Interview/</code> · Lời giải chạy bằng Python 3.10+, không cần cài thêm gì.</p>
+</footer>
+
+</main>
+</div>
