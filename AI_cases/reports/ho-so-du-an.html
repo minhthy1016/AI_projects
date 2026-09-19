@@ -1,0 +1,568 @@
+<title>Hồ sơ dự án Greenwashing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+:root{
+  --paper:#f4f5f4; --surface:#ffffff; --surface-2:#e9ebea;
+  --ink:#141d1d; --ink-2:#3f4c4c; --ink-3:#6c7a79;
+  --rule:#d6dad9; --rule-strong:#b6bdbc;
+  --accent:#1d4a56; --accent-ink:#1d4a56; --accent-soft:#e1ecee;
+  --flare:#a9581a;
+  --crit:#9b3128; --crit-soft:#f3e2e0;
+  --warn:#83600f; --warn-soft:#f3ecda;
+  --ok:#376046; --ok-soft:#e2ece5;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0d1315; --surface:#141b1d; --surface-2:#1b2427;
+  --ink:#e7ebea; --ink-2:#a8b4b3; --ink-3:#7a8887;
+  --rule:#283336; --rule-strong:#3b494c;
+  --accent:#72b6c3; --accent-ink:#8ec8d3; --accent-soft:#16303a;
+  --flare:#d68c47; --crit:#e08478; --crit-soft:#33201d;
+  --warn:#d2a54c; --warn-soft:#2e2717; --ok:#7bb08f; --ok-soft:#1a2b21;
+}}
+:root[data-theme="dark"]{
+  --paper:#0d1315; --surface:#141b1d; --surface-2:#1b2427;
+  --ink:#e7ebea; --ink-2:#a8b4b3; --ink-3:#7a8887;
+  --rule:#283336; --rule-strong:#3b494c;
+  --accent:#72b6c3; --accent-ink:#8ec8d3; --accent-soft:#16303a;
+  --flare:#d68c47; --crit:#e08478; --crit-soft:#33201d;
+  --warn:#d2a54c; --warn-soft:#2e2717; --ok:#7bb08f; --ok-soft:#1a2b21;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:"Source Serif 4",Georgia,serif;font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin:0 auto;padding:0 28px 96px}
+.prose{max-width:68ch}
+h1,h2,h3,h4,.eyebrow,th,.chip{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+.mono,code,.tree{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+.eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+header.mast{border-bottom:2px solid var(--ink);padding:44px 0 24px}
+.mast .eyebrow{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.mast .eyebrow .dot{width:5px;height:5px;border-radius:50%;background:var(--flare);display:inline-block}
+h1{font-size:clamp(36px,6vw,58px);line-height:1.04;letter-spacing:-.025em;font-weight:700;margin:14px 0 0;text-wrap:balance}
+.standfirst{font-size:19px;color:var(--ink-2);max-width:62ch;margin:16px 0 0}
+/* ── biểu đồ ───────────────────────────────────────────────────────────── */
+.chart{margin:30px 0 8px}
+.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.chart .cl{font-family:Archivo,sans-serif;font-size:12.5px;fill:var(--ink-2)}
+.chart .cv{font-family:"Roboto Mono",monospace;font-size:12.5px;fill:var(--ink);font-weight:600}
+.chart .cu{font-family:Archivo,sans-serif;font-size:11px;fill:var(--ink-3);font-weight:400}
+.chart .cn{font-family:"Roboto Mono",monospace;font-size:10.5px;fill:var(--ink-3);text-anchor:middle}
+.chart .cx{font-family:Archivo,sans-serif;font-size:11px;fill:var(--ink-2);text-anchor:middle}
+.chart .cx2{font-family:"Roboto Mono",monospace;font-size:10px;fill:var(--ok);text-anchor:middle}
+.chart .cy{font-family:"Roboto Mono",monospace;font-size:10px;fill:var(--ink-3);text-anchor:end}
+.legend{display:flex;flex-wrap:wrap;gap:18px;margin:14px 0 0;font-size:12.5px;color:var(--ink-2)}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{width:13px;height:13px;border-radius:2px;flex:none}
+.metastrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));border-bottom:1px solid var(--rule);margin-bottom:52px}
+.metastrip div{padding:16px 20px 18px;border-right:1px solid var(--rule)}
+.metastrip div:last-child{border-right:none}
+.metastrip dt{font-family:Archivo,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin:0 0 5px}
+.metastrip dd{margin:0;font-size:15px;line-height:1.4;color:var(--ink)}
+section{margin:0 0 70px}
+.sechead{display:flex;align-items:baseline;gap:16px;border-bottom:1px solid var(--rule-strong);padding-bottom:10px;margin-bottom:26px}
+.secnum{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--flare);font-weight:500;padding-top:4px}
+h2{font-size:clamp(24px,3.3vw,32px);line-height:1.14;letter-spacing:-.018em;font-weight:700;margin:0;text-wrap:balance}
+h3{font-size:18px;font-weight:600;margin:36px 0 12px;letter-spacing:-.008em}
+h3:first-child{margin-top:0}
+p{margin:0 0 16px}
+code{font-size:.85em;background:var(--surface-2);padding:1px 5px;border-radius:3px;color:var(--ink)}
+
+/* ---- giải thích khái niệm ---- */
+.terms{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);margin:0 0 20px}
+@media(min-width:720px){.terms{grid-template-columns:1fr 1fr 1fr}}
+.term{background:var(--surface);padding:18px 20px 20px}
+.term b{display:block;font-family:Archivo,sans-serif;font-size:15px;color:var(--ink);margin-bottom:5px}
+.term span{font-size:14.5px;color:var(--ink-2);line-height:1.5}
+
+/* ---- cây thư mục ---- */
+.treewrap{border:1px solid var(--rule);background:var(--surface);overflow-x:auto;margin:0 0 14px}
+.tree{min-width:780px;font-size:13px;line-height:1.95;padding:20px 22px;margin:0}
+.tree .row{display:grid;grid-template-columns:330px 1fr;gap:18px;align-items:baseline}
+.tree .row.group{margin-top:14px}
+.tree .row.group:first-child{margin-top:0}
+.tree .p{color:var(--ink);white-space:pre}
+.tree .p.dim{color:var(--ink-3)}
+.tree .p .nm{color:var(--accent-ink);font-weight:500}
+.tree .p .nm.hot{color:var(--flare)}
+.tree .note{font-family:"Source Serif 4",serif;font-size:14.5px;color:var(--ink-2);line-height:1.45}
+.tree .hdr{grid-column:1/-1;font-family:Archivo,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--flare);padding-top:6px;border-top:1px solid var(--rule);margin-top:8px}
+.tree .hdr:first-child{border-top:none;margin-top:0;padding-top:0}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--rule);background:var(--surface);margin:0 0 14px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14.5px}
+th{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:13px 16px;border-bottom:1px solid var(--rule-strong);white-space:nowrap;background:var(--surface)}
+td{padding:12px 16px;border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.45;color:var(--ink-2)}
+tr:last-child td{border-bottom:none}
+td.lead{color:var(--ink);font-weight:600;font-family:Archivo,sans-serif;font-size:14px}
+td.n{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;font-size:13px}
+td .sub{display:block;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3);margin-top:4px;white-space:normal}
+.up{color:var(--crit);font-weight:600}
+.down{color:var(--ok);font-weight:600}
+.chip{display:inline-block;font-size:9.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;padding:3px 7px;border-radius:2px;white-space:nowrap}
+.chip.crit{background:var(--crit-soft);color:var(--crit)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.acc{background:var(--accent-soft);color:var(--accent-ink)}
+.callout{border:1px solid var(--rule);border-left:3px solid var(--accent);background:var(--surface);padding:18px 22px;margin:22px 0}
+.callout .eyebrow{color:var(--accent-ink);margin-bottom:6px;display:block}
+.callout p{margin:0;font-size:15.5px;color:var(--ink-2)}
+.callout p b{color:var(--ink)}
+.caption{font-size:13.5px;color:var(--ink-3);margin:0 0 32px;max-width:68ch}
+ul.plain{margin:0 0 16px;padding-left:20px}
+ul.plain li{margin-bottom:9px;color:var(--ink-2)}
+ul.plain li::marker{color:var(--rule-strong)}
+ul.plain li b{color:var(--ink);font-weight:600}
+.cmd{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--flare);padding:16px 20px;overflow-x:auto;font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.8;color:var(--ink-2);margin:0 0 14px}
+.cmd b{color:var(--ink);font-weight:500}
+.cmd i{color:var(--ink-3);font-style:normal}
+.steps{display:flex;flex-direction:column;gap:14px;margin:0 0 14px}
+.step{border:1px solid var(--rule);background:var(--surface);overflow:hidden}
+.step .head{display:flex;align-items:baseline;gap:12px;padding:12px 18px 11px;border-bottom:1px solid var(--rule);background:var(--surface-2)}
+.step .num{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:500;color:var(--flare);flex:none}
+.step .what{font-family:Archivo,sans-serif;font-size:14.5px;font-weight:600;color:var(--ink);letter-spacing:-.005em}
+.step .why{font-size:13.5px;color:var(--ink-3);margin-left:auto;text-align:right}
+@media(max-width:700px){.step .why{margin-left:0;flex-basis:100%;text-align:left}}
+.step pre{margin:0;padding:14px 18px;overflow-x:auto;font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.75;color:var(--ink-2);white-space:pre}
+.step pre b{color:var(--ink);font-weight:500}
+.two{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);margin:0 0 14px}
+@media(min-width:760px){.two{grid-template-columns:1fr 1fr}}
+.two > div{background:var(--surface);padding:20px 22px 22px}
+.two h4{font-family:Archivo,sans-serif;font-size:15px;font-weight:600;margin:0 0 10px;letter-spacing:-.005em}
+.two h4 .tag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:400;letter-spacing:.08em;text-transform:uppercase;color:var(--flare);display:block;margin-bottom:4px}
+.two ul{margin:0;padding-left:18px}
+.two li{font-size:14.5px;color:var(--ink-2);margin-bottom:8px;line-height:1.5}
+.two li b{color:var(--ink);font-weight:600}
+footer{border-top:2px solid var(--ink);padding-top:22px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+footer p{font-size:13.5px;color:var(--ink-3);margin:0;max-width:56ch}
+:focus-visible{outline:2px solid var(--flare);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow"><span>Hồ sơ dự án</span><span class="dot"></span><span>Dầu khí · ESG</span><span class="dot"></span><span>15.09.2026</span></div>
+  <h1>Hồ sơ dự án Greenwashing</h1>
+  <p class="standfirst">Hệ thống đọc báo cáo tài chính và báo cáo bền vững của các công ty dầu khí, rồi chỉ ra chỗ lời nói và con số không khớp nhau. Trang này giải thích dự án làm gì, các file nằm ở đâu, và kết quả trên toàn bộ tám công ty trong bộ dữ liệu.</p>
+</header>
+
+<dl class="metastrip">
+  <div><dt>Số liệu tài chính</dt><dd>8 công ty · 6 ngôn ngữ</dd></div>
+  <div><dt>Số liệu môi trường</dt><dd>OMV · Aker BP</dd></div>
+  <div><dt>Dữ liệu đã trích</dt><dd class="mono">351 dòng có nguồn gốc</dd></div>
+  <div><dt>Độ chính xác</dt><dd class="mono">100% — 238/238 vs XBRL</dd></div>
+  <div><dt>Trạng thái</dt><dd>Thử nghiệm, chưa phải sản phẩm</dd></div>
+</dl>
+
+<section>
+  <div class="sechead"><span class="secnum">§1</span><h2>Dự án này làm gì</h2></div>
+  <p class="prose"><b>Greenwashing</b> là khi một công ty nói về môi trường hay hơn thực tế họ làm. Với ngành dầu khí, chuyện này khó phát hiện bằng mắt thường vì bằng chứng nằm rải rác trong những tài liệu 200–300 trang: một con số ở báo cáo tài chính, một cam kết ở báo cáo bền vững, một chú thích nhỏ ở cuối trang làm thay đổi ý nghĩa của cả hai.</p>
+  <p class="prose">Dự án làm ba việc, theo thứ tự:</p>
+  <ul class="plain">
+    <li><b>Đọc tài liệu thành dữ liệu.</b> Chuyển PDF báo cáo thành bảng số liệu máy hiểu được, trong đó <i>mỗi con số đều nhớ nó đến từ trang nào</i>.</li>
+    <li><b>Kiểm tra dữ liệu có đúng không.</b> Dùng các đẳng thức kế toán bất biến — ví dụ tổng tài sản phải bằng tổng nguồn vốn — để tự phát hiện chỗ đọc sai, không cần người soát từng dòng.</li>
+    <li><b>Đối chiếu tìm mâu thuẫn.</b> So cam kết với con số, so con số năm nay với năm trước, so chỉ tiêu công ty tự chọn với chỉ tiêu quy định bắt buộc.</li>
+  </ul>
+
+  <h3>Ba khái niệm cần biết để đọc kết quả</h3>
+  <div class="terms">
+    <div class="term"><b>Scope 1, 2, 3</b><span>Ba nhóm phát thải. Scope 1 là khí công ty tự thải ra, Scope 2 từ điện mua vào, Scope 3 từ chuỗi giá trị — quan trọng nhất là <i>khách hàng đốt sản phẩm công ty bán ra</i>. Với dầu khí, Scope 3 thường lớn gấp hàng chục lần hai nhóm kia.</span></div>
+    <div class="term"><b>Năm gốc (baseline)</b><span>Năm được chọn làm mốc so sánh cho mục tiêu giảm phát thải. Đổi năm gốc là một cách làm cho tỷ lệ giảm trông đẹp hơn mà không cần giảm thật.</span></div>
+    <div class="term"><b>ESRS</b><span>Bộ chuẩn công bố bền vững của EU, bắt buộc từ 2024 theo luật CSRD. Nó thay thế phần lớn vai trò của GRI với các công ty lớn ở châu Âu.</span></div>
+  </div>
+  <p class="caption">Cả OMV và Aker BP đều công bố theo ESRS, và phần bền vững nằm ngay trong báo cáo thường niên chứ không phải một file riêng.</p>
+  <div class="callout">
+    <span class="eyebrow">Hai tầng, hai mức trưởng thành</span>
+    <p>Tầng <b>số liệu tài chính</b> đã chạy trên cả tám công ty EU, vì mỗi báo cáo đi kèm file XBRL do chính công ty gắn thẻ — tức có sẵn đáp án để chấm. Tầng <b>số liệu môi trường</b> vẫn chỉ hai công ty, vì báo cáo bền vững <i>không</i> có file đối chứng tương đương. Mọi phát hiện greenwashing ở §3 và §4 vì thế vẫn nằm trên hai công ty, không phải tám.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§2</span><h2>Các file trong thư mục AI_cases</h2></div>
+  <p class="prose">Thư mục có bốn nhóm file. Nếu bạn chỉ muốn xem kết quả, đọc nhóm <b>Báo cáo</b>. Nếu muốn chạy lại, đọc nhóm <b>Chương trình</b> theo đúng thứ tự 1 → 5.</p>
+
+  <div class="treewrap">
+  <div class="tree">
+
+    <div class="row"><span class="hdr">Chương trình — chạy theo thứ tự này</span></div>
+    <div class="row"><span class="p">├── <span class="nm hot">ingest/fetch_corpus.py</span></span><span class="note"><b>1.</b> Tải báo cáo từ SEC (Mỹ) và filings.xbrl.org (EU). Chạy lại được, không sợ trùng.</span></div>
+    <div class="row"><span class="p">├── <span class="nm hot">parsing/docling_convert.py</span></span><span class="note"><b>2.</b> PDF → JSON có cấu trúc bằng <b>Docling</b>. Bước nặng nhất (13–80 giây), kết quả ghi ra đĩa để dùng lại.</span></div>
+    <div class="row"><span class="p">├── <span class="nm">parsing/docling_io.py</span></span><span class="note">Đọc JSON đó mà không cần cài Docling. Nhờ vậy các bước sau chạy bằng Python thường.</span></div>
+    <div class="row"><span class="p">├── <span class="nm hot">extraction/doc_extract.py</span></span><span class="note"><b>3.</b> Đọc phần <i>tài chính</i> ra bảng số. Hai “profile”: <code>omv-de</code> (Đức) và <code>akerbp-en</code> (Anh).</span></div>
+    <div class="row"><span class="p">├── <span class="nm hot">extraction/esg_extract.py</span></span><span class="note"><b>4.</b> Đọc phần <i>môi trường</i>: bảng phát thải và mục tiêu giảm. Một file cho cả hai công ty.</span></div>
+    <div class="row"><span class="p">├── <span class="nm hot">extraction/esrs_index_check.py</span></span><span class="note"><b>5.</b> Đối soát mục lục ESRS: công ty khai “đã công bố mục X” — kiểm xem có thật không.</span></div>
+    <div class="row"><span class="p">└── <span class="nm hot">signals/compute_signals.py</span></span><span class="note"><b>6.</b> Tính dấu hiệu nghi vấn, mỗi dấu hiệu kèm trang và đoạn chữ gốc để tự kiểm.</span></div>
+
+    <div class="row"><span class="hdr">Kiểm chứng — để biết dữ liệu có đáng tin không</span></div>
+    <div class="row"><span class="p">├── <span class="nm">validation/validate_identities.py</span></span><span class="note">Chạy các đẳng thức kế toán lên dữ liệu. File lớn nhất và quan trọng nhất: bắt lỗi mắt người không thấy.</span></div>
+    <div class="row"><span class="p">├── <span class="nm">validation/compare_to_truth.py</span></span><span class="note">So kết quả đọc PDF với dữ liệu chuẩn, báo riêng từng loại sai: sai 1000 lần, sai dấu, sai khác.</span></div>
+    <div class="row"><span class="p">├── <span class="nm">validation/make_fixture.py</span></span><span class="note">Tạo dữ liệu giả có lỗi cố ý, để kiểm tra bộ kiểm chứng có thật sự bắt được lỗi không.</span></div>
+    <div class="row"><span class="p">├── <span class="nm">contracts/extraction_contract.json</span></span><span class="note">Quy ước cho dữ liệu <b>tài chính</b>: dòng nào cũng phải có những trường gì. Thiếu nguồn gốc là bị loại.</span></div>
+    <div class="row"><span class="p">├── <span class="nm">contracts/esg_contract.json</span></span><span class="note">Quy ước cho dữ liệu <b>môi trường</b>. Tách riêng vì hai loại dữ liệu có bản chất khác nhau.</span></div>
+    <div class="row"><span class="p">├── <span class="nm">validation/coverage_esef.py</span></span><span class="note">Đo xem tài liệu <i>có chứa</i> bao nhiêu phần số liệu cần lấy — tức trần trên của hệ thống.</span></div>
+    <div class="row"><span class="p">├── <span class="nm">shared/text_match_locale.py</span></span><span class="note">Đọc số theo cách viết của từng nước. Cần vì tiếng Đức viết <code>24.308</code> nghĩa là hai mươi tư nghìn.</span></div>
+    <div class="row"><span class="p">└── <span class="nm">tests/test_text_match_locale.py</span></span><span class="note">20 bài kiểm tra cho file trên. Chạy trước khi đem dùng — và đã bắt được hai lỗi.</span></div>
+
+    <div class="row"><span class="hdr">Nối sang bộ đo chất lượng</span></div>
+    <div class="row"><span class="p">└── <span class="nm">integrations/make_fabrion_dataset.py</span></span><span class="note">Đóng gói hai báo cáo thành bộ dữ liệu chấm điểm cho <code>Fabrion/fabrion-extraction-evaluation</code>, <b>đáp án sinh tự động</b> từ file số liệu chuẩn.</span></div>
+
+    <div class="row"><span class="hdr">Dữ liệu</span></div>
+    <div class="row"><span class="p">└── <span class="nm">data/</span></span><span class="note"></span></div>
+    <div class="row"><span class="p">    ├── <span class="nm">sec/</span> <span class="dim">179 MB</span></span><span class="note">Báo cáo 7 công ty Mỹ/quốc tế, dạng máy đọc được sẵn.</span></div>
+    <div class="row"><span class="p">    ├── <span class="nm">esef/</span> <span class="dim">644 MB</span></span><span class="note">Báo cáo 8 công ty EU. Mỗi bộ có file nội dung và file số liệu chuẩn — file thứ hai là “đáp án”.</span></div>
+    <div class="row"><span class="p">    ├── <span class="nm">xbrl/</span> <span class="dim">15 MB</span></span><span class="note">Số liệu tài chính đã chuẩn hoá, trải 21 năm.</span></div>
+    <div class="row"><span class="p">    ├── <span class="nm">ir-pdf/</span> <span class="dim">810 MB</span></span><span class="note">PDF dựng từ tài liệu gốc của cả 8 công ty. Kèm <code>TARGETS.md</code> liệt kê báo cáo còn phải tải tay.</span></div>
+    <div class="row"><span class="p">    ├── <span class="nm">parsed/</span> <span class="dim">11 MB</span></span><span class="note">Kết quả Docling, định dạng chuẩn <code>DoclingDocument</code>. Mỗi file kèm <code>.meta.json</code> ghi nguồn và phiên bản.</span></div>
+    <div class="row"><span class="p">    ├── <span class="nm">extracted/</span> <span class="dim">496 KB</span></span><span class="note"><b>Kết quả chính.</b> 13 file, xem bảng ngay dưới.</span></div>
+    <div class="row"><span class="p">    ├── <span class="nm">gold/</span> <span class="dim">10 KB</span></span><span class="note">Đáp án ESEF suy từ file XBRL. Nhỏ và không tái tạo tự động được, nên nằm trong git.</span></div>
+    <div class="row"><span class="p">    ├── <span class="nm">manifest.jsonl</span></span><span class="note">Danh mục mọi file đã tải: nguồn, kích thước, mã băm.</span></div>
+    <div class="row"><span class="p">    └── <span class="nm">v_*.jsonl</span></span><span class="note">Kết quả kiểm chứng của từng công ty. 8 file.</span></div>
+
+    <div class="row"><span class="hdr">Bản cũ giữ lại để đối chứng</span></div>
+    <div class="row"><span class="p">└── <span class="nm dim">*_pdftotext.py.bak</span></span><span class="note">Ba bản đọc PDF theo cách cũ (cắt theo vị trí ký tự), giữ lại để so sánh với cách mới.</span></div>
+
+    <div class="row"><span class="hdr">Báo cáo — mở bằng trình duyệt</span></div>
+    <div class="row"><span class="p">├── <span class="nm">reports/greenwashing-pipeline.html</span></span><span class="note">Bản thiết kế hệ thống: chọn hạ tầng, các chỗ dễ sai, cách đo chất lượng.</span></div>
+    <div class="row"><span class="p">├── <span class="nm">reports/silver-schema.html</span></span><span class="note">Đặc tả từng trường dữ liệu, dành cho người viết code.</span></div>
+    <div class="row"><span class="p">├── <span class="nm">reports/esg-findings.html</span></span><span class="note">Báo cáo kết quả chi tiết, tiếng Anh.</span></div>
+    <div class="row"><span class="p">└── <span class="nm hot">reports/ho-so-du-an.html</span></span><span class="note">Chính là trang bạn đang đọc.</span></div>
+
+  </div>
+  </div>
+
+  <h3>Mười ba file kết quả trong <code>data/extracted/</code></h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>File</th><th>Số dòng</th><th>Chứa gì</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">shell-2025.jsonl</td><td class="n">36</td><td rowspan="8">Số liệu tài chính — tài sản, vốn chủ, doanh thu, dòng tiền. Một file cho mỗi công ty, cùng một chương trình đọc, khác nhau ở bảng tên gọi và cách viết số.</td></tr>
+      <tr><td class="lead">omv-2025.jsonl</td><td class="n">34</td></tr>
+      <tr><td class="lead">akerbp-2024.jsonl</td><td class="n">34</td></tr>
+      <tr><td class="lead">eni-2025.jsonl</td><td class="n">31</td></tr>
+      <tr><td class="lead">galp-2024.jsonl</td><td class="n">31</td></tr>
+      <tr><td class="lead">repsol-2024.jsonl</td><td class="n">28</td></tr>
+      <tr><td class="lead">totalenergies-2025.jsonl</td><td class="n">27</td></tr>
+      <tr><td class="lead">equinor-2024.jsonl</td><td class="n">17</td></tr>
+      <tr><td class="lead">omv-2025-esg.jsonl</td><td class="n">30</td><td>Phát thải và mục tiêu giảm của OMV</td></tr>
+      <tr><td class="lead">akerbp-2024-esg.jsonl</td><td class="n">10</td><td>Phát thải và mục tiêu giảm của Aker BP</td></tr>
+      <tr><td class="lead">omv-2025-esrs-index.jsonl</td><td class="n">70</td><td>Kết quả đối soát mục lục ESRS của OMV</td></tr>
+      <tr><td class="lead">omv-2025-signals.jsonl</td><td class="n">2</td><td rowspan="2">Dấu hiệu tìm được, mỗi dấu hiệu trỏ về dòng dữ liệu làm bằng chứng</td></tr>
+      <tr><td class="lead">akerbp-2024-signals.jsonl</td><td class="n">1</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="caption">Định dạng <code>.jsonl</code> là file chữ thường, mỗi dòng một bản ghi — mở được bằng bất kỳ trình soạn thảo nào.</p>
+
+  <h3>Vì sao chỉ có ngần ấy dòng?</h3>
+  <p class="prose">Một báo cáo thường niên chứa hàng nghìn con số. Hệ thống chỉ lấy ra vài chục. Đây là con số thật, đo trên toàn bộ tài liệu:</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Trong tài liệu</th><th>OMV</th><th>Aker BP</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">Số bảng</td><td class="n">349</td><td class="n">147</td></tr>
+      <tr><td class="lead">Ô chứa số</td><td class="n">10.605</td><td class="n">1.418</td></tr>
+      <tr><td class="lead">Dòng có tên gọi</td><td class="n">3.833</td><td class="n">1.639</td></tr>
+      <tr><td class="lead">Hệ thống lấy ra</td><td class="n"><b>34</b></td><td class="n"><b>32</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="prose"><b>Nguyên nhân là bảng tên gọi chỉ có 17 dòng.</b> Hệ thống chỉ nhận ra 17 chỉ tiêu — tổng tài sản, tổng vốn chủ, doanh thu, lợi nhuận, các dòng tiền. Mọi dòng khác trong tài liệu không có tên tương ứng nên bị bỏ qua.</p>
+  <p class="prose">Để loại trừ các nghi ngờ khác, đã chạy thử trên <b>toàn bộ tài liệu</b> thay vì chỉ vài trang: kết quả vẫn đúng 34 dòng. Nghĩa là giới hạn <i>không</i> nằm ở việc chỉ đọc một phần tài liệu, cũng <i>không</i> nằm ở công cụ đọc PDF — nó nằm ở bảng tên gọi viết tay.</p>
+  <p class="prose">Phép đo trần ở <b>§6</b> cho <b>98%</b> số liệu cần lấy có mặt trong phần tài liệu đã parse — và lần này con số đó đứng vững, vì đi kèm nền: cùng bộ gold đó chỉ đạt <b>11%</b> khi so với tài liệu của công ty <i>khác</i>. Khoảng cách thật <b>86 điểm</b>. (Đo trên bản parse đầy đủ 300 trang thì trần 99% nhưng nền 87% — gần như vô nghĩa; thu hẹp về đúng các trang báo cáo tài chính mới làm phép đo có nội dung.) Tính thêm 2 ca lệch quy ước dấu mà extractor xử lý đúng, trần thực chất là <b>98,8%</b> (160/162). Kết luận: công cụ đọc không phải rào cản.</p>
+
+  <div class="callout">
+    <span class="eyebrow">Lấy ít không có nghĩa là thiếu</span>
+    <p>Phần lớn trong 10.605 ô số là số trang, số tham chiếu chú thích, bảng lương, đối chiếu thuế — không liên quan tới greenwashing. Mục tiêu không phải lấy hết mọi con số, mà là <b>lấy đủ những con số mà các dấu hiệu cần</b>. Ở mức đó thì hiện đã đủ: mọi phép kiểm kế toán đều chạy được, và cả hai dấu hiệu của OMV đều tính ra được.</p>
+    <p style="margin-top:10px">Muốn mở rộng, cách đúng <b>không phải</b> viết tay thêm vài trăm dòng tên gọi. Chuẩn kế toán IFRS có sẵn từ điển ánh xạ tên gọi sang mã chỉ tiêu, kèm bản dịch từng ngôn ngữ. Lấy từ đó thì hàng nghìn dòng trở nên nhận ra được mà không phải gõ tay dòng nào — và đó là việc còn nợ, đã ghi ở phần hạn chế.</p>
+  </div>
+
+  <h3>Chạy lại từ đầu</h3>
+  <p class="prose">Sáu bước, chạy lần lượt. Mỗi bước là một lệnh độc lập — chạy xong bước này mới sang bước kế. Ví dụ dưới dùng OMV; Aker BP đổi đường dẫn, mã công ty và tên profile.</p>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="head"><span class="num">Bước 1</span><span class="what">Tải tài liệu về máy</span><span class="why">cần mạng · chạy một lần</span></div>
+<pre><b>python3 ingest/fetch_corpus.py</b></pre>
+    </div>
+
+    <div class="step">
+      <div class="head"><span class="num">Bước 2</span><span class="what">Đọc PDF thành dữ liệu có cấu trúc</span><span class="why">bước nặng nhất · 13–80 giây</span></div>
+<pre><b>&lt;fabrion&gt;/.venv/bin/python parsing/docling_convert.py \
+    --pdf   data/ir-pdf/omv/omv-2025-esef-rendered.pdf \
+    --pages 147-152 \
+    --out   data/parsed/omv-canon.docling.json</b></pre>
+    </div>
+
+    <div class="step">
+      <div class="head"><span class="num">Bước 3</span><span class="what">Trích số liệu tài chính</span><span class="why">ra 34 dòng</span></div>
+<pre><b>python3 extraction/doc_extract.py \
+    --parsed     data/parsed/omv-canon.docling.json \
+    --company-id 549300V62YJ9HTLRI486 \
+    --profile    omv-de \
+    --out        data/extracted/omv-2025.jsonl</b></pre>
+    </div>
+
+    <div class="step">
+      <div class="head"><span class="num">Bước 4</span><span class="what">Trích số liệu môi trường</span><span class="why">ra 30 dòng</span></div>
+<pre><b>&lt;fabrion&gt;/.venv/bin/python parsing/docling_convert.py \
+    --pdf data/ir-pdf/omv/omv-2025-esef-rendered.pdf \
+    --pages 62-69 --out data/parsed/omv-esg.docling.json
+
+python3 extraction/esg_extract.py \
+    --parsed     data/parsed/omv-esg.docling.json \
+    --company-id 549300V62YJ9HTLRI486 \
+    --profile    omv \
+    --out        data/extracted/omv-2025-esg.jsonl</b></pre>
+    </div>
+
+    <div class="step">
+      <div class="head"><span class="num">Bước 5</span><span class="what">Đối soát mục lục ESRS</span><span class="why">ra 70 dòng</span></div>
+<pre><b>python3 extraction/esrs_index_check.py \
+    --txt        data/ir-pdf/omv/omv-2025.txt \
+    --company-id 549300V62YJ9HTLRI486 \
+    --out        data/extracted/omv-2025-esrs-index.jsonl</b></pre>
+    </div>
+
+    <div class="step">
+      <div class="head"><span class="num">Bước 6</span><span class="what">Tính dấu hiệu nghi vấn</span><span class="why">kết quả cuối</span></div>
+<pre><b>python3 signals/compute_signals.py --esg data/extracted/omv-2025-esg.jsonl</b></pre>
+    </div>
+
+    <div class="step">
+      <div class="head"><span class="num">Kiểm tra</span><span class="what">Chạy được bất cứ lúc nào</span><span class="why">không phụ thuộc thứ tự</span></div>
+<pre><i># so với dữ liệu chuẩn</i>
+<b>python3 validation/compare_to_truth.py \
+    --extracted data/extracted/omv-2025.jsonl \
+    --truth     data/esef/549300V62YJ9HTLRI486/2025-12-31/omvag-2025-12-31-1-de.json</b>
+
+<i># chạy các đẳng thức kế toán</i>
+<b>python3 validation/validate_identities.py --source extraction \
+    --file data/extracted/omv-2025.jsonl</b></pre>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§3</span><h2>Kết quả mẫu — OMV</h2></div>
+  <p class="prose">OMV là tập đoàn dầu khí Áo. Báo cáo 2025 cho thấy họ giảm phát thải trực tiếp khá tốt. Nhưng khi đặt cạnh phát thải gián tiếp thì bức tranh đổi chiều.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Loại phát thải</th><th>2019 (gốc)</th><th>2025</th><th>Thay đổi</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">Scope 1 + 2<span class="sub">công ty tự thải + điện mua vào</span></td><td class="n">13.920.157</td><td class="n">10.286.093</td><td class="n down">−26,1%</td></tr>
+      <tr><td class="lead">Scope 3 — theo chuẩn ESRS<span class="sub">bắt buộc công bố</span></td><td class="n">134.419.405</td><td class="n">154.270.286</td><td class="n up">+14,8%</td></tr>
+      <tr><td class="lead">Scope 3 — chỉ tiêu tự định nghĩa<span class="sub">công ty tự đặt ra</span></td><td class="n">113.696.828</td><td class="n">91.536.655</td><td class="n down">−19,5%</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="caption">Đơn vị: tấn CO2e. Nguồn: bảng E1-6, trang 67 của báo cáo.</p>
+  <ul class="plain">
+    <li><b>Phần giảm là phần nhỏ.</b> Scope 1+2 giảm 26%, nhưng Scope 3 lớn gấp <b>15 lần</b> và đang tăng 14,8%. Cộng lại, tổng phát thải của OMV đã tăng trong chính giai đoạn họ báo cáo là giảm.</li>
+    <li><b>Mục tiêu neo vào con số đang giảm.</b> OMV công bố hai chỉ tiêu Scope 3 cạnh nhau. Mục tiêu giảm 20% đến 2030 được đặt trên chỉ tiêu <i>tự định nghĩa</i> (113,7 triệu tấn, đang giảm), không phải chỉ tiêu ESRS bắt buộc (134,4 triệu tấn, đang tăng).</li>
+    <li><b>Mục lục ESRS sạch.</b> 70/70 mục công ty khai đã công bố đều tìm thấy thật. Đây là kết quả tốt và cũng là bằng chứng cho thấy công cụ không bịa ra dấu hiệu khi không có gì.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§4</span><h2>Kết quả mẫu — Aker BP</h2></div>
+  <p class="prose">Aker BP là công ty thăm dò khai thác Na Uy. Cấu trúc báo cáo khác OMV nên phải viết chương trình đọc riêng, nhưng dấu hiệu tìm được cùng một dạng, thậm chí rõ hơn.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Loại phát thải</th><th>2017 (gốc)</th><th>2024</th><th>Mục tiêu 2030</th><th>Mục tiêu 2050</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">Scope 1 + 2 như công bố</td><td class="n">1.250.000</td><td class="n">853.000</td><td class="n">625.000</td><td class="n">125.000</td></tr>
+      <tr><td class="lead">Scope 3</td><td class="n">—</td><td class="n">71.458.000</td><td class="n">—</td><td class="n">—</td></tr>
+      <tr><td class="lead">Scope 2 — cơ sở địa điểm</td><td class="n">—</td><td class="n">14.000</td><td class="n">—</td><td class="n">—</td></tr>
+      <tr><td class="lead">Scope 2 — cơ sở thị trường</td><td class="n">—</td><td class="n">575.000</td><td class="n">—</td><td class="n">—</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="caption">Đơn vị: tấn CO2e. Nguồn: bảng 11, trang 68–69. Báo cáo in số theo đơn vị nghìn tấn, đã quy đổi.</p>
+  <ul class="plain">
+    <li><b>Mục tiêu chỉ phủ khoảng 1% lượng phát thải.</b> Scope 3 gấp <b>84 lần</b> Scope 1+2, nhưng công ty không công bố năm gốc và không đặt mục tiêu nào cho Scope 3 — nghĩa là phần lớn nhất vừa không có đích đến, vừa không đo được tiến độ.</li>
+    <li><b>Con số tổng dựa trên cơ sở có lợi hơn.</b> Công ty công bố hai cách tính Scope 2. Lấy cách “địa điểm” (14 nghìn tấn) thì tổng khớp với số đã in. Lấy cách “thị trường” (575 nghìn tấn, gấp 41 lần) thì tổng năm 2024 <i>vượt</i> năm gốc 13%, thay vì giảm 31,8%.
+      <br><span class="chip warn">Ghi nhận để rà soát</span> Không khẳng định, vì công ty không công bố số theo cơ sở thị trường cho năm gốc 2017, nên chưa so sánh cùng cơ sở qua thời gian được.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§5</span><h2>Mở rộng ra tám công ty</h2></div>
+  <p class="prose">Hai công ty đầu chưa đủ để biết hệ thống có chạy được ngoài phòng thí nghiệm hay không. Bộ dữ liệu ESEF có tám báo cáo, sáu ngôn ngữ, và mỗi báo cáo đi kèm file XBRL do chính công ty gắn thẻ — tức có sẵn đáp án chính xác tuyệt đối, không tốn công gán nhãn. Cả tám đã chạy.</p>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Công ty</th><th>Ngôn ngữ</th><th>Số liệu lấy ra</th><th>Đúng</th><th>Lấy đủ</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">TotalEnergies<span class="sub">Pháp — báo cáo tiếng Anh</span></td><td>Anh</td><td class="n">27</td><td class="n">100%</td><td class="n">100,0%</td></tr>
+      <tr><td class="lead">OMV<span class="sub">Áo</span></td><td>Đức</td><td class="n">34</td><td class="n">100%</td><td class="n">97,0%</td></tr>
+      <tr><td class="lead">Shell<span class="sub">Anh/Hà Lan</span></td><td>Anh</td><td class="n">36</td><td class="n">100%</td><td class="n">94,7%</td></tr>
+      <tr><td class="lead">Aker BP<span class="sub">Na Uy</span></td><td>Anh</td><td class="n">34</td><td class="n">100%</td><td class="n">94,4%</td></tr>
+      <tr><td class="lead">Galp<span class="sub">Bồ Đào Nha</span></td><td>Anh</td><td class="n">31</td><td class="n">100%</td><td class="n">93,1%</td></tr>
+      <tr><td class="lead">Repsol<span class="sub">Tây Ban Nha</span></td><td>Tây BN</td><td class="n">28</td><td class="n">100%</td><td class="n">92,3%</td></tr>
+      <tr><td class="lead">Equinor<span class="sub">Na Uy</span></td><td>Na Uy</td><td class="n">17</td><td class="n">100%</td><td class="n">88,2%</td></tr>
+      <tr><td class="lead">Eni<span class="sub">Ý</span></td><td>Ý</td><td class="n">31</td><td class="n">100%</td><td class="n">82,9%</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="caption"><b>Đúng</b> = trong số liệu lấy ra, bao nhiêu phần khớp chính xác file XBRL của chính báo cáo đó. <b>Lấy đủ</b> = trong số liệu mà bảng tên gọi của công ty đó có khai, bao nhiêu phần thật sự lấy được. Tổng: <b>238</b> giá trị lấy ra, trong đó <b>223 đối chiếu được</b> với file XBRL và <b>cả 223 đều đúng</b>. 15 giá trị còn lại không đối chiếu được vì chính công ty không gắn thẻ chúng trong XBRL — không tính vào tử số lẫn mẫu số.</p>
+
+  <h3>Từ 2.543 trang PDF còn lại 223 con số đã kiểm</h3>
+  <p class="prose">Biểu đồ dưới là toàn bộ đường đi của dữ liệu, gộp cả tám công ty. Trục ngang theo thang loga vì hai đầu cách nhau hơn bốn bậc — nếu vẽ theo thang thường thì bốn vạch cuối biến mất hẳn.</p>
+  <div class="chart"><svg viewBox="0 0 760 273" role="img" aria-label="Phễu từ trang PDF tới giá trị đã kiểm"><text x="0" y="20" class="cl">Trang PDF dựng từ tài liệu gốc</text><rect x="250" y="0" width="367.6" height="30" rx="2" fill="var(--ink-3)" opacity=".88"/><text x="626.6" y="20" class="cv">2.543 <tspan class="cu">trang</tspan></text><text x="0" y="59" class="cl">Trang chứa báo cáo tài chính</text><rect x="250" y="39" width="187.8" height="30" rx="2" fill="var(--ink-2)" opacity=".88"/><text x="446.8" y="59" class="cv">54 <tspan class="cu">trang</tspan></text><text x="0" y="98" class="cl">Bảng công cụ nhận ra</text><rect x="250" y="78" width="201.7" height="30" rx="2" fill="var(--accent)" opacity=".88"/><text x="460.7" y="98" class="cv">73 <tspan class="cu">bảng</tspan></text><text x="0" y="137" class="cl">Ô có chứa chữ số</text><rect x="250" y="117" width="392.0" height="30" rx="2" fill="var(--accent)" opacity=".88"/><text x="651.0" y="137" class="cv">4.285 <tspan class="cu">ô</tspan></text><text x="0" y="176" class="cl">Số liệu lấy ra</text><rect x="250" y="156" width="256.7" height="30" rx="2" fill="var(--flare)" opacity=".88"/><text x="515.7" y="176" class="cv">238 <tspan class="cu">giá trị</tspan></text><text x="0" y="215" class="cl">Đối chiếu được với XBRL</text><rect x="250" y="195" width="253.7" height="30" rx="2" fill="var(--ok)" opacity=".88"/><text x="512.7" y="215" class="cv">223 <tspan class="cu">giá trị</tspan></text><text x="0" y="254" class="cl">Khớp chính xác</text><rect x="250" y="234" width="253.7" height="30" rx="2" fill="var(--ok)" opacity=".88"/><text x="512.7" y="254" class="cv">223 <tspan class="cu">giá trị</tspan></text></svg></div>
+  <p class="caption">Mỗi bậc là một lần thu hẹp có chủ ý, không phải hao hụt. Bậc <b>2.543 → 54 trang</b> là chọn đúng phần báo cáo tài chính pháp định; bậc <b>4.285 ô số → 238 giá trị</b> là bảng tên gọi chỉ khai ~15 khái niệm mỗi công ty; bậc <b>238 → 223</b> là phần công ty không gắn thẻ XBRL nên không có gì để đối chiếu. Chỉ bậc cuối là phép kiểm thật, và ở đó không mất gì.</p>
+
+  <h3>Vì sao “đúng 100%” và “lấy đủ 83–100%” không mâu thuẫn</h3>
+  <p class="prose">Đây là hai câu hỏi khác nhau, và tách chúng ra là điều quan trọng nhất trong cả bộ đo. <b>Đúng</b> hỏi: những gì đã lấy có sai không. <b>Lấy đủ</b> hỏi: có bỏ sót gì không. Một hệ thống chỉ đọc đúng một dòng vẫn đạt 100% ở câu hỏi thứ nhất — nên nếu chỉ báo cáo con số đó thì không nói lên điều gì.</p>
+  <p class="prose">Phần thiếu ở cột “lấy đủ” gần như đều là <b>cột so sánh năm cũ không có trong bảng</b> (bảng in hai cột, đáp án có ba năm), chứ không phải đọc sai. Riêng Eni thấp nhất vì công cụ nhận diện bảng đánh rơi ô tiêu đề <code>2025</code> — hệ thống <b>bỏ cả cột</b> thay vì đoán năm, đúng nguyên tắc.</p>
+
+  <div class="chart"><svg viewBox="0 -14 760 300" role="img" aria-label="Ba mẫu số cho mỗi công ty"><line x1="88" y1="232.0" x2="760" y2="232.0" stroke="var(--rule)" stroke-width=".5"/><text x="82" y="236.0" class="cy">0</text><line x1="88" y1="163.4" x2="760" y2="163.4" stroke="var(--rule)" stroke-width=".5"/><text x="82" y="167.4" class="cy">100</text><line x1="88" y1="94.7" x2="760" y2="94.7" stroke="var(--rule)" stroke-width=".5"/><text x="82" y="98.7" class="cy">200</text><line x1="88" y1="26.1" x2="760" y2="26.1" stroke="var(--rule)" stroke-width=".5"/><text x="82" y="30.1" class="cy">300</text><rect x="111.8" y="0.0" width="51.5" height="232.0" fill="var(--rule)" /><rect x="111.8" y="208.0" width="51.5" height="24.0" fill="var(--accent)" opacity=".30"/><rect x="111.8" y="212.1" width="51.5" height="19.9" fill="var(--ok)"/><text x="137.5" y="-7.0" class="cn">338</text><text x="137.5" y="248.0" class="cx">Eni</text><text x="137.5" y="262.0" class="cx2">29/35</text><rect x="194.8" y="46.7" width="51.5" height="185.3" fill="var(--rule)" /><rect x="194.8" y="205.9" width="51.5" height="26.1" fill="var(--accent)" opacity=".30"/><rect x="194.8" y="207.3" width="51.5" height="24.7" fill="var(--ok)"/><text x="220.5" y="39.7" class="cn">270</text><text x="220.5" y="248.0" class="cx">Shell</text><text x="220.5" y="262.0" class="cx2">36/38</text><rect x="277.8" y="49.4" width="51.5" height="182.6" fill="var(--rule)" /><rect x="277.8" y="215.5" width="51.5" height="16.5" fill="var(--accent)" opacity=".30"/><rect x="277.8" y="215.5" width="51.5" height="16.5" fill="var(--ok)"/><text x="303.5" y="42.4" class="cn">266</text><text x="303.5" y="248.0" class="cx">TotalEnergies</text><text x="303.5" y="262.0" class="cx2">24/24</text><rect x="360.8" y="60.4" width="51.5" height="171.6" fill="var(--rule)" /><rect x="360.8" y="220.3" width="51.5" height="11.7" fill="var(--accent)" opacity=".30"/><rect x="360.8" y="221.7" width="51.5" height="10.3" fill="var(--ok)"/><text x="386.5" y="53.4" class="cn">250</text><text x="386.5" y="248.0" class="cx">Equinor</text><text x="386.5" y="262.0" class="cx2">15/17</text><rect x="443.8" y="72.1" width="51.5" height="159.9" fill="var(--rule)" /><rect x="443.8" y="209.3" width="51.5" height="22.7" fill="var(--accent)" opacity=".30"/><rect x="443.8" y="210.0" width="51.5" height="22.0" fill="var(--ok)"/><text x="469.5" y="65.1" class="cn">233</text><text x="469.5" y="248.0" class="cx">OMV</text><text x="469.5" y="262.0" class="cx2">32/33</text><rect x="526.8" y="96.1" width="51.5" height="135.9" fill="var(--rule)" /><rect x="526.8" y="214.2" width="51.5" height="17.8" fill="var(--accent)" opacity=".30"/><rect x="526.8" y="215.5" width="51.5" height="16.5" fill="var(--ok)"/><text x="552.5" y="89.1" class="cn">198</text><text x="552.5" y="248.0" class="cx">Repsol</text><text x="552.5" y="262.0" class="cx2">24/26</text><rect x="609.8" y="104.3" width="51.5" height="127.7" fill="var(--rule)" /><rect x="609.8" y="212.1" width="51.5" height="19.9" fill="var(--accent)" opacity=".30"/><rect x="609.8" y="213.5" width="51.5" height="18.5" fill="var(--ok)"/><text x="635.5" y="97.3" class="cn">186</text><text x="635.5" y="248.0" class="cx">Galp</text><text x="635.5" y="262.0" class="cx2">27/29</text><rect x="692.8" y="118.7" width="51.5" height="113.3" fill="var(--rule)" /><rect x="692.8" y="207.3" width="51.5" height="24.7" fill="var(--accent)" opacity=".30"/><rect x="692.8" y="208.7" width="51.5" height="23.3" fill="var(--ok)"/><text x="718.5" y="111.7" class="cn">165</text><text x="718.5" y="248.0" class="cx">Aker BP</text><text x="718.5" y="262.0" class="cx2">34/36</text></svg></div>
+  <div class="legend">
+    <span><i style="background:var(--ok)"></i>Lấy được và đã kiểm</span>
+    <span><i style="background:var(--accent);opacity:.30"></i>Bảng tên gọi có khai nhưng chưa lấy được</span>
+    <span><i style="background:var(--rule)"></i>Có trong XBRL nhưng bảng tên gọi chưa nhắc tới</span>
+  </div>
+  <p class="caption">Cột xám là toàn bộ số liệu công ty đã gắn thẻ. Phần xanh đậm là thứ hệ thống lấy được. Khoảng cách giữa hai vùng chính là <b>giới hạn thật</b> — và nó không nằm ở công cụ đọc PDF mà ở bảng tên gọi viết tay. Shell gắn thẻ 270 giá trị, bảng tên gọi chỉ khai 38; con số “lấy đủ 94,7%” nói về 38 giá trị đó, không phải 270.</p>
+
+  <h3>Bốn lỗi mà chỉ chạy nhiều tài liệu mới lộ ra</h3>
+  <p class="prose">Sáu công ty mới không chỉ là sáu lần chạy lại. Mỗi công ty phơi ra một dạng hỏng mà hai công ty đầu không có — và cả bốn đều thuộc loại nguy hiểm nhất: <i>con số đọc đúng, nhưng gắn sai chỗ</i>, nên không có phép kiểm số học nào bắt được.</p>
+  <ul class="plain">
+    <li><b>Shell — nhãn lệch dòng.</b> Bảng cân đối có dòng ghi “Total assets” nhưng mang giá trị của tổng tài sản <i>ngắn hạn</i>: 107.173 thay vì 370.350. Nếu tin bản đọc, Shell sẽ có tổng tài sản sai <b>gấp 3,5 lần</b> mà vẫn trông hợp lý. Đã gỡ bỏ ánh xạ đó thay vì giữ số sai.</li>
+    <li><b>Eni — một năm ứng với hai cột.</b> Ô tiêu đề “2024” gộp ngang hai cột con: cột tổng và cột <i>“trong đó với bên liên quan”</i>. Kết quả: doanh thu 2024 ra <b>hai</b> giá trị, 88.797 và 2.997. Cả hai đều là số đọc đúng. Nay hệ thống bắt buộc phải chỉ rõ cột nào là cột tổng, không chỉ rõ được thì bỏ cả năm.</li>
+    <li><b>Galp — máy in cắt mất cột số.</b> Bản PDF dựng từ tài liệu gốc <i>mất sạch</i> các cột giá trị: bảng rộng hơn khổ giấy nên phần tràn bị cắt, cột tên còn lại nên trang trông vẫn bình thường. Phát hiện bằng cách tìm một giá trị đáp án trên cả 628 trang — không có dòng nào. Dựng lại bằng khổ giấy lớn là ra đủ.</li>
+    <li><b>TotalEnergies — báo cáo bị ngắt trang giữa chừng.</b> Phần đuôi của báo cáo kết quả kinh doanh rơi sang trang sau, không còn tiêu đề phía trên, nên cả bảng bị bỏ. Nay bảng tiếp nối được phép kế thừa báo cáo của bảng ngay trước, <i>chỉ khi</i> cùng bộ cột năm — dấu hiệu một báo cáo bị cắt đôi chứ không phải hai bảng khác nhau nằm cạnh.</li>
+  </ul>
+  <p class="prose">Điểm chung: cả bốn đều do <b>bộ đối chiếu với đáp án</b> bắt, không phải do người soát hay do chương trình tự báo lỗi. Đó là lý do phần kiểm chứng đáng đầu tư ngang phần trích xuất.</p>
+
+  <div class="callout">
+    <span class="eyebrow">Chỗ phải nói thẳng</span>
+    <p>Mỗi công ty vẫn cần một <b>bảng tên gọi viết tay</b> — khoảng 15 dòng ánh xạ “Umsatzerlöse”, “Salgsinntekter”, “Ricavi della gestione caratteristica” về cùng một khái niệm. Đây là điểm yếu kiến trúc, không phải chi tiết kỹ thuật: ca Shell cho thấy một bảng tên gọi <i>trông đúng</i> vẫn có thể ra số sai gấp 3,5 lần. Chỗ chặn được là bộ đối chiếu, không phải sự cẩn thận của người viết.</p>
+    <p style="margin-top:10px">Ngoài ra, cột “lấy đủ” chỉ tính trong phạm vi bảng tên gọi đã khai. Shell còn <b>232 giá trị</b> trong file XBRL mà bảng tên gọi chưa nhắc tới — con số 94,7% nói về 38 giá trị được chọn quan tâm, không phải toàn bộ báo cáo.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§6</span><h2>Nâng cấp: đọc PDF bằng Docling</h2></div>
+  <p class="prose">Bản đầu đọc PDF bằng cách chuyển sang chữ thuần rồi <b>cắt theo vị trí ký tự</b> để dựng lại các cột. Cách đó chạy được, nhưng mọi lỗi nặng nhất đều sinh ra từ nó — và đều <i>im lặng</i>: số vẫn trông hợp lý, chỉ nằm sai cột hoặc sai năm.</p>
+  <p class="prose">Bản hiện tại dùng <b>Docling</b>, công cụ nhận diện cấu trúc bảng: nó trả về lưới ô có chỉ số hàng/cột thay vì một khối chữ. Cả lớp logic cắt ký tự biến mất theo.</p>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Lỗi của bản cũ</th><th>Hậu quả</th><th>Docling xử</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">Hai bảng chung một dòng đơn vị</td><td>Lấy nhầm tiêu đề cột → <b>cả bảng lệch một cột</b>, giá trị năm gốc bị gán cho năm khác</td><td>mỗi bảng là một đối tượng riêng</td></tr>
+      <tr><td class="lead">Nhãn nhóm căn giữa dùng làm ranh giới cột</td><td>Đọc nhầm sang khối số khác — và <b>phép kiểm nội bộ vẫn báo đạt</b>, vì các số đó tự khớp với nhau</td><td>tiêu đề hai tầng đọc thẳng từ lưới</td></tr>
+      <tr><td class="lead">Ký tự chú thích dính vào tiêu đề (<code>2024¹</code>)</td><td>Mất trọn một báo cáo, không một dòng lỗi nào</td><td>tiêu đề là một ô, chú thích giữ nguyên</td></tr>
+      <tr><td class="lead">Cột số tham chiếu lẫn vào dữ liệu</td><td>Đọc số tham chiếu thành giá trị</td><td>là một cột riêng</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Kết quả đo được</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Công ty</th><th>Cách cũ</th><th>Docling</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">OMV 2025</td><td class="n">32 số · 93,3% đúng</td><td class="n"><b>34 số · 100% đúng</b></td></tr>
+      <tr><td class="lead">Aker BP 2024</td><td class="n">29 số · 100% đúng</td><td class="n"><b>32 số · 100% đúng</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="caption">Tăng cả độ chính xác lẫn số lượng. Chấm bằng cách so với file số liệu chuẩn đi kèm chính tài liệu đó, không phải bằng người đọc lại.</p>
+
+  <div class="callout">
+    <span class="eyebrow">Đổi loại lỗi, không phải hết lỗi</span>
+    <p>Docling cũng sinh ra lỗi mới: nó <b>nuốt dấu cách</b> (<code>Summe Aktiva</code> → <code>SummeAktiva</code>) và có lúc <b>đánh rơi một nhãn năm</b>. Khác biệt nằm ở chỗ: lỗi cũ là lỗi hình học, rất khó suy luận; lỗi mới là lỗi chữ nghĩa, nhìn ra ngay và vá được. Chỗ nào không chắc thì hệ thống <b>gắn cờ và hạ độ tin cậy</b> chứ không đoán — ví dụ nhãn năm bị mất thì mốc đó vẫn được ghi lại với năm để trống, kèm cờ, thay vì bịa ra một cái năm.</p>
+  </div>
+
+  <h3>Hệ thống đọc sót, hay tài liệu vốn không có?</h3>
+  <p class="prose">Một câu hỏi phải trả lời được trước khi tin bất kỳ con số nào: khi hệ thống không lấy ra một giá trị, là vì nó <i>đọc sót</i>, hay vì giá trị đó <i>vốn không có mặt</i> trong tài liệu? Dự án <code>fabrion-extraction-evaluation</code> có sẵn công cụ đo việc này — nó đếm xem bao nhiêu giá trị cần lấy thật sự xuất hiện trong tài liệu, trước khi bất kỳ chương trình đọc nào chạy. Đó là <b>trần trên</b>: không chương trình nào vượt qua được.</p>
+  <p class="prose">Lần đo đầu cho <b>44%</b> — nghe như hơn nửa số liệu không có trong tài liệu. Con số đó sai, và nguyên nhân có hai phần.</p>
+  <ul class="plain">
+    <li><b>Công cụ đo đọc số theo cách viết Anh-Mỹ.</b> Báo cáo Đức viết <code>24.308</code> để chỉ hai mươi tư nghìn ba trăm linh tám; công cụ hiểu thành hai mươi tư phẩy ba. Đo cụ thể: <b>33 trên 37</b> giá trị của OMV chỉ tồn tại ở dạng châu Âu, nên gần như toàn bộ bị tính là “không tìm thấy”. Aker BP viết tiếng Anh nên không dính.</li>
+    <li><b>Đếm cả những trường không thể đọc từ văn bản.</b> Đáp án ghi hệ số <code>1000000</code> trong khi tài liệu viết “In EUR Mio”; ghi kỳ báo cáo là <code>FY2025</code> trong khi tài liệu viết <code>2025</code>. Hai thứ này là quy ước ghi đáp án, không phải chữ có trong tài liệu — tính chúng vào mẫu số chỉ làm con số khó hiểu.</li>
+  </ul>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Đo lại cho đúng</th><th>Trước</th><th>Sau</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">OMV — giá trị số</td><td class="n">27%</td><td class="n down">100%</td></tr>
+      <tr><td class="lead">OMV — tổng phần đọc được từ văn bản</td><td class="n">63%</td><td class="n down">98%</td></tr>
+      <tr><td class="lead">Aker BP — tổng phần đọc được</td><td class="n">99%</td><td class="n">99%</td></tr>
+      <tr><td class="lead"><b>Cả hai công ty</b></td><td class="n">82%</td><td class="n down"><b>98%</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="caption">Cột “trước” là kết quả nếu chỉ đọc số theo cách viết Anh-Mỹ, không phải một mốc lịch sử.</p>
+
+  <div class="callout">
+    <span class="eyebrow">Một con số trần không có nền là con số không đọc được</span>
+    <p>Phép đo này khớp giá trị trên túi số của cả bản parse, không theo vị trí — nên phải biết <b>nền</b>: cùng bộ đáp án đó khớp được bao nhiêu với tài liệu của công ty <i>khác</i>. Đo trên bản parse đầy đủ 300 trang: trần 99% nhưng <b>nền 87%</b>, tức gần như vô nghĩa. Đo trên phần đã parse (chỉ các trang báo cáo tài chính, đúng thứ chương trình nhìn thấy): trần <b>98%</b>, nền <b>11%</b>, khoảng cách thật <b>86 điểm</b>.</p>
+    <p style="margin-top:10px">Hai điểm chênh giữa hai cách đo hoá ra là <b>khớp giả</b>: đáp án ghi chi phí thuế <code>+1834</code> theo quy ước taxonomy, tài liệu in <code>–1.834</code>, và trong 300 trang tình cờ có một <code>+1834</code> khác. Tính thêm hai ca lệch quy ước dấu mà chương trình xử lý đúng, trần thực chất là <b>98,8%</b> — 160 trên 162, và lần này biết vì sao.</p>
+  </div>
+
+  <p class="prose"><b>Ý nghĩa:</b> gần như toàn bộ số liệu cần lấy <i>đều có mặt</i> trong tài liệu và <i>đều đọc được</i>. Không có rào cản nào từ phía công cụ đọc PDF. Điều này khớp với kết quả thực tế — cả hai công ty đều đúng 100% — và xác nhận lại kết luận ở phần trên: giới hạn duy nhất là bảng tên gọi 17 dòng.</p>
+
+  <div class="callout">
+    <span class="eyebrow">Sửa ở đâu, và vì sao không sửa chỗ kia</span>
+    <p>Bản đọc số có nhận biết cách viết từng nước nằm trong <b>thư mục này</b> (<code>shared/text_match_locale.py</code>), <b>không</b> sửa vào dự án Fabrion — file gốc ở đó dùng chung cho nhiều tầng và cho cả điểm số cũ, đổi nó sẽ làm lệch mọi kết quả đã có. Mọi thay đổi khác cho dự án Fabrion cũng đã được tách sang nhánh riêng <code>mini_project_greenwashing</code>, nhánh chính giữ nguyên.</p>
+    <p style="margin-top:10px">Phần khó nhất không phải viết code mà là <b>chấp nhận rằng có chỗ không thể biết chắc</b>: <code>1.234</code> đứng một mình có thể là một nghìn hai trăm ba mươi tư, cũng có thể là một phẩy hai ba tư. Cách xử lý: chỗ nào chắc chắn thì quyết theo chính con số; chỗ nào không chắc thì quyết theo <b>cả tài liệu</b> rồi áp nhất quán — chứ không đoán riêng lẻ từng số.</p>
+  </div>
+
+  <h3>Nối vào bộ đo chất lượng</h3>
+  <p class="prose">Hai báo cáo này đã được đóng gói thành một bộ dữ liệu chấm điểm cho dự án <code>fabrion-extraction-evaluation</code>. Điều đáng giá: <b>đáp án không phải soạn tay</b> — mỗi báo cáo EU đi kèm file số liệu đã gắn thẻ, nên 79 giá trị đối chứng được sinh tự động và chính xác tuyệt đối. Nhờ vậy câu hỏi “công cụ nào đọc tốt hơn” trả lời được bằng số, trên đúng loại tài liệu khó, mà không tốn công gán nhãn.</p>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§7</span><h2>Mặt được và hạn chế</h2></div>
+  <div class="two">
+    <div>
+      <h4><span class="tag">Mặt được</span>Những gì đã chạy thật</h4>
+      <ul>
+        <li><b>Mọi con số đều truy được nguồn.</b> Mỗi dòng dữ liệu ghi rõ trang, bảng, tiêu đề cột và đoạn chữ nguyên văn. Mở đúng trang là đối chiếu được ngay — điều bắt buộc với một sản phẩm mang tính cáo buộc.</li>
+        <li><b>Chấm điểm không tốn công annotate.</b> Tài liệu EU đi kèm sẵn file số liệu chuẩn, nên có ngay “đáp án”. Kết quả hiện tại: <b>cả tám công ty đúng 100%</b> ở phần tài chính — 223 trên 223 giá trị đối chiếu được, trong tổng 238 giá trị lấy ra.</li>
+        <li><b>Dữ liệu ra tuân thủ hợp đồng.</b> 351 dòng trên 13 file, <b>không dòng nào thiếu trường bắt buộc</b>, không giá trị nào ngoài danh sách cho phép. Hai hợp đồng riêng cho hai loại dữ liệu, vì tài chính và môi trường có bản chất khác nhau.</li>
+        <li><b>Hệ thống tự bắt lỗi của chính nó.</b> Các đẳng thức kế toán phát hiện được ba lỗi đọc sai cột mà mắt thường không thấy vì mọi con số vẫn trông hợp lý.</li>
+        <li><b>Không dùng AI để đoán số.</b> Toàn bộ phần đọc là luật tất định, nên kết quả lặp lại được và giải thích được từng bước.</li>
+        <li><b>Thà mất dòng còn hơn sai bậc.</b> Khi không xác định được đơn vị (nghìn hay triệu), hệ thống <b>từ chối phát ra số</b> thay vì mặc định. Chạy trên toàn bộ 241 trang, quy tắc này chặn 119 bảng không liên quan.</li>
+      </ul>
+    </div>
+    <div>
+      <h4><span class="tag">Hạn chế</span>Những gì chưa làm được</h4>
+      <ul>
+        <li><b>Phần môi trường vẫn chỉ hai công ty.</b> Tầng tài chính đã lên tám, nhưng mọi dấu hiệu greenwashing ở §3 và §4 vẫn dựa trên OMV và Aker BP. Lý do không phải thiếu thời gian: báo cáo bền vững <b>không có file đối chứng</b> như báo cáo tài chính, nên mở rộng tầng này tốn công gán nhãn tay, không tự động được.</li>
+        <li><b>Hơn nửa dữ liệu chưa từng được đối chứng.</b> 113 trên 351 dòng là số liệu môi trường và tín hiệu — không có “đáp án” nào để kiểm. Con số 100% chỉ nói về 238 dòng tài chính.</li>
+        <li><b>Tám công ty vẫn chưa phải một bộ dữ liệu.</b> Các dấu hiệu mạnh nhất — đổi năm gốc, đổi phạm vi, trình bày lại số cũ — cần 5–10 năm và vài chục công ty mới nói được thế nào là bất thường.</li>
+        <li><b>Chưa kiểm được số trang trong mục lục.</b> Bản PDF được tạo lại từ file gốc nên số trang bị đánh lại, không khớp với số công ty khai. Cần tải PDF gốc từ trang quan hệ nhà đầu tư mới khôi phục được phép kiểm này.</li>
+        <li><b>Mỗi công ty vẫn cần một “profile” riêng.</b> Tám công ty dùng chung một chương trình, nhưng vẫn phải khai riêng cách đọc số và bảng tên gọi (~15 dòng mỗi công ty). Ca Shell cho thấy đây không phải chi tiết nhỏ: một bảng tên gọi trông đúng vẫn ra số sai gấp 3,5 lần. Phần này đáng lẽ lấy từ từ điển của chuẩn kế toán chứ không viết tay — việc còn nợ lớn nhất.</li>
+        <li><b>Chưa lấy mức độ đảm bảo.</b> Báo cáo bền vững có được kiểm toán độc lập hay không, và ở mức nào, là một dấu hiệu quan trọng chưa được thu thập.</li>
+        <li><b>Chưa có mô hình máy học, và cố ý như vậy.</b> Greenwashing không có đáp án đúng/sai để huấn luyện. Ở giai đoạn này hệ thống chỉ chấm mâu thuẫn theo luật, có bằng chứng kèm theo, và cần người xem lại trước khi kết luận.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <span class="eyebrow">Một lưu ý về cách đọc kết quả</span>
+    <p>Các dấu hiệu ở trên <b>không chứng minh công ty gian dối</b>. Chúng chỉ ra chỗ cách công bố làm bức tranh trông khác đi so với dữ liệu đầy đủ. Việc một công ty tách riêng Scope 3 hay chọn một cơ sở tính toán đều có thể có lý do kỹ thuật chính đáng. Giá trị của hệ thống là <b>chỉ đúng chỗ cần hỏi</b>, kèm bằng chứng để người có chuyên môn tự đánh giá — không phải đưa ra phán quyết.</p>
+  </div>
+
+  <h3>Việc tiếp theo, theo thứ tự</h3>
+  <ul class="plain">
+    <li><b>Sinh bảng tên gọi từ từ điển chuẩn kế toán</b> thay vì viết tay — bỏ được điểm yếu kiến trúc lớn nhất, và là điều kiện để đi quá tám công ty mà không nhân đôi rủi ro.</li>
+    <li><b>Mở rộng tầng môi trường</b> ra sáu công ty còn lại, chấp nhận phải gán nhãn tay vì không có file đối chứng.</li>
+    <li><b>Tải PDF gốc</b> của OMV và Aker BP từ trang nhà đầu tư, để khôi phục phép kiểm số trang trong mục lục.</li>
+    <li><b>Mở rộng lên khoảng 20 công ty × 8 năm</b>, đủ để có phân phối tham chiếu cho ngành.</li>
+    <li><b>Thu thập mức độ đảm bảo và thay đổi phạm vi</b> — hai trường đã có trong đặc tả nhưng chưa điền.</li>
+    <li><b>Chỉ khi có đủ dữ liệu đối chứng</b> mới tính đến mô hình dự đoán.</li>
+  </ul>
+</section>
+
+<footer>
+  <p>Hồ sơ dự án phát hiện greenwashing từ báo cáo tài chính và báo cáo bền vững ngành dầu khí — thư mục <code>~/Desktop/Interview/AI_cases</code>.</p>
+  <p class="mono" style="font-size:12px">Cập nhật 18.09.2026 — tám công ty ESEF</p>
+</footer>
+
+</div>

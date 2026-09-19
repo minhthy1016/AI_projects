@@ -1,0 +1,426 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Silver B extraction output — esg_claim",
+  "description": "Hợp đồng cho tầng trích xuất ESG. Grain KHÁC Silver A: một dòng là một disclosure hoặc một claim, và giá trị có thể không phải số (mục tiêu, mô tả phương pháp, một ô trong content index). Đó là lý do hai bảng không dùng chung contract — dùng chung sẽ buộc esg_claim mang những trường vô nghĩa với nó (statement, sign_rule_applied) và bỏ mất những trường quyết định (scope, boundary, baseline_year).",
+  "type": "object",
+  "required": [
+    "claim_id",
+    "doc_hash",
+    "company_id",
+    "report_year",
+    "framework",
+    "gri_code",
+    "claim_type",
+    "claim_text",
+    "source_ref",
+    "groundedness_verified",
+    "extractor_version",
+    "model_id",
+    "schema_version"
+  ],
+  "properties": {
+    "claim_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "doc_hash": {
+      "type": "string"
+    },
+    "company_id": {
+      "type": "string",
+      "description": "LEI nếu có"
+    },
+    "report_year": {
+      "type": "integer"
+    },
+    "framework": {
+      "enum": [
+        "ESRS",
+        "GRI",
+        "IFRS-S",
+        "TCFD",
+        "other"
+      ],
+      "description": "Bọc ngoài gri_code. Corpus 2026 trộn nhiều khung — EU lớn đã chuyển sang ESRS theo CSRD — nên không hardcode GRI được."
+    },
+    "framework_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "gri_standard_version": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "chỉ dùng khi framework = GRI"
+    },
+    "gri_code": {
+      "type": "string",
+      "description": "mã disclosure: E1-6, 305-1, 11.1.5"
+    },
+    "gri_code_reported": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "mã/nhãn như tài liệu tự khai"
+    },
+    "disclosure_status_claimed": {
+      "enum": [
+        "reported",
+        "partially_reported",
+        "omitted",
+        "not_applicable",
+        null
+      ]
+    },
+    "disclosure_verified": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "claimed=reported nhưng verified=false là tín hiệu rẻ và chính xác cao nhất trong hệ thống"
+    },
+    "omission_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "claim_type": {
+      "enum": [
+        "quantitative",
+        "target",
+        "narrative",
+        "methodology"
+      ]
+    },
+    "claim_text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "value": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "value_raw_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "unit_reported": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "unit_canonical": {
+      "enum": [
+        "tCO2e",
+        "tCO2e_per_boe",
+        "tCO2e_per_musd_revenue",
+        "m3_water",
+        "t_waste",
+        "pct",
+        "MWh",
+        null
+      ],
+      "description": "Nhầm t / kt / Mt là lỗi 1000× y hệt bên tài chính."
+    },
+    "unit_conversion_factor": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "decimal_separator": {
+      "enum": [
+        ".",
+        ",",
+        null
+      ]
+    },
+    "is_intensity_metric": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "denominator_basis": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "đổi mẫu số giữa các năm cũng là một cách làm đẹp số"
+    },
+    "scope": {
+      "enum": [
+        "scope_1",
+        "scope_2_location",
+        "scope_2_market",
+        "scope_3",
+        "combined_1_2_market",
+        "combined_1_2_reported",
+        "total_location",
+        "total_market",
+        "not_applicable",
+        null
+      ]
+    },
+    "scope3_categories": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 15
+      },
+      "description": "Với dầu khí, category 11 là phần lớn phát thải; thiếu nó thì con số Scope 3 gần như vô nghĩa."
+    },
+    "boundary": {
+      "enum": [
+        "equity_share",
+        "operational_control",
+        "financial_control",
+        "unspecified",
+        null
+      ]
+    },
+    "boundary_changed_vs_prior": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "baseline_year": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "baseline_value_mt": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "is_baseline_column": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "period_end": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "null với claim_type=target"
+    },
+    "target_year": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "null KHI VÀ CHỈ KHI extractor không đọc được nhãn năm — phải kèm cờ year_label_missing. Tuyệt đối không suy ra năm."
+    },
+    "target_type": {
+      "enum": [
+        "absolute",
+        "intensity",
+        "net_zero",
+        "carbon_neutral",
+        null
+      ]
+    },
+    "interim_target_present": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "target_covers_scope3": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "in_scope_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "out_of_scope_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "offsets_included": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_restated": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "is_company_specific": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "chỉ tiêu công ty tự định nghĩa cạnh chỉ tiêu bắt buộc — neo mục tiêu vào cái tự định nghĩa là tín hiệu"
+    },
+    "is_subtotal": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "assurance_level": {
+      "enum": [
+        "none",
+        "limited",
+        "reasonable",
+        null
+      ]
+    },
+    "assurance_covers_this_claim": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "gán ở mức claim, không gán ở mức tài liệu"
+    },
+    "source_ref": {
+      "type": "object",
+      "required": [
+        "page_no",
+        "verbatim_span",
+        "extraction_path"
+      ],
+      "properties": {
+        "page_no": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "bbox": {
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "verbatim_span": {
+          "type": "string",
+          "minLength": 1
+        },
+        "table_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "row_idx": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "col_idx": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "col_header_path": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "extraction_path": {
+          "enum": [
+            "native_text",
+            "ocr",
+            "vlm_image"
+          ]
+        }
+      }
+    },
+    "groundedness_verified": {
+      "type": "boolean"
+    },
+    "confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "validation_flags": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      },
+      "description": "year_label_missing · description_not_found · restated · boundary_changed"
+    },
+    "extractor_version": {
+      "type": "string"
+    },
+    "model_id": {
+      "type": "string"
+    },
+    "prompt_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schema_version": {
+      "type": "string"
+    }
+  },
+  "allOf": [
+    {
+      "$comment": "Mục tiêu là cam kết, không phải một lần công bố số, nên không có kỳ báo cáo. Trước đây quy tắc này chỉ nằm trong mô tả nên không ai thực thi — và một trong hai nhánh sinh dữ liệu đã vi phạm mà bộ kiểm không kêu.",
+      "if": {
+        "properties": {
+          "claim_type": {
+            "const": "target"
+          }
+        },
+        "required": [
+          "claim_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "period_end": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ]
+}

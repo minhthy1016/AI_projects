@@ -1,0 +1,298 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Silver A extraction output — financial_fact",
+  "description": "Hợp đồng giữa skill A (doc-extract) và mọi thứ phía sau. Một dòng JSONL = một ô số trong một bảng của một tài liệu. Ba trường provenance là bắt buộc tuyệt đối: thiếu source_ref thì dòng bị loại, không có ngoại lệ.",
+  "type": "object",
+  "required": [
+    "fact_id",
+    "run_id",
+    "doc_hash",
+    "company_id",
+    "statement",
+    "line_item_reported",
+    "period_start",
+    "period_end",
+    "period_basis",
+    "value_raw_text",
+    "value",
+    "scale_multiplier",
+    "scale_source",
+    "currency",
+    "sign_rule_applied",
+    "source_ref",
+    "groundedness_verified",
+    "extractor_version",
+    "model_id",
+    "prompt_hash",
+    "schema_version",
+    "decimal_separator"
+  ],
+  "properties": {
+    "fact_id": {
+      "type": "string",
+      "description": "hash tất định của (doc_hash, page_no, table_id, row_idx, col_idx)"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "doc_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "company_id": {
+      "type": "string",
+      "description": "LEI nếu có, fallback id nội bộ. Không dùng tên."
+    },
+    "statement": {
+      "enum": [
+        "income_statement",
+        "balance_sheet",
+        "cash_flow",
+        "equity",
+        "segment_note",
+        "other_note"
+      ]
+    },
+    "line_item_reported": {
+      "type": "string",
+      "minLength": 1
+    },
+    "line_item_canonical": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "us-gaap:* hoặc ifrs-full:*. null còn hơn map ẩu."
+    },
+    "canonical_taxonomy": {
+      "enum": [
+        "us-gaap",
+        "ifrs-full",
+        "internal",
+        null
+      ]
+    },
+    "mapping_confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "điểm của bước canonicalization — TÁCH RIÊNG khỏi extraction_confidence"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_duration_months": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "period_basis": {
+      "enum": [
+        "audited",
+        "unaudited",
+        "restated",
+        "pro_forma"
+      ]
+    },
+    "is_comparative": {
+      "type": "boolean"
+    },
+    "value_raw_text": {
+      "type": "string",
+      "description": "nguyên văn như in, ví dụ \"(1,234)\". Không bao giờ ghi đè."
+    },
+    "value": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "đã áp scale và sign"
+    },
+    "declared_precision": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "số chữ số tài liệu tự khai; dùng làm tolerance khi eval"
+    },
+    "scale_multiplier": {
+      "enum": [
+        1,
+        1000,
+        1000000,
+        1000000000
+      ]
+    },
+    "scale_source": {
+      "enum": [
+        "statement_header",
+        "column_header",
+        "footnote",
+        "row_label",
+        "inferred"
+      ],
+      "description": "inferred PHẢI bị coi là mùi lỗi và gắn cờ review"
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "currency_source": {
+      "enum": [
+        "statement_header",
+        "column_header",
+        "footnote",
+        "row_label",
+        "inferred",
+        null
+      ]
+    },
+    "sign_rule_applied": {
+      "enum": [
+        "as_printed",
+        "parenthesis_negative",
+        "less_prefix",
+        "outflow_negative",
+        "taxonomy_balance"
+      ],
+      "description": "Quy tắc dấu đã áp. `taxonomy_balance` = dấu lấy theo balance type của taxonomy chứ không theo dấu in trên giấy — IFRS định nghĩa IncomeTaxExpenseContinuingOperations là chi phí DƯƠNG trong khi báo cáo Đức in nó như một khoản trừ."
+    },
+    "is_nil": {
+      "type": "boolean",
+      "description": "phân biệt gạch ngang = 0 với KHÔNG công bố"
+    },
+    "source_ref": {
+      "type": "object",
+      "required": [
+        "page_no",
+        "verbatim_span",
+        "extraction_path"
+      ],
+      "properties": {
+        "page_no": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "bbox": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "verbatim_span": {
+          "type": "string",
+          "minLength": 1,
+          "description": "đoạn text nguyên văn chứa giá trị — dùng để string-match ngược lại trang"
+        },
+        "table_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "row_idx": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "col_idx": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "col_header_path": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "đường dẫn header lồng nhau; đối chiếu với period_end để bắt lệch cell-header"
+        },
+        "extraction_path": {
+          "enum": [
+            "native_text",
+            "ocr",
+            "vlm_image"
+          ]
+        }
+      }
+    },
+    "groundedness_verified": {
+      "type": "boolean",
+      "description": "GATE: false thì không được merge vào main"
+    },
+    "extraction_confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "footnote_refs": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "footnote_texts": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "validation_flags": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "extractor_version": {
+      "type": "string"
+    },
+    "model_id": {
+      "type": "string"
+    },
+    "prompt_hash": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "decimal_separator": {
+      "enum": [
+        ".",
+        ","
+      ],
+      "default": ".",
+      "description": "Dấu thập phân của tài liệu. '.' = Anh-Mỹ (1,234.5) | ',' = châu Âu (1.234,5). Thiếu trường này thì mọi kiểm tra số học trên tài liệu châu Âu sai đúng 1000×."
+    }
+  }
+}

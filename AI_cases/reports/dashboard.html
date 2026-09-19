@@ -1,0 +1,251 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<title>Bảng điều khiển chất lượng trích xuất</title>
+<style>
+:root{
+  --paper:#f4f5f4; --surface:#ffffff; --surface-2:#e9ebea;
+  --ink:#141d1d; --ink-2:#3f4c4c; --ink-3:#6c7a79;
+  --rule:#d6dad9; --rule-strong:#b6bdbc;
+  --accent:#1d4a56; --accent-soft:#e1ecee;
+  --flare:#a9581a;
+  --crit:#9b3128; --warn:#83600f; --ok:#376046; --ok-soft:#e2ece5;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#0d1315; --surface:#141b1d; --surface-2:#1b2427;
+  --ink:#e7ebea; --ink-2:#a8b4b3; --ink-3:#7a8887;
+  --rule:#283336; --rule-strong:#3b494c;
+  --accent:#72b6c3; --accent-soft:#16303a; --flare:#d68c47;
+  --crit:#e08478; --warn:#d2a54c; --ok:#7bb08f; --ok-soft:#1a2b21;
+}}
+:root[data-theme="dark"]{
+  --paper:#0d1315; --surface:#141b1d; --surface-2:#1b2427;
+  --ink:#e7ebea; --ink-2:#a8b4b3; --ink-3:#7a8887;
+  --rule:#283336; --rule-strong:#3b494c;
+  --accent:#72b6c3; --accent-soft:#16303a; --flare:#d68c47;
+  --crit:#e08478; --warn:#d2a54c; --ok:#7bb08f; --ok-soft:#1a2b21;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:Archivo,system-ui,sans-serif;
+     font-size:14px;line-height:1.5;margin:0;padding:0 22px 64px}
+.wrap{max-width:1180px;margin:0 auto}
+header{padding:34px 0 18px;border-bottom:1px solid var(--rule)}
+h1{font-size:25px;font-weight:700;letter-spacing:-.015em;margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--ink-2);margin:0;max-width:66ch}
+.mono{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:20px 0 26px}
+.seg{display:inline-flex;border:1px solid var(--rule-strong);border-radius:6px;overflow:hidden}
+.seg button{font:inherit;font-weight:600;font-size:12.5px;padding:7px 15px;border:0;
+     background:var(--surface);color:var(--ink-2);cursor:pointer}
+.seg button+button{border-left:1px solid var(--rule-strong)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--paper)}
+.seg button:focus-visible{outline:2px solid var(--flare);outline-offset:-2px}
+.hint{color:var(--ink-3);font-size:12.5px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:1px;
+      background:var(--rule);border:1px solid var(--rule);margin-bottom:30px}
+.kpi{background:var(--surface);padding:15px 17px 16px}
+.kpi dt{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+        color:var(--ink-3);margin:0 0 7px}
+.kpi .v{font-family:"IBM Plex Mono",monospace;font-size:27px;font-weight:600;
+        letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:12px;margin-top:6px;color:var(--ink-3)}
+.kpi .d b{font-family:"IBM Plex Mono",monospace;font-weight:600}
+.up{color:var(--ok)} .down{color:var(--crit)} .flat{color:var(--ink-3)}
+
+section{margin:0 0 34px}
+h2{font-size:15px;font-weight:700;margin:0 0 4px;letter-spacing:-.01em}
+.note{color:var(--ink-2);margin:0 0 15px;max-width:74ch;font-size:13px}
+
+.panel{background:var(--surface);border:1px solid var(--rule);padding:18px 20px 14px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.ax{font-family:"IBM Plex Mono",monospace;font-size:10px;fill:var(--ink-3)}
+.dotlab{font-family:Archivo,sans-serif;font-size:10.5px;fill:var(--ink-2)}
+.gl{stroke:var(--rule);stroke-width:.6}
+
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+   color:var(--ink-3);text-align:right;padding:0 0 8px;border-bottom:1px solid var(--rule-strong);
+   white-space:nowrap}
+th:first-child{text-align:left}
+td{padding:8px 0;border-bottom:1px solid var(--rule);text-align:right;
+   font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+td:first-child{text-align:left;font-family:Archivo,sans-serif}
+tbody tr:last-child td{border-bottom:0}
+tr.tot td{font-weight:600;border-top:1.5px solid var(--rule-strong);background:var(--surface-2)}
+.lang{color:var(--ink-3);font-size:11px;margin-left:7px;text-transform:uppercase;letter-spacing:.06em}
+.bar{display:inline-block;vertical-align:middle;width:78px;height:7px;background:var(--rule);
+     border-radius:2px;overflow:hidden;margin-right:8px}
+.bar i{display:block;height:100%}
+.pill{display:inline-block;font-family:Archivo,sans-serif;font-size:10.5px;font-weight:600;
+      padding:2px 7px;border-radius:9px;letter-spacing:.03em}
+.p-ok{background:var(--ok-soft);color:var(--ok)}
+.p-warn{background:var(--surface-2);color:var(--warn)}
+.p-crit{background:var(--surface-2);color:var(--crit)}
+.scroll{overflow-x:auto}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:2px;flex:none}
+.callout{border-left:2.5px solid var(--flare);padding:2px 0 2px 15px;margin:16px 0 0;
+         color:var(--ink-2);font-size:13px;max-width:74ch}
+footer{border-top:1px solid var(--rule);padding-top:16px;color:var(--ink-3);font-size:12px}
+@media (max-width:640px){ .kpi .v{font-size:22px} h1{font-size:21px} }
+</style>
+
+<div class="wrap">
+<header>
+  <h1>Bảng điều khiển chất lượng trích xuất</h1>
+  <p class="sub">Tám báo cáo thường niên ESEF, sáu ngôn ngữ. Mỗi con số dưới đây tính từ
+  <span class="mono">data/hardness_report*.csv</span>, đối chiếu với file XBRL do chính công ty gắn thẻ.</p>
+</header>
+
+<div class="toolbar">
+  <div class="seg" role="group" aria-label="Chọn bảng tên gọi">
+    <button id="b-hand" aria-pressed="true">Bảng viết tay</button>
+    <button id="b-gen" aria-pressed="false">Sinh từ iXBRL</button>
+  </div>
+  <span class="hint" id="hint"></span>
+</div>
+
+<dl class="kpis" id="kpis"></dl>
+
+<section>
+  <h2>Tin cậy so với phạm vi</h2>
+  <p class="note">Hai trục trả lời hai câu khác nhau. <b>Tin cậy</b> = cái phát ra có đúng và có kiểm được không.
+  <b>Phạm vi</b> = phủ được bao nhiêu phần dữ liệu công ty đã gắn thẻ. Góc trên bên phải là đích đến;
+  đi sang phải mà tụt xuống dưới là đánh đổi sai.</p>
+  <div class="panel"><svg id="scatter" viewBox="0 0 760 330" role="img"
+       aria-label="Biểu đồ tin cậy theo phạm vi cho tám công ty"></svg>
+    <div class="legend">
+      <span><i style="background:var(--ink-3)"></i>Bảng viết tay</span>
+      <span><i style="background:var(--accent)"></i>Sinh từ iXBRL</span>
+      <span><i style="background:var(--flare);border-radius:50%"></i>Chế độ đang xem</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Từng công ty</h2>
+  <p class="note">Cột <b>nền</b> là tỉ lệ khớp được với bản parse của công ty <i>khác</i> — phần
+  trùng hợp thuần tuý. Phạm vi phải cao hơn nền nhiều lần thì con số mới có nghĩa.</p>
+  <div class="panel scroll"><table id="tbl"></table></div>
+</section>
+
+<section>
+  <h2>Chốt chặn fail-closed</h2>
+  <p class="note">Số bảng bị <b>bỏ</b> vì không xác định được đơn vị hoặc không rõ thuộc báo cáo nào,
+  và số bảng được <b>cứu</b> bằng suy luận. Bỏ nhiều là dấu hiệu tốt: hệ thống từ chối đoán.
+  Theo dõi cột này để biết khi nào một thay đổi vô tình mở cổng ra.</p>
+  <div class="panel scroll"><table id="guards"></table></div>
+  <p class="callout">Không có chốt nào trong số này là lỗi. Chúng là chỗ pipeline chọn
+  <b>mất một dòng còn hơn phát ra một con số sai bậc</b> — và mỗi lần chúng khác 0 là một lần
+  tài liệu thật sự mơ hồ.</p>
+</section>
+
+<footer>
+  <p><span class="mono">reports/dashboard.html</span> — sinh từ
+  <span class="mono">validation/hardness_report.py</span>. Cập nhật 18.09.2026.</p>
+</footer>
+</div>
+
+<script>
+const DATA = {"hand": [{"company": "OMV", "language": "de", "label_map": "hand", "pdf_pages": 241, "parsed_tables": 10, "numeric_cells": 557, "label_count": 17, "guard_no_scale": 0, "guard_no_section": 0, "guard_empty_row": 0, "guard_dup_label": 3, "assist_doc_scale": 0, "assist_continuation": 0, "facts_extracted": 34, "facts_comparable": 32, "facts_exact": 32, "gt_total": 233, "gt_inscope": 33, "gt_caught": 32, "precision": 1.0, "verifiability": 0.9412, "recall_inscope": 0.9697, "coverage_filing": 0.1373, "trust": 0.9412, "chance_floor": 0.0177, "signal_margin": 0.1196}, {"company": "Aker BP", "language": "en", "label_map": "hand", "pdf_pages": 236, "parsed_tables": 8, "numeric_cells": 324, "label_count": 17, "guard_no_scale": 0, "guard_no_section": 0, "guard_empty_row": 1, "guard_dup_label": 0, "assist_doc_scale": 0, "assist_continuation": 1, "facts_extracted": 34, "facts_comparable": 34, "facts_exact": 34, "gt_total": 165, "gt_inscope": 36, "gt_caught": 34, "precision": 1.0, "verifiability": 1.0, "recall_inscope": 0.9444, "coverage_filing": 0.2061, "trust": 1.0, "chance_floor": 0.087, "signal_margin": 0.1191}, {"company": "Shell", "language": "en", "label_map": "hand", "pdf_pages": 456, "parsed_tables": 8, "numeric_cells": 522, "label_count": 13, "guard_no_scale": 0, "guard_no_section": 2, "guard_empty_row": 0, "guard_dup_label": 1, "assist_doc_scale": 2, "assist_continuation": 0, "facts_extracted": 36, "facts_comparable": 36, "facts_exact": 36, "gt_total": 270, "gt_inscope": 38, "gt_caught": 36, "precision": 1.0, "verifiability": 1.0, "recall_inscope": 0.9474, "coverage_filing": 0.1333, "trust": 1.0, "chance_floor": 0.0112, "signal_margin": 0.1221}, {"company": "Equinor", "language": "nb", "label_map": "hand", "pdf_pages": 185, "parsed_tables": 18, "numeric_cells": 390, "label_count": 7, "guard_no_scale": 0, "guard_no_section": 0, "guard_empty_row": 0, "guard_dup_label": 0, "assist_doc_scale": 0, "assist_continuation": 0, "facts_extracted": 17, "facts_comparable": 15, "facts_exact": 15, "gt_total": 250, "gt_inscope": 17, "gt_caught": 15, "precision": 1.0, "verifiability": 0.8824, "recall_inscope": 0.8824, "coverage_filing": 0.06, "trust": 0.8824, "chance_floor": 0.0081, "signal_margin": 0.0519}, {"company": "Eni", "language": "it", "label_map": "hand", "pdf_pages": 526, "parsed_tables": 8, "numeric_cells": 895, "label_count": 14, "guard_no_scale": 0, "guard_no_section": 1, "guard_empty_row": 0, "guard_dup_label": 0, "assist_doc_scale": 0, "assist_continuation": 0, "facts_extracted": 31, "facts_comparable": 29, "facts_exact": 29, "gt_total": 338, "gt_inscope": 35, "gt_caught": 29, "precision": 1.0, "verifiability": 0.9355, "recall_inscope": 0.8286, "coverage_filing": 0.0858, "trust": 0.9355, "chance_floor": 0.0207, "signal_margin": 0.0651}, {"company": "Repsol", "language": "es", "label_map": "hand", "pdf_pages": 488, "parsed_tables": 7, "numeric_cells": 439, "label_count": 14, "guard_no_scale": 0, "guard_no_section": 0, "guard_empty_row": 0, "guard_dup_label": 0, "assist_doc_scale": 0, "assist_continuation": 0, "facts_extracted": 28, "facts_comparable": 26, "facts_exact": 26, "gt_total": 198, "gt_inscope": 26, "gt_caught": 24, "precision": 1.0, "verifiability": 0.9286, "recall_inscope": 0.9231, "coverage_filing": 0.1212, "trust": 0.9286, "chance_floor": 0.0524, "signal_margin": 0.0688}, {"company": "Galp", "language": "en", "label_map": "hand", "pdf_pages": 165, "parsed_tables": 4, "numeric_cells": 547, "label_count": 16, "guard_no_scale": 0, "guard_no_section": 0, "guard_empty_row": 0, "guard_dup_label": 1, "assist_doc_scale": 0, "assist_continuation": 0, "facts_extracted": 31, "facts_comparable": 27, "facts_exact": 27, "gt_total": 186, "gt_inscope": 29, "gt_caught": 27, "precision": 1.0, "verifiability": 0.871, "recall_inscope": 0.931, "coverage_filing": 0.1452, "trust": 0.871, "chance_floor": 0.0562, "signal_margin": 0.089}, {"company": "TotalEnergies", "language": "en", "label_map": "hand", "pdf_pages": 246, "parsed_tables": 10, "numeric_cells": 611, "label_count": 9, "guard_no_scale": 0, "guard_no_section": 0, "guard_empty_row": 2, "guard_dup_label": 1, "assist_doc_scale": 0, "assist_continuation": 2, "facts_extracted": 27, "facts_comparable": 24, "facts_exact": 24, "gt_total": 266, "gt_inscope": 24, "gt_caught": 24, "precision": 1.0, "verifiability": 0.8889, "recall_inscope": 1.0, "coverage_filing": 0.0902, "trust": 0.8889, "chance_floor": 0.0077, "signal_margin": 0.0825}, {"company": "TOTAL", "language": "", "label_map": "hand", "pdf_pages": 2543, "parsed_tables": 73, "numeric_cells": 4285, "label_count": 107, "guard_no_scale": 0, "guard_no_section": 3, "guard_empty_row": 3, "guard_dup_label": 6, "assist_doc_scale": 2, "assist_continuation": 3, "facts_extracted": 238, "facts_comparable": 223, "facts_exact": 223, "gt_total": 1906, "gt_inscope": 238, "gt_caught": 221, "precision": 1.0, "verifiability": 0.937, "recall_inscope": 0.9286, "coverage_filing": 0.1159, "trust": 0.937, "chance_floor": null, "signal_margin": null}], "generated": [{"company": "OMV", "language": "de", "label_map": "generated", "pdf_pages": 241, "parsed_tables": 10, "numeric_cells": 557, "label_count": 83, "guard_no_scale": 0, "guard_no_section": 0, "guard_empty_row": 0, "guard_dup_label": 1, "assist_doc_scale": 0, "assist_continuation": 0, "facts_extracted": 108, "facts_comparable": 108, "facts_exact": 108, "gt_total": 233, "gt_inscope": 162, "gt_caught": 108, "precision": 1.0, "verifiability": 1.0, "recall_inscope": 0.6667, "coverage_filing": 0.4635, "trust": 1.0, "chance_floor": 0.0177, "signal_margin": 0.4458}, {"company": "Aker BP", "language": "en", "label_map": "generated", "pdf_pages": 236, "parsed_tables": 8, "numeric_cells": 324, "label_count": 81, "guard_no_scale": 0, "guard_no_section": 0, "guard_empty_row": 2, "guard_dup_label": 1, "assist_doc_scale": 0, "assist_continuation": 1, "facts_extracted": 122, "facts_comparable": 121, "facts_exact": 121, "gt_total": 165, "gt_inscope": 153, "gt_caught": 121, "precision": 1.0, "verifiability": 0.9918, "recall_inscope": 0.7908, "coverage_filing": 0.7333, "trust": 0.9918, "chance_floor": 0.087, "signal_margin": 0.6463}, {"company": "Shell", "language": "en", "label_map": "generated", "pdf_pages": 456, "parsed_tables": 8, "numeric_cells": 522, "label_count": 71, "guard_no_scale": 0, "guard_no_section": 2, "guard_empty_row": 0, "guard_dup_label": 1, "assist_doc_scale": 2, "assist_continuation": 0, "facts_extracted": 130, "facts_comparable": 129, "facts_exact": 126, "gt_total": 270, "gt_inscope": 191, "gt_caught": 129, "precision": 0.9767, "verifiability": 0.9923, "recall_inscope": 0.6754, "coverage_filing": 0.4778, "trust": 0.9692, "chance_floor": 0.0112, "signal_margin": 0.4666}, {"company": "Equinor", "language": "nb", "label_map": "generated", "pdf_pages": 185, "parsed_tables": 18, "numeric_cells": 390, "label_count": 87, "guard_no_scale": 0, "guard_no_section": 0, "guard_empty_row": 1, "guard_dup_label": 1, "assist_doc_scale": 0, "assist_continuation": 0, "facts_extracted": 75, "facts_comparable": 75, "facts_exact": 75, "gt_total": 250, "gt_inscope": 216, "gt_caught": 75, "precision": 1.0, "verifiability": 1.0, "recall_inscope": 0.3472, "coverage_filing": 0.3, "trust": 1.0, "chance_floor": 0.0081, "signal_margin": 0.2919}, {"company": "Eni", "language": "it", "label_map": "generated", "pdf_pages": 526, "parsed_tables": 8, "numeric_cells": 895, "label_count": 96, "guard_no_scale": 0, "guard_no_section": 1, "guard_empty_row": 0, "guard_dup_label": 0, "assist_doc_scale": 0, "assist_continuation": 0, "facts_extracted": 134, "facts_comparable": 134, "facts_exact": 134, "gt_total": 338, "gt_inscope": 241, "gt_caught": 134, "precision": 1.0, "verifiability": 1.0, "recall_inscope": 0.556, "coverage_filing": 0.3964, "trust": 1.0, "chance_floor": 0.0207, "signal_margin": 0.3757}, {"company": "Repsol", "language": "es", "label_map": "generated", "pdf_pages": 488, "parsed_tables": 7, "numeric_cells": 439, "label_count": 95, "guard_no_scale": 0, "guard_no_section": 0, "guard_empty_row": 0, "guard_dup_label": 0, "assist_doc_scale": 0, "assist_continuation": 0, "facts_extracted": 114, "facts_comparable": 112, "facts_exact": 108, "gt_total": 198, "gt_inscope": 176, "gt_caught": 112, "precision": 0.9643, "verifiability": 0.9825, "recall_inscope": 0.6364, "coverage_filing": 0.5657, "trust": 0.9474, "chance_floor": 0.0524, "signal_margin": 0.5133}, {"company": "Galp", "language": "en", "label_map": "hand", "pdf_pages": 165, "parsed_tables": 4, "numeric_cells": 547, "label_count": 16, "guard_no_scale": 0, "guard_no_section": 0, "guard_empty_row": 0, "guard_dup_label": 1, "assist_doc_scale": 0, "assist_continuation": 0, "facts_extracted": 31, "facts_comparable": 27, "facts_exact": 27, "gt_total": 186, "gt_inscope": 29, "gt_caught": 27, "precision": 1.0, "verifiability": 0.871, "recall_inscope": 0.931, "coverage_filing": 0.1452, "trust": 0.871, "chance_floor": 0.0562, "signal_margin": 0.089}, {"company": "TotalEnergies", "language": "en", "label_map": "generated", "pdf_pages": 246, "parsed_tables": 10, "numeric_cells": 611, "label_count": 79, "guard_no_scale": 0, "guard_no_section": 0, "guard_empty_row": 3, "guard_dup_label": 1, "assist_doc_scale": 0, "assist_continuation": 2, "facts_extracted": 135, "facts_comparable": 135, "facts_exact": 135, "gt_total": 266, "gt_inscope": 230, "gt_caught": 135, "precision": 1.0, "verifiability": 1.0, "recall_inscope": 0.587, "coverage_filing": 0.5075, "trust": 1.0, "chance_floor": 0.0077, "signal_margin": 0.4998}, {"company": "TOTAL", "language": "", "label_map": "generated", "pdf_pages": 2543, "parsed_tables": 73, "numeric_cells": 4285, "label_count": 608, "guard_no_scale": 0, "guard_no_section": 3, "guard_empty_row": 6, "guard_dup_label": 6, "assist_doc_scale": 2, "assist_continuation": 3, "facts_extracted": 849, "facts_comparable": 841, "facts_exact": 834, "gt_total": 1906, "gt_inscope": 1398, "gt_caught": 841, "precision": 0.9917, "verifiability": 0.9906, "recall_inscope": 0.6016, "coverage_filing": 0.4412, "trust": 0.9824, "chance_floor": null, "signal_margin": null}]};
+let mode = "hand";
+const pct = v => v === null ? "—" : (v*100).toFixed(1) + "%";
+const tone = v => v >= .95 ? "p-ok" : v >= .85 ? "p-warn" : "p-crit";
+const col  = v => v >= .95 ? "var(--ok)" : v >= .85 ? "var(--warn)" : "var(--crit)";
+
+function rows(m){ return DATA[m].filter(r => r.company !== "TOTAL"); }
+function total(m){ return DATA[m].find(r => r.company === "TOTAL"); }
+
+function kpis(){
+  const t = total(mode), o = total(mode === "hand" ? "generated" : "hand");
+  const d = (a,b,p) => {
+    if (a === null || b === null) return "";
+    const x = p ? (a-b)*100 : a-b;
+    const c = Math.abs(x) < 0.05 ? "flat" : x > 0 ? "up" : "down";
+    const s = x > 0 ? "+" : "";
+    return `<div class="d">so với chế độ kia <b class="${c}">${s}${p ? x.toFixed(1)+" đ" : Math.round(x)}</b></div>`;
+  };
+  document.getElementById("kpis").innerHTML = `
+  <div class="kpi"><dt>Tin cậy</dt><div class="v" style="color:${col(t.trust)}">${pct(t.trust)}</div>
+    ${d(t.trust,o.trust,1)}</div>
+  <div class="kpi"><dt>Phạm vi tài liệu</dt><div class="v">${pct(t.coverage_filing)}</div>
+    ${d(t.coverage_filing,o.coverage_filing,1)}</div>
+  <div class="kpi"><dt>Số liệu lấy ra</dt><div class="v">${t.facts_extracted}</div>
+    ${d(t.facts_extracted,o.facts_extracted,0)}</div>
+  <div class="kpi"><dt>Đối chiếu được</dt><div class="v">${t.facts_comparable}</div>
+    <div class="d">trong đó đúng <b class="up">${t.facts_exact}</b></div></div>
+  <div class="kpi"><dt>Nhãn đã khai</dt><div class="v">${t.label_count}</div>
+    ${d(t.label_count,o.label_count,0)}</div>`;
+  document.getElementById("hint").textContent = mode === "hand"
+    ? "107 nhãn gõ tay trong 8 profile"
+    : "608 nhãn sinh tự động từ chính file iXBRL (Galp vẫn dùng bảng viết tay)";
+}
+
+function scatter(){
+  const W=760,H=330,L=54,R=18,T=14,B=42, x0=L, x1=W-R, y0=H-B, y1=T;
+  const sx = v => x0 + v*(x1-x0);
+  const sy = v => y0 - ((v-.8)/.2)*(y0-y1);
+  let s = "";
+  for (let g=0; g<=5; g++){ const v=g/5, X=sx(v);
+    s += `<line class="gl" x1="${X}" y1="${y1}" x2="${X}" y2="${y0}"/>`
+      +  `<text class="ax" x="${X}" y="${y0+16}" text-anchor="middle">${(v*100)|0}%</text>`; }
+  for (let g=0; g<=4; g++){ const v=.8+g*.05, Y=sy(v);
+    s += `<line class="gl" x1="${x0}" y1="${Y}" x2="${x1}" y2="${Y}"/>`
+      +  `<text class="ax" x="${x0-8}" y="${Y+3}" text-anchor="end">${(v*100).toFixed(0)}%</text>`; }
+  s += `<text class="ax" x="${(x0+x1)/2}" y="${H-6}" text-anchor="middle">phạm vi tài liệu →</text>`;
+  s += `<text class="ax" transform="translate(13,${(y0+y1)/2}) rotate(-90)" text-anchor="middle">tin cậy →</text>`;
+  const H2 = rows("hand"), G = rows("generated");
+  H2.forEach((h,i) => { const g=G[i];
+    if (!g || h.trust===null || g.trust===null) return;
+    s += `<line x1="${sx(h.coverage_filing)}" y1="${sy(h.trust)}" x2="${sx(g.coverage_filing)}" y2="${sy(g.trust)}" stroke="var(--rule-strong)" stroke-width="1" stroke-dasharray="2 3"/>`; });
+  const draw = (arr, fill, r, active) => arr.forEach(d => {
+    if (d.trust===null) return;
+    s += `<circle cx="${sx(d.coverage_filing)}" cy="${sy(d.trust)}" r="${r}" fill="${fill}" `
+       + `${active?'stroke="var(--flare)" stroke-width="2"':'opacity=".45"'}/>`;
+    if (active) s += `<text class="dotlab" x="${sx(d.coverage_filing)}" y="${sy(d.trust)-12}" text-anchor="middle">${d.company}</text>`; });
+  draw(mode==="hand"?G:H2, mode==="hand"?"var(--accent)":"var(--ink-3)", 5, false);
+  draw(mode==="hand"?H2:G, mode==="hand"?"var(--ink-3)":"var(--accent)", 6.5, true);
+  document.getElementById("scatter").innerHTML = s;
+}
+
+function table(){
+  const rs = rows(mode), t = total(mode);
+  const bar = (v,c) => `<span class="bar"><i style="width:${(v*100).toFixed(1)}%;background:${c}"></i></span>`;
+  let h = `<thead><tr><th>Công ty</th><th>Lấy ra</th><th>Đối chiếu</th><th>Đúng</th>
+    <th>Tin cậy</th><th>Phạm vi</th><th>Nền</th><th>Nhãn</th></tr></thead><tbody>`;
+  for (const r of rs) h += `<tr>
+    <td>${r.company}<span class="lang">${r.language}</span></td>
+    <td>${r.facts_extracted}</td><td>${r.facts_comparable}</td><td>${r.facts_exact}</td>
+    <td>${bar(r.trust,col(r.trust))}<span class="pill ${tone(r.trust)}">${pct(r.trust)}</span></td>
+    <td>${bar(r.coverage_filing,"var(--accent)")}${pct(r.coverage_filing)}</td>
+    <td>${pct(r.chance_floor)}</td><td>${r.label_count}</td></tr>`;
+  h += `<tr class="tot"><td>Tổng</td><td>${t.facts_extracted}</td><td>${t.facts_comparable}</td>
+    <td>${t.facts_exact}</td><td><span class="pill ${tone(t.trust)}">${pct(t.trust)}</span></td>
+    <td>${pct(t.coverage_filing)}</td><td>—</td><td>${t.label_count}</td></tr></tbody>`;
+  document.getElementById("tbl").innerHTML = h;
+}
+
+function guards(){
+  const rs = rows(mode), t = total(mode);
+  const K = [["guard_no_scale","không rõ đơn vị"],["guard_no_section","không rõ báo cáo"],
+             ["guard_empty_row","hàng khớp nhãn nhưng rỗng"],["guard_dup_label","nhãn trùng"],
+             ["assist_doc_scale","đơn vị suy từ cả tài liệu"],["assist_continuation","bảng tiếp nối"]];
+  let h = `<thead><tr><th>Công ty</th>${K.map(k=>`<th>${k[1]}</th>`).join("")}</tr></thead><tbody>`;
+  for (const r of rs) h += `<tr><td>${r.company}</td>` + K.map(k => {
+      const v = r[k[0]];
+      return `<td>${v ? `<b style="color:var(--flare)">${v}</b>` : '<span style="color:var(--ink-3)">·</span>'}</td>`;
+    }).join("") + `</tr>`;
+  h += `<tr class="tot"><td>Tổng</td>${K.map(k=>`<td>${t[k[0]]}</td>`).join("")}</tr></tbody>`;
+  document.getElementById("guards").innerHTML = h;
+}
+
+function render(){ kpis(); scatter(); table(); guards();
+  document.getElementById("b-hand").setAttribute("aria-pressed", mode==="hand");
+  document.getElementById("b-gen").setAttribute("aria-pressed", mode==="generated"); }
+document.getElementById("b-hand").onclick = () => { mode="hand"; render(); };
+document.getElementById("b-gen").onclick  = () => { mode="generated"; render(); };
+render();
+</script>

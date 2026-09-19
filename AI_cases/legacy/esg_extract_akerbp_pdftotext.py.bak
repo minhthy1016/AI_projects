@@ -1,0 +1,174 @@
+#!/usr/bin/env python3
+"""
+Silver B cho Aker BP — cùng contract với OMV, khác parser.
+
+Ba khác biệt cấu trúc buộc phải viết parser riêng, và chính chúng là bằng chứng
+cho luận điểm "profile mô tả cách đọc, không phải một pipeline dùng chung":
+
+  1. Đơn vị là "1,000 t CO2e" khai TRÊN TỪNG DÒNG, không phải một lần ở đầu bảng
+     như OMV. Bỏ qua hệ số 1000 này là sai đúng 1000× — bottleneck số một.
+  2. Bảng có HAI cơ sở boundary song song (Operational control | Equity), mỗi
+     cơ sở một bộ cột. Gộp hai cơ sở là trộn hai phép đo khác nhau.
+  3. Ô trống rải rác: nhiều dòng chỉ có cột 2024. Ánh xạ theo THỨ TỰ token sẽ
+     gán số của 2024 vào cột base year. Bắt buộc cắt theo VỊ TRÍ CỘT.
+"""
+import argparse, collections, hashlib, json, pathlib, re, sys
+from decimal import Decimal
+
+ROWS = {
+    "Gross scope 1 GHG emissions":                        ("scope_1", True),
+    "Gross location-based scope 2 GHG emissions":         ("scope_2_location", True),
+    "Gross market-based scope 2 GHG emissions":           ("scope_2_market", True),
+    "Total scope 1 and 2 GHG emissions":                  ("combined_1_2_reported", True),
+    "Total gross indirect (scope 3) GHG emissions":       ("scope_3", True),
+    "Total GHG emissions (location-based)":               ("total_location", True),
+    "Total GHG emissions (market-based)":                 ("total_market", True),
+}
+UNIT_RE = re.compile(r"(1,000|1 000)\s*t\s*CO2e")
+NUM = re.compile(r"-?[\d,]+(?:\.\d+)?%?")
+
+def parse_num(tok):
+    t = tok.strip().rstrip("%")
+    if not t or t in ("-", "–"):
+        return None
+    try:
+        return Decimal(t.replace(",", ""))
+    except Exception:
+        return None
+
+COL_TOK = re.compile(r"(\(20\d{2}\))|(20\d{2})\s{1,2}target|\b(20\d{2})\b|(target)|(baseline)")
+
+def header_columns(hdr_line, group_line, above_line):
+    """Cột của riêng khối 'Operational control'.
+
+    Bản đầu cắt khối Equity bằng lần xuất hiện thứ hai của '(2017)'. Trang 69
+    KHÔNG có cột base year, nên điều kiện đó không bao giờ kích hoạt và toàn bộ
+    cột Equity lọt vào: Scope 3 lấy phải 71.330 (equity) thay vì 71.458
+    (operational control). Chặn đúng là theo VỊ TRÍ chữ 'Equity' trên dòng nhóm.
+
+    Cột 'Reduction from baseline' là phần trăm, không phải giá trị phát thải —
+    phải loại, nếu không nó vào Silver B như một lượng khí thải.
+    """
+    # Nhãn nhóm được CĂN GIỮA khối của nó, nên vị trí bắt đầu của "Equity" (196)
+    # nằm bên PHẢI các cột thuộc chính nó (175, 193). Lấy nó làm biên trái sẽ
+    # nhận nhầm cả khối Equity vào Operational control — và vì các giá trị equity
+    # tự nhất quán với nhau, gate scope1+scope2=total VẪN PASS. Sai im lặng qua
+    # được cả cổng kiểm tra. Biên đúng là trung điểm giữa tâm hai nhãn.
+    oc = group_line.find("Operational control")
+    eq = group_line.find("Equity")
+    if oc >= 0 and eq >= 0:
+        limit = ((oc + len("Operational control") / 2) + (eq + len("Equity") / 2)) / 2
+    elif eq >= 0:
+        limit = eq
+    else:
+        limit = len(hdr_line) + 1
+    cols = []
+    for m in COL_TOK.finditer(hdr_line):
+        end = m.end()
+        if end >= limit:
+            break
+        base, yr_target, yr, tgt, base_kw = m.groups()
+        if base_kw:                       # cột Reduction % -> bỏ
+            continue
+        if base:
+            cols.append((base.strip("()"), False, end))
+        elif yr_target:
+            cols.append((yr_target, True, end))
+        elif yr:
+            cols.append((yr, False, end))
+        elif tgt:
+            ym = re.search(r"20\d{2}", above_line[max(0, end - 14):end + 2])
+            if ym:
+                cols.append((ym.group(0), True, end))
+    return cols
+
+def extract(txt, company_id):
+    pages = txt.read_text(encoding="utf-8", errors="replace").split("\f")
+    doc_hash = hashlib.sha256(txt.read_bytes()).hexdigest()
+    run_id = "esg-extract-akerbp-2026-09-15"
+    out, stats = [], collections.Counter()
+
+    for pno, page in enumerate(pages, 1):
+        if "Emission source/category" not in page:
+            continue
+        lines = page.split("\n")
+        hdr_i = next((i for i, l in enumerate(lines) if "Emission source/category" in l), None)
+        grp = next((lines[i] for i in range(max(0, hdr_i - 8), hdr_i)
+                    if "Operational control" in lines[i]), "")
+        cols = header_columns(lines[hdr_i], grp, lines[hdr_i - 2] if hdr_i >= 2 else "")
+        if not cols:
+            continue
+        stats["table"] += 1
+        for ln in range(hdr_i + 1, len(lines)):
+            line = lines[ln]
+            label = line[:78].strip()
+            key = next((k for k in ROWS if label.startswith(k)), None)
+            if not key:
+                continue
+            scope, is_total = ROWS[key]
+            um = UNIT_RE.search(line)
+            if not um:
+                stats["thiếu đơn vị"] += 1
+                continue
+            mult = 1000                      # 1,000 t CO2e -> t CO2e
+            for year, is_target, end in cols:
+                field = line[max(0, end - 14):end + 2]
+                toks = NUM.findall(field)
+                if not toks:
+                    continue
+                v = parse_num(toks[-1])
+                if v is None:
+                    continue
+                out.append({
+                    "claim_id": hashlib.sha256(f"{doc_hash}{pno}{ln}{end}".encode()).hexdigest()[:32],
+                    "run_id": run_id, "doc_hash": doc_hash, "company_id": company_id,
+                    "report_year": 2024,
+                    "framework": "ESRS", "framework_version": "ESRS-2023",
+                    "gri_standard_version": None,
+                    "gri_code": "E1-6" if not is_target else "E1-4",
+                    "gri_code_reported": "Table 11",
+                    "claim_type": "target" if is_target else "quantitative",
+                    "claim_text": key,
+                    "value": float(v * mult), "value_raw_text": toks[-1],
+                    "unit_reported": "1,000 t CO2e", "unit_canonical": "tCO2e",
+                    "unit_conversion_factor": float(mult),
+                    "is_intensity_metric": False, "denominator_basis": None,
+                    "scope": scope, "scope3_categories": None,
+                    "boundary": "operational_control",
+                    "boundary_changed_vs_prior": None,
+                    "baseline_year": 2017,
+                    "is_baseline_column": year == "2017",
+                    "period_end": f"{year}-12-31",
+                    "target_year": int(year) if is_target else None,
+                    "target_type": "absolute" if is_target else None,
+                    "target_covers_scope3": None,
+                    "is_company_specific": False, "is_subtotal": is_total,
+                    "offsets_included": None,
+                    "assurance_level": None, "assurance_covers_this_claim": None,
+                    "is_restated": None,
+                    "source_ref": {
+                        "page_no": pno, "bbox": None, "verbatim_span": toks[-1],
+                        "table_id": f"E1-6-p{pno}", "row_idx": ln, "col_idx": end,
+                        "col_header_path": ["Table 11: Total GHG emissions by source",
+                                            "Operational control", year],
+                        "extraction_path": "native_text",
+                    },
+                    "groundedness_verified": toks[-1] in page,
+                    "confidence": 0.95, "decimal_separator": ".",
+                    "extractor_version": "esg-extract-akerbp@0.1.0",
+                    "model_id": "none-rule-based", "prompt_hash": "-", "schema_version": "1.0",
+                })
+                stats["claim"] += 1
+    print(f"    [esg-akerbp] {stats['table']} bảng, {stats['claim']} claim, "
+          f"{stats['thiếu đơn vị']} dòng thiếu đơn vị", file=sys.stderr)
+    return out
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--txt", required=True); ap.add_argument("--company-id", required=True)
+    ap.add_argument("--out", required=True)
+    a = ap.parse_args()
+    rows = extract(pathlib.Path(a.txt), a.company_id)
+    pathlib.Path(a.out).write_text(
+        "\n".join(json.dumps(r, ensure_ascii=False) for r in rows) + "\n", encoding="utf-8")
+    print(f"{len(rows)} claim -> {a.out}")

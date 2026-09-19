@@ -1,0 +1,293 @@
+#!/usr/bin/env python3
+"""
+doc-extract cho đường native-text: PDF -> JSONL theo extraction_contract.json.
+
+Đây là nhánh dễ nhất trong ba nhánh (native_text / ocr / vlm_image) và cố tình
+viết tất định, không LLM — để khi cắm LLM vào sau, có một baseline để so.
+
+Ba bẫy thật trong tài liệu này, đều đã gặp trong danh sách bottleneck:
+
+  1. Số kiểu Đức: "24.308" là 24308, KHÔNG phải 24,308. Parser ngây thơ sai 1000×.
+  2. Dấu âm là en-dash "–" (U+2013), không phải hyphen, không phải ngoặc.
+     "—" (em-dash) lại mang nghĩa khác: không công bố. Hai ký tự gần giống nhau,
+     hai nghĩa hoàn toàn khác -> is_nil.
+  3. Cột "Anhangangabe" (tham chiếu thuyết minh) nằm GIỮA nhãn và giá trị, chứa
+     số nguyên nhỏ trông y hệt dữ liệu. Nên không đoán theo thứ tự token mà cắt
+     theo VỊ TRÍ CỘT lấy từ dòng header — đây cũng chính là col_header_path.
+"""
+import argparse, hashlib, json, pathlib, re, sys
+from decimal import Decimal
+from datetime import date
+
+EN_DASH, EM_DASH = "–", "—"
+# Năm có thể dính ký tự chú thích: "2024¹" được pdftotext render thành "20241".
+# Regex \b(20\d{2})\b KHÔNG khớp -> cột thứ hai biến mất -> cả section bị bỏ
+# IM LẶNG. Đây là bottleneck "footnote marker trong header" ở dạng thuần tuý nhất:
+# hỏng không báo lỗi, chỉ mất dữ liệu. Chỉ metric coverage mới bắt được.
+YEAR_RE = re.compile(r"(?<!\d)(20[0-4]\d)([¹²³\*†]|\d(?!\d))?(?!\d)")
+NUM_RE = re.compile(r"^[" + EN_DASH + EM_DASH + r"\-+]?[\d.,]+$")
+
+# --------------------------------------------------------------------------
+# PROFILE — mỗi họ tài liệu một cấu hình. Chạy thử trên hai công ty cho thấy
+# hardcode là không khả thi: OMV dùng số kiểu Đức, dấu âm en-dash, header cột
+# là năm; Aker BP dùng số kiểu Anh-Mỹ, dấu âm hyphen, header cột là ngày đầy đủ.
+# Nhưng LƯU Ý: đây KHÔNG phải lời biện hộ cho việc phân loại template rồi rẽ
+# nhánh prompt. Profile chỉ mô tả cách ĐỌC (locale, ký tự, vị trí cột); phần
+# ánh xạ nhãn -> concept vẫn nên lấy từ label linkbase của taxonomy trong
+# production, không viết tay như dưới đây.
+# --------------------------------------------------------------------------
+PROFILES = {
+ "omv-de": dict(
+    decimal_separator=",", neg_chars="\u2013-", nil_tokens=("\u2014",),
+    scale_re=r"In\s+([A-Z]{3})\s+(Mio|Mrd|Tsd)",
+    scale_map={"Tsd": 1_000, "Mio": 1_000_000, "Mrd": 1_000_000_000},
+    sections=[("Konzern-Gewinn- und Verlustrechnung", "income_statement"),
+              ("Verm\u00f6gen", "balance_sheet"),
+              ("Eigenkapital und Verbindlichkeiten", "balance_sheet"),
+              ("Konzern-Cashflow-Rechnung", "cash_flow")],
+    skip_prefix=("davon Cashflow", "Davon liquide"),
+    labels={
+      "Umsatzerl\u00f6se": ("ifrs-full:Revenue", "income_statement"),
+      "Operatives Ergebnis": ("ifrs-full:ProfitLossFromOperatingActivities", "income_statement"),
+      "Ergebnis vor Steuern": ("ifrs-full:ProfitLossBeforeTax", "income_statement"),
+      "Steuern vom Einkommen und vom Ertrag": ("ifrs-full:IncomeTaxExpenseContinuingOperations", "income_statement"),
+      "Jahres\u00fcberschuss": ("ifrs-full:ProfitLoss", "income_statement"),
+      "davon den Aktion\u00e4ren des Mutterunternehmens zuzurechnen":
+          ("ifrs-full:ProfitLossAttributableToOwnersOfParent", "income_statement"),
+      "davon nicht beherrschenden Anteilen zuzurechnen":
+          ("ifrs-full:ProfitLossAttributableToNoncontrollingInterests", "income_statement"),
+      "Summe Aktiva": ("ifrs-full:Assets", "balance_sheet"),
+      "Summe Eigenkapital": ("ifrs-full:Equity", "balance_sheet"),
+      "Eigenkapital der Anteilseigner des Mutterunternehmens":
+          ("ifrs-full:EquityAttributableToOwnersOfParent", "balance_sheet"),
+      "Nicht beherrschende Anteile": ("ifrs-full:NoncontrollingInterests", "balance_sheet"),
+      "Summe Eigenkapital und Verbindlichkeiten": ("ifrs-full:EquityAndLiabilities", "balance_sheet"),
+      "Zahlungsmittel und Zahlungsmittel\u00e4quivalente": ("ifrs-full:CashAndCashEquivalents", "balance_sheet"),
+      "Cashflow aus der Betriebst\u00e4tigkeit": ("ifrs-full:CashFlowsFromUsedInOperatingActivities", "cash_flow"),
+      "Cashflow aus der Investitionst\u00e4tigkeit": ("ifrs-full:CashFlowsFromUsedInInvestingActivities", "cash_flow"),
+      "Cashflow aus der Finanzierungst\u00e4tigkeit": ("ifrs-full:CashFlowsFromUsedInFinancingActivities", "cash_flow"),
+      "W\u00e4hrungsdifferenz auf liquide Mittel":
+          ("ifrs-full:EffectOfExchangeRateChangesOnCashAndCashEquivalents", "cash_flow"),
+    }),
+
+ "akerbp-en": dict(
+    decimal_separator=".", neg_chars="-\u2013", nil_tokens=("-", "\u2013", "\u2014"),
+    scale_re=r"\(([A-Z]{3})\s+(million|thousand|billion)\)",
+    scale_map={"thousand": 1_000, "million": 1_000_000, "billion": 1_000_000_000},
+    sections=[("Income statements", "income_statement"),
+              ("Statement of financial position", "balance_sheet"),
+              ("Statement of cash flows", "cash_flow")],
+    skip_prefix=(),
+    labels={
+      "Total income": ("ifrs-full:RevenueAndOperatingIncome", "income_statement"),
+      "Total operating expenses": ("ifrs-full:OperatingExpense", "income_statement"),
+      "Profit/loss before taxes": ("ifrs-full:ProfitLossBeforeTax", "income_statement"),
+      "Net profit/loss": ("ifrs-full:ProfitLoss", "income_statement"),
+      "Total assets": ("ifrs-full:Assets", "balance_sheet"),
+      "Total non-current assets": ("ifrs-full:NoncurrentAssets", "balance_sheet"),
+      "Total current assets": ("ifrs-full:CurrentAssets", "balance_sheet"),
+      "Total equity": ("ifrs-full:Equity", "balance_sheet"),
+      "Total liabilities": ("ifrs-full:Liabilities", "balance_sheet"),
+      "Total non-current liabilities": ("ifrs-full:NoncurrentLiabilities", "balance_sheet"),
+      "Total current liabilities": ("ifrs-full:CurrentLiabilities", "balance_sheet"),
+      "Total equity and liabilities": ("ifrs-full:EquityAndLiabilities", "balance_sheet"),
+      "Net cash flow from operating activities": ("ifrs-full:CashFlowsFromUsedInOperatingActivities", "cash_flow"),
+      "Net cash flow from investment activities": ("ifrs-full:CashFlowsFromUsedInInvestingActivities", "cash_flow"),
+      "Net cash flow from financing activities": ("ifrs-full:CashFlowsFromUsedInFinancingActivities", "cash_flow"),
+      "Net change in cash and cash equivalents":
+          ("ifrs-full:IncreaseDecreaseInCashAndCashEquivalentsBeforeEffectOfExchangeRateChanges", "cash_flow"),
+      "Cash and cash equivalents": ("ifrs-full:CashAndCashEquivalents", "balance_sheet"),
+    }),
+}
+
+def _num(d):
+    """Decimal -> kiểu JSON, giữ nguyên độ chính xác (int khi là số nguyên)."""
+    return int(d) if d == d.to_integral_value() else float(d)
+
+
+def parse_number(tok, prof):
+    """Đọc số theo locale của profile.
+
+    DE: '24.308' -> 24308 | '\u201313.975' -> -13975 | '\u2014' -> nil
+    EN: '12,756.6' -> 12756.6 | '-4,763.8' -> -4763.8 | '-' -> nil
+
+    Trong tiếng Anh, '-' vừa là dấu âm vừa là ký hiệu không công bố. Phân biệt
+    bằng độ dài: '-' trơ trọi là nil, '-123' là số âm. Gộp hai thứ này là biến
+    'không công bố' thành 0, tức bịa ra một con số chưa từng được công bố.
+    """
+    t = tok.strip()
+    if t == "" or t in prof["nil_tokens"]:
+        return None, True
+    neg = t[0] in prof["neg_chars"]
+    t = t.lstrip(prof["neg_chars"] + "+")
+    if prof["decimal_separator"] == ",":
+        t = t.replace(".", "").replace(",", ".")
+    else:
+        t = t.replace(",", "")
+    if not t or not re.fullmatch(r"\d+(\.\d+)?", t):
+        return None, False
+    # Decimal, KHÔNG float: 33906.8 * 1_000_000 trong float ra
+    # 33906800000.000004 — sai số nhị phân trên số tiền. Đây chính là lỗi mà
+    # schema Silver A quy định decimal(38,6) để tránh, và nó đã xuất hiện thật
+    # trong bản đầu của chính extractor này.
+    v = Decimal(t)
+    return (-v if neg else v), False
+
+def find_columns(line):
+    """Trả về [(năm, vị trí kết thúc cột, ký tự chú thích)] từ dòng header.
+    Số căn phải nên vị trí kết thúc của token năm cũng là kết thúc của cả cột."""
+    return [(m.group(1), m.end(), m.group(2) or "") for m in YEAR_RE.finditer(line)]
+
+
+def column_basis(lines, start, marker):
+    """Ký tự chú thích trên header cột KHÔNG phải nhiễu — nó nói cột đó là số gì.
+    OMV chú thích cột 2024 bằng "Angepasste Zahlen" = số đã trình bày lại.
+    Bỏ qua nó là mất luôn period_basis = restated, tức mất tín hiệu restatement.
+    """
+    if not marker:
+        return "audited", None
+    for l in lines[start:start + 80]:
+        t = l.strip()
+        if t.startswith(marker) and len(t) > 3:
+            note = t[len(marker):].strip()
+            if re.search(r"Angepass|Anpassung|restated|adjusted", note, re.I):
+                return "restated", note[:160]
+            return "audited", note[:160]
+    return "audited", None
+
+def extract(txt_path, pdf_name, company_id, profile):
+    prof = PROFILES[profile]
+    SECTIONS = prof["sections"]
+    LABEL_MAP = prof["labels"]
+    SKIP_PREFIX = prof["skip_prefix"]
+    currency = "USD"
+    pages = txt_path.read_text(encoding="utf-8", errors="replace").split("\f")
+    doc_hash = hashlib.sha256(txt_path.read_bytes()).hexdigest()
+    run_id = f"doc-extract-{date.today()}"
+    rows, stats = [], {"section": 0, "row": 0, "mapped": 0, "nil": 0}
+
+    # Nhãn TRÙNG NHAU giữa các báo cáo: trang 148 chứa cả Gewinn- und
+    # Verlustrechnung lẫn Gesamtergebnisrechnung, và cả hai đều có dòng
+    # "Jahresüberschuss" và "davon nicht beherrschenden Anteilen zuzurechnen".
+    # Lần khớp thứ hai (tổng thu nhập toàn diện) ghi đè lần đầu (lợi nhuận) ->
+    # NCI ra 238/645 thay vì 443/571. Giữ lần khớp ĐẦU trong mỗi section.
+    claimed = set()
+    for pno, page in enumerate(pages, 1):
+        lines = page.split("\n")
+        i = 0
+        while i < len(lines):
+            head = lines[i].strip()
+            sect = next((s for name, s in SECTIONS if head.startswith(name)), None)
+            if not sect:
+                i += 1; continue
+            stats["section"] += 1
+
+            # scale + currency khai ở dòng ngay dưới tiêu đề: "In EUR Mio"
+            scale, scale_src, cur = 1, "inferred", currency
+            for look in lines[i + 1:i + 4]:
+                m = re.search(prof["scale_re"], look)
+                if m:
+                    cur = m.group(1)
+                    scale = prof["scale_map"][m.group(2)]
+                    scale_src = "statement_header"
+                    break
+
+            # dòng header cột chứa các năm
+            cols, hdr_off = [], None
+            for j in range(i + 1, min(i + 8, len(lines))):
+                c = find_columns(lines[j])
+                if len(c) >= 2:
+                    cols, hdr_off = c, j
+                    break
+            if not cols:
+                i += 1; continue
+            col_basis = [column_basis(lines, hdr_off, mk) for _, _, mk in cols]
+
+            for j in range(hdr_off + 1, len(lines)):
+                line = lines[j]
+                if not line.strip():
+                    continue
+                if any(line.strip().startswith(n) for n, _ in SECTIONS):
+                    break
+                label = line[:cols[0][1] - 24].strip()
+                label = re.sub(r"\s{2,}\d+(,\s*\d+)*\s*$", "", label).strip()  # bỏ cột Anhangangabe
+                if not label or label.startswith(SKIP_PREFIX):
+                    continue
+                canon = LABEL_MAP.get(label)
+                stats["row"] += 1
+                if not canon:
+                    continue
+                concept, stmt = canon
+                if (concept, stmt) in claimed:
+                    stats["dup"] = stats.get("dup", 0) + 1
+                    continue
+                claimed.add((concept, stmt))
+                if stmt != sect and not (sect == "balance_sheet" and stmt == "balance_sheet"):
+                    continue
+                for ci, (yr, end, marker) in enumerate(cols):
+                    field = line[max(0, end - 22):end + 1]
+                    tok = field.strip().split()[-1] if field.strip() else ""
+                    if not NUM_RE.match(tok) and tok not in prof["nil_tokens"]:
+                        continue
+                    val, is_nil = parse_number(tok, prof)
+                    if val is None and not is_nil:
+                        continue
+                    if is_nil:
+                        stats["nil"] += 1
+                    instant = stmt == "balance_sheet"
+                    rows.append({
+                        "fact_id": hashlib.sha256(
+                            f"{doc_hash}{pno}{sect}{j}{ci}".encode()).hexdigest()[:32],
+                        "run_id": run_id, "doc_hash": doc_hash, "company_id": company_id,
+                        "statement": stmt,
+                        "line_item_reported": label,
+                        "line_item_canonical": concept, "canonical_taxonomy": "ifrs-full",
+                        "mapping_confidence": 1.0,
+                        "period_start": None if instant else f"{yr}-01-01",
+                        "period_end": f"{yr}-12-31",
+                        "period_duration_months": None if instant else 12,
+                        "period_basis": col_basis[ci][0], "is_comparative": ci > 0,
+                        "value_raw_text": tok,
+                        "value": None if is_nil else _num(val * Decimal(scale)),
+                        "declared_precision": -6 if scale == 1_000_000 else None,
+                        "scale_multiplier": scale, "scale_source": scale_src,
+                        "currency": cur, "currency_source": scale_src,
+                        "decimal_separator": prof["decimal_separator"],
+                        # en-dash đứng trước số: dấu âm đã in sẵn, không phải quy tắc ngoặc
+                        "sign_rule_applied": "as_printed",
+                        "is_nil": is_nil,
+                        "source_ref": {
+                            "page_no": pno, "bbox": None,
+                            "verbatim_span": tok,
+                            "table_id": f"{sect}-p{pno}", "row_idx": j, "col_idx": ci,
+                            "col_header_path": [head, yr],
+                            "extraction_path": "native_text",
+                        },
+                        "groundedness_verified": tok in page,
+                        "extraction_confidence": 0.99,
+                        "footnote_refs": [marker] if marker else [],
+                        "footnote_texts": [col_basis[ci][1]] if col_basis[ci][1] else [],
+                        "validation_flags": (["restated"] if col_basis[ci][0] == "restated" else []),
+                        "extractor_version": "doc-extract@0.1.0-deterministic",
+                        "model_id": "none-rule-based", "prompt_hash": "-",
+                        "schema_version": "1.0",
+                    })
+                    stats["mapped"] += 1
+            i = j if j > i else i + 1
+    print(f"    [doc-extract] {stats['section']} section, {stats['row']} dòng có nhãn, "
+          f"{stats['mapped']} fact xuất ra ({stats['nil']} nil, "
+          f"{stats.get('dup', 0)} nhãn trùng bị loại)", file=sys.stderr)
+    return rows
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--txt", required=True, help="text layer từ pdftotext -layout")
+    ap.add_argument("--pdf", required=True)
+    ap.add_argument("--company-id", required=True)
+    ap.add_argument("--profile", required=True, choices=list(PROFILES))
+    ap.add_argument("--out", required=True)
+    a = ap.parse_args()
+    rows = extract(pathlib.Path(a.txt), a.pdf, a.company_id, a.profile)
+    pathlib.Path(a.out).write_text(
+        "\n".join(json.dumps(r, ensure_ascii=False) for r in rows) + "\n", encoding="utf-8")
+    print(f"{len(rows)} fact -> {a.out}")

@@ -1,0 +1,378 @@
+<title>Fact and Claim Schema</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+:root{
+  --paper:#f4f5f4; --surface:#ffffff; --surface-2:#e9ebea;
+  --ink:#141d1d; --ink-2:#3f4c4c; --ink-3:#6c7a79;
+  --rule:#d6dad9; --rule-strong:#b6bdbc;
+  --accent:#1d4a56; --accent-ink:#1d4a56; --accent-soft:#e1ecee;
+  --flare:#a9581a;
+  --crit:#9b3128; --crit-soft:#f3e2e0;
+  --warn:#83600f; --warn-soft:#f3ecda;
+  --ok:#376046; --ok-soft:#e2ece5;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0d1315; --surface:#141b1d; --surface-2:#1b2427;
+    --ink:#e7ebea; --ink-2:#a8b4b3; --ink-3:#7a8887;
+    --rule:#283336; --rule-strong:#3b494c;
+    --accent:#72b6c3; --accent-ink:#8ec8d3; --accent-soft:#16303a;
+    --flare:#d68c47;
+    --crit:#e08478; --crit-soft:#33201d;
+    --warn:#d2a54c; --warn-soft:#2e2717;
+    --ok:#7bb08f; --ok-soft:#1a2b21;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0d1315; --surface:#141b1d; --surface-2:#1b2427;
+  --ink:#e7ebea; --ink-2:#a8b4b3; --ink-3:#7a8887;
+  --rule:#283336; --rule-strong:#3b494c;
+  --accent:#72b6c3; --accent-ink:#8ec8d3; --accent-soft:#16303a;
+  --flare:#d68c47;
+  --crit:#e08478; --crit-soft:#33201d;
+  --warn:#d2a54c; --warn-soft:#2e2717;
+  --ok:#7bb08f; --ok-soft:#1a2b21;
+}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:"Source Serif 4",Georgia,serif;font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin:0 auto;padding:0 28px 96px}
+.prose{max-width:68ch}
+h1,h2,h3,h4,.eyebrow,th,.chip,.badge{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+.mono,code,pre{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+.eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+
+header.mast{border-bottom:2px solid var(--ink);padding:44px 0 24px}
+.mast .eyebrow{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.mast .eyebrow .dot{width:5px;height:5px;border-radius:50%;background:var(--flare);display:inline-block}
+h1{font-size:clamp(38px,6.2vw,62px);line-height:1.02;letter-spacing:-.025em;font-weight:700;margin:14px 0 0;text-wrap:balance}
+.standfirst{font-size:19px;color:var(--ink-2);max-width:62ch;margin:16px 0 0}
+
+.metastrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));border-bottom:1px solid var(--rule);margin-bottom:52px}
+.metastrip div{padding:16px 20px 18px;border-right:1px solid var(--rule)}
+.metastrip div:last-child{border-right:none}
+.metastrip dt{font-family:Archivo,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin:0 0 5px}
+.metastrip dd{margin:0;font-size:15px;line-height:1.4;color:var(--ink)}
+
+section{margin:0 0 72px}
+.sechead{display:flex;align-items:baseline;gap:16px;border-bottom:1px solid var(--rule-strong);padding-bottom:10px;margin-bottom:26px}
+.secnum{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--flare);font-weight:500;padding-top:4px}
+h2{font-size:clamp(25px,3.4vw,33px);line-height:1.12;letter-spacing:-.018em;font-weight:700;margin:0;text-wrap:balance}
+h3{font-size:18px;font-weight:600;margin:38px 0 12px;letter-spacing:-.008em}
+h3:first-child{margin-top:0}
+p{margin:0 0 16px}
+strong{font-weight:600}
+code{font-size:.85em;background:var(--surface-2);padding:1px 5px;border-radius:3px;color:var(--ink)}
+
+/* field group header */
+.grouprow{
+  display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  padding:16px 16px 10px;background:var(--surface);border-bottom:1px solid var(--rule);
+}
+.grouprow .gname{font-family:Archivo,sans-serif;font-size:11px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--flare)}
+.grouprow .gnote{font-size:13.5px;color:var(--ink-3)}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--rule);background:var(--surface);margin:0 0 14px}
+table{border-collapse:collapse;width:100%;min-width:680px;font-size:14.5px}
+th{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:13px 16px;border-bottom:1px solid var(--rule-strong);white-space:nowrap;background:var(--surface)}
+td{padding:11px 16px;border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.45;color:var(--ink-2)}
+tr:last-child td{border-bottom:none}
+td.f{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink);white-space:nowrap;font-weight:500}
+td.t{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+td.lead{color:var(--ink);font-weight:600;font-family:Archivo,sans-serif;font-size:14px}
+td .sub{display:block;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3);margin-top:4px;white-space:normal}
+
+.chip{display:inline-block;font-size:9.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;padding:3px 7px;border-radius:2px;white-space:nowrap}
+.chip.req{background:var(--crit-soft);color:var(--crit)}
+.chip.key{background:var(--accent-soft);color:var(--accent-ink)}
+.chip.opt{background:var(--surface-2);color:var(--ink-3)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.crit{background:var(--crit-soft);color:var(--crit)}
+
+pre{
+  background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);
+  padding:18px 20px;overflow-x:auto;font-size:12.5px;line-height:1.65;margin:0 0 14px;color:var(--ink-2);
+}
+pre b{color:var(--ink);font-weight:500}
+pre i{color:var(--ink-3);font-style:normal}
+
+.callout{border:1px solid var(--rule);border-left:3px solid var(--flare);background:var(--surface);padding:18px 22px;margin:22px 0}
+.callout .eyebrow{color:var(--flare);margin-bottom:6px;display:block}
+.callout p{margin:0;font-size:15.5px;color:var(--ink-2)}
+.callout p b{color:var(--ink)}
+.caption{font-size:13.5px;color:var(--ink-3);margin:0 0 34px;max-width:68ch}
+
+ul.plain{margin:0 0 16px;padding-left:20px}
+ul.plain li{margin-bottom:8px;color:var(--ink-2)}
+ul.plain li::marker{color:var(--rule-strong)}
+ul.plain li b{color:var(--ink);font-weight:600}
+
+footer{border-top:2px solid var(--ink);padding-top:22px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+footer p{font-size:13.5px;color:var(--ink-3);margin:0;max-width:56ch}
+:focus-visible{outline:2px solid var(--flare);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow"><span>Silver layer spec</span><span class="dot"></span><span>Greenwashing Signal Pipeline</span><span class="dot"></span><span>v1.0</span></div>
+  <h1>Fact and Claim Schema</h1>
+  <p class="standfirst">Hai bảng Iceberg ở tầng Silver: <b>financial_fact</b> cho số định lượng trong báo cáo tài chính, <b>esg_claim</b> cho disclosure theo GRI. Grain khác nhau, vòng đời khác nhau, không gộp.</p>
+</header>
+
+<dl class="metastrip">
+  <div><dt>Silver A grain</dt><dd>1 row = 1 ô số trong báo cáo</dd></div>
+  <div><dt>Silver B grain</dt><dd>1 row = 1 disclosure / claim</dd></div>
+  <div><dt>Partition</dt><dd class="mono">fiscal_year</dd></div>
+  <div><dt>Sort order</dt><dd class="mono">(company_id, period_end)</dd></div>
+</dl>
+
+<section>
+  <div class="sechead"><span class="secnum">§0</span><h2>Ba nguyên tắc chi phối mọi field</h2></div>
+  <ul class="plain">
+    <li><b>Không value nào tồn tại mà thiếu <code>source_ref</code>.</b> Field này không nullable. Một con số không truy được về trang và đoạn text nguyên văn thì không được phép vào Silver.</li>
+    <li><b>Luôn lưu cả dạng reported lẫn dạng canonical.</b> <code>line_item_reported</code> đứng cạnh <code>line_item_canonical</code>, <code>unit_reported</code> đứng cạnh <code>unit_canonical</code>. Normalize là một bước có thể sai và cần audit — đừng ghi đè bản gốc.</li>
+    <li><b>Mỗi row mang dấu vết cách nó được sinh ra.</b> <code>extractor_version</code>, <code>model_id</code>, <code>prompt_hash</code>, <code>schema_version</code>. Không có bốn cột này thì không diff được hai extraction run, và không có regression report.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§1</span><h2>Silver A — financial_fact</h2></div>
+  <p class="prose">Grain: <b>một ô số trong một bảng của một tài liệu</b>. Không phải một dòng báo cáo, không phải một công ty-năm. Chọn grain nhỏ nhất vì mọi thứ khác đều aggregate lên được, còn chiều ngược lại thì không.</p>
+
+  <div class="tablewrap">
+    <div class="grouprow"><span class="gname">Identity</span><span class="gnote">khoá và truy nguyên</span></div>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td class="f">fact_id</td><td class="t">string</td><td><span class="chip key">PK</span> Hash tất định của <span class="mono">(doc_hash, page_no, table_id, row_idx, col_idx)</span> — cùng một ô luôn ra cùng id, nên re-run là idempotent.</td></tr>
+        <tr><td class="f">run_id</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> ID của extraction run. Đây là thứ cho phép diff hai lần chạy và rollback theo lô.</td></tr>
+        <tr><td class="f">doc_hash</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> SHA-256 của PDF gốc. Cũng chính là key trên S3 Bronze.</td></tr>
+        <tr><td class="f">company_id</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> LEI nếu có, fallback id nội bộ. Đừng dùng tên làm khoá.</td></tr>
+        <tr><td class="f">company_name_reported</td><td class="t">string</td><td>Tên như in trên tài liệu. Giữ để audit việc map entity.</td></tr>
+        <tr><td class="f">report_type</td><td class="t">enum</td><td><span class="mono">annual_report · form_10k · form_20f · interim · sustainability · integrated</span></td></tr>
+        <tr><td class="f">statement</td><td class="t">enum</td><td><span class="mono">income_statement · balance_sheet · cash_flow · equity · segment_note · other_note</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <div class="grouprow"><span class="gname">Line item</span><span class="gnote">reported ↔ canonical, có confidence riêng</span></div>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td class="f">line_item_reported</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> Nhãn nguyên văn: <i>“Sales and other operating revenue”</i>.</td></tr>
+        <tr><td class="f">line_item_canonical</td><td class="t">string</td><td>Tag chuẩn: <span class="mono">us-gaap:Revenues</span>. Nullable — thà để trống còn hơn map ẩu.</td></tr>
+        <tr><td class="f">canonical_taxonomy</td><td class="t">enum</td><td><span class="mono">us-gaap · ifrs-full · internal</span></td></tr>
+        <tr><td class="f">mapping_confidence</td><td class="t">float</td><td>Điểm của bước canonicalization, <b>tách riêng</b> khỏi confidence của bước đọc số. Hai bước độc lập, sai độc lập.</td></tr>
+        <tr><td class="f">statement_depth</td><td class="t">int</td><td>Cấp thụt đầu dòng trong bảng. Cần để dựng lại quan hệ tổng–thành phần cho checksum.</td></tr>
+        <tr><td class="f">parent_fact_id</td><td class="t">string</td><td>Dòng tổng mà dòng này đóng góp vào. Nullable.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <div class="grouprow"><span class="gname">Period</span><span class="gnote">fiscal ≠ calendar, restated đứng cạnh gốc</span></div>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td class="f">period_start</td><td class="t">date</td><td><span class="chip req">Bắt buộc</span> Không lưu “FY2024” dạng chuỗi — nó vô nghĩa khi so giữa các công ty.</td></tr>
+        <tr><td class="f">period_end</td><td class="t">date</td><td><span class="chip req">Bắt buộc</span></td></tr>
+        <tr><td class="f">period_duration_months</td><td class="t">int</td><td>3 · 6 · 12. Bắt được cả trường hợp năm tài chính chuyển đổi bị rút ngắn.</td></tr>
+        <tr><td class="f">period_basis</td><td class="t">enum</td><td><span class="chip req">Bắt buộc</span> <span class="mono">audited · unaudited · restated · pro_forma</span> — bỏ cột này là mất luôn tín hiệu restatement.</td></tr>
+        <tr><td class="f">is_comparative</td><td class="t">boolean</td><td>Cột so sánh kỳ trước nằm trong báo cáo kỳ này. Chính là nguyên liệu cho YoY continuity check.</td></tr>
+        <tr><td class="f">fiscal_year</td><td class="t">int</td><td><span class="chip key">Partition</span> Suy ra từ <code>period_end</code>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <div class="grouprow"><span class="gname">Value</span><span class="gnote">nơi lỗi 1000× ẩn náu</span></div>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td class="f">value_raw_text</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> Nguyên văn như in: <span class="mono">"(1,234)"</span>. Không bao giờ ghi đè.</td></tr>
+        <tr><td class="f">value</td><td class="t">decimal(38,6)</td><td><span class="chip req">Bắt buộc</span> Đã áp scale và sign. <b>Không dùng float</b> — sai số nhị phân trên số tiền là lỗi không thể bào chữa.</td></tr>
+        <tr><td class="f">declared_precision</td><td class="t">int</td><td>Số chữ số có nghĩa mà tài liệu tự khai. Đây là ngưỡng so sánh khi eval — không phải tolerance tự đặt.</td></tr>
+        <tr><td class="f">scale_multiplier</td><td class="t">int</td><td><span class="chip req">Bắt buộc</span> <span class="mono">1 · 1e3 · 1e6 · 1e9</span></td></tr>
+        <tr><td class="f">scale_source</td><td class="t">enum</td><td><span class="chip crit">Critical</span> <span class="mono">statement_header · column_header · footnote · row_label · inferred</span> — <b>inferred phải bị coi là mùi lỗi</b> và gắn cờ review.</td></tr>
+        <tr><td class="f">scale_source_ref</td><td class="t">struct</td><td>Trỏ tới đúng trang và đoạn text chứa câu khai scale. Thường nằm cách đó vài trang.</td></tr>
+        <tr><td class="f">currency</td><td class="t">string</td><td>ISO 4217. Oil &amp; gas trộn USD / NOK / EUR trong cùng một tài liệu là chuyện thường.</td></tr>
+        <tr><td class="f">currency_source</td><td class="t">enum</td><td>Cùng bộ giá trị với <code>scale_source</code>.</td></tr>
+        <tr><td class="f">sign_rule_applied</td><td class="t">enum</td><td><span class="mono">as_printed · parenthesis_negative · less_prefix · outflow_negative</span></td></tr>
+        <tr><td class="f">is_nil</td><td class="t">boolean</td><td>Phân biệt <b>dấu gạch ngang = 0</b> với <b>không công bố</b>. Hai thứ này khác nhau và pipeline hay gộp làm một.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <div class="grouprow"><span class="gname">Provenance &amp; qualifier</span><span class="gnote">footnote là tín hiệu, không phải nhiễu</span></div>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td class="f">source_ref</td><td class="t">struct</td><td><span class="chip req">Bắt buộc</span> Xem §3. Không nullable, không ngoại lệ.</td></tr>
+        <tr><td class="f">groundedness_verified</td><td class="t">boolean</td><td><span class="chip crit">Gate</span> <code>verbatim_span</code> có thật sự xuất hiện trên trang đã khai hay không. <b>false thì không được merge vào main.</b></td></tr>
+        <tr><td class="f">footnote_refs</td><td class="t">array&lt;string&gt;</td><td>Các marker gắn với ô này: <span class="mono">["(3)", "*"]</span></td></tr>
+        <tr><td class="f">footnote_texts</td><td class="t">array&lt;string&gt;</td><td>Nội dung nguyên văn. <i>“excludes JV operations”</i> làm đổi hoàn toàn nghĩa của con số — đây chính là feature, không phải metadata.</td></tr>
+        <tr><td class="f">extraction_confidence</td><td class="t">float</td><td>Điểm của bước đọc số. Là đầu vào cho hybrid routing sang model mạnh hơn.</td></tr>
+        <tr><td class="f">xbrl_crosscheck</td><td class="t">struct</td><td><span class="mono">{matched: bool, xbrl_value: decimal, rel_delta: double}</span> — null với công ty không có XBRL. Đây là ground truth miễn phí cho công ty niêm yết.</td></tr>
+        <tr><td class="f">validation_flags</td><td class="t">array&lt;string&gt;</td><td><span class="mono">identity_break · yoy_discontinuity · mda_mismatch · scale_inferred · unit_outlier</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="caption">Ba cột cuối cùng của mỗi bảng đều giống nhau và bắt buộc: <code>extractor_version</code>, <code>model_id</code>, <code>prompt_hash</code>, <code>schema_version</code>, <code>ingested_at</code>.</p>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§2</span><h2>Silver B — esg_claim</h2></div>
+  <p class="prose">Grain: <b>một disclosure hoặc một claim</b>. Khác Silver A ở chỗ giá trị có thể <i>không phải là số</i> — một mục tiêu, một câu mô tả phương pháp, hay một ô trong GRI content index đều là claim hợp lệ.</p>
+
+  <div class="tablewrap">
+    <div class="grouprow"><span class="gname">GRI mapping</span><span class="gnote">version drift là chuyện chắc chắn xảy ra</span></div>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td class="f">claim_id</td><td class="t">string</td><td><span class="chip key">PK</span> Hash của <span class="mono">(doc_hash, page_no, gri_code, claim_ordinal)</span></td></tr>
+        <tr><td class="f">gri_standard_version</td><td class="t">enum</td><td><span class="chip req">Bắt buộc</span> <span class="mono">GRI-2016 · GRI-2021 · GRI-11-2021</span> — cùng một chỉ tiêu đổi cách disclose giữa các version, nên tuyệt đối không hardcode.</td></tr>
+        <tr><td class="f">gri_code</td><td class="t">string</td><td>Mã đã chuẩn hoá: <span class="mono">305-1</span>, <span class="mono">11.1.5</span></td></tr>
+        <tr><td class="f">gri_code_reported</td><td class="t">string</td><td>Mã <b>công ty tự khai</b> trong content index. Lệch với <code>gri_code</code> là tín hiệu.</td></tr>
+        <tr><td class="f">disclosure_status_claimed</td><td class="t">enum</td><td><span class="mono">reported · partially_reported · omitted · not_applicable</span> — lấy từ content index.</td></tr>
+        <tr><td class="f">disclosure_verified</td><td class="t">boolean</td><td><span class="chip crit">Tín hiệu</span> Đi theo page reference công ty khai và kiểm tra disclosure có thật trên trang đó. <b>claimed = reported nhưng verified = false</b> là tín hiệu rẻ và chính xác cao nhất trong toàn hệ thống.</td></tr>
+        <tr><td class="f">omission_reason</td><td class="t">string</td><td>GRI yêu cầu nêu lý do khi omit. Không nêu, hoặc nêu mơ hồ, cũng là tín hiệu.</td></tr>
+        <tr><td class="f">claim_type</td><td class="t">enum</td><td><span class="mono">quantitative · target · narrative · methodology</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <div class="grouprow"><span class="gname">Quantitative</span><span class="gnote">chỉ khi claim_type = quantitative</span></div>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td class="f">value</td><td class="t">decimal(38,6)</td><td>Đã quy về <code>unit_canonical</code>.</td></tr>
+        <tr><td class="f">value_raw_text</td><td class="t">string</td><td>Nguyên văn, giữ nguyên.</td></tr>
+        <tr><td class="f">unit_reported</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> Như in: <span class="mono">"ktCO2e"</span>, <span class="mono">"kg CO2e/boe"</span></td></tr>
+        <tr><td class="f">unit_canonical</td><td class="t">enum</td><td><span class="chip crit">Critical</span> <span class="mono">tCO2e · tCO2e_per_boe · tCO2e_per_musd_revenue · m3_water · t_waste · pct</span></td></tr>
+        <tr><td class="f">unit_conversion_factor</td><td class="t">decimal</td><td>Lưu tường minh. Nhầm giữa tCO2e / ktCO2e / MtCO2e là lỗi 1000× — cùng loại với lỗi scale ở Silver A.</td></tr>
+        <tr><td class="f">is_intensity_metric</td><td class="t">boolean</td><td>Cờ trực tiếp cho tín hiệu <i>“chỉ công bố intensity trong khi absolute tăng”</i>.</td></tr>
+        <tr><td class="f">denominator_basis</td><td class="t">string</td><td>Với intensity: mẫu số là gì (boe sản xuất, doanh thu, nhân sự). Đổi mẫu số giữa các năm cũng là một cách làm đẹp số.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <div class="grouprow"><span class="gname">Scope &amp; boundary</span><span class="gnote">nơi phần lớn greenwashing thực sự diễn ra</span></div>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td class="f">scope</td><td class="t">enum</td><td><span class="mono">scope_1 · scope_2_location · scope_2_market · scope_3 · combined · not_applicable</span> — tách location và market based, gộp là mất tín hiệu.</td></tr>
+        <tr><td class="f">scope3_categories</td><td class="t">array&lt;int&gt;</td><td>1–15 theo GHG Protocol. Với oil &amp; gas, <b>category 11 (use of sold products)</b> là phần lớn phát thải — thiếu nó thì con số Scope 3 gần như vô nghĩa.</td></tr>
+        <tr><td class="f">boundary</td><td class="t">enum</td><td><span class="mono">equity_share · operational_control · financial_control · unspecified</span></td></tr>
+        <tr><td class="f">boundary_changed_vs_prior</td><td class="t">boolean</td><td><span class="chip crit">Tín hiệu</span> Đổi boundary mà không restate số cũ là thủ pháp kinh điển.</td></tr>
+        <tr><td class="f">baseline_year</td><td class="t">int</td><td></td></tr>
+        <tr><td class="f">baseline_year_changed_vs_prior</td><td class="t">boolean</td><td><span class="chip crit">Tín hiệu</span> Rebasing năm gốc để phần trăm giảm trông đẹp hơn.</td></tr>
+        <tr><td class="f">offsets_included</td><td class="t">boolean</td><td>Kèm <code>value_gross</code> và <code>value_net</code> khi tách được. Khoảng cách giữa hai số là mức độ phụ thuộc offset.</td></tr>
+        <tr><td class="f">is_restated</td><td class="t">boolean</td><td>Kèm <code>restated_from_value</code>. Tần suất restate tự nó là feature.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <div class="grouprow"><span class="gname">Target &amp; assurance</span><span class="gnote">khoảng cách giữa lời hứa và cam kết</span></div>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td class="f">target_year</td><td class="t">int</td><td>Chỉ với <span class="mono">claim_type = target</span></td></tr>
+        <tr><td class="f">target_type</td><td class="t">enum</td><td><span class="mono">absolute · intensity · net_zero · carbon_neutral</span> — <i>carbon neutral</i> và <i>net zero</i> không đồng nghĩa, đừng gộp.</td></tr>
+        <tr><td class="f">interim_target_present</td><td class="t">boolean</td><td>Mục tiêu 2050 không có mốc trung gian nào là mục tiêu không ai phải chịu trách nhiệm.</td></tr>
+        <tr><td class="f">target_covers_scope3</td><td class="t">boolean</td><td>Với oil &amp; gas đây gần như là câu hỏi duy nhất đáng hỏi về một mục tiêu.</td></tr>
+        <tr><td class="f">assurance_level</td><td class="t">enum</td><td><span class="mono">none · limited · reasonable</span></td></tr>
+        <tr><td class="f">assurance_provider</td><td class="t">string</td><td></td></tr>
+        <tr><td class="f">assurance_covers_this_claim</td><td class="t">boolean</td><td>Assurance thường chỉ phủ vài chỉ tiêu chứ không phủ cả báo cáo. Gán ở mức claim, không gán ở mức tài liệu.</td></tr>
+        <tr><td class="f">claim_text</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> Nguyên văn. Với <span class="mono">claim_type = narrative</span> thì đây là toàn bộ nội dung.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§3</span><h2>source_ref — struct dùng chung</h2></div>
+  <p class="prose">Cùng một định nghĩa cho cả hai bảng. Đây là thứ biến hệ thống từ “một model nói vậy” thành “có thể mở đúng trang ra đối chiếu”.</p>
+<pre><b>struct source_ref</b> {
+  page_no        int        <i>-- 1-indexed, theo PDF gốc</i>
+  bbox           array&lt;double&gt;   <i>-- [x0,y0,x1,y1] toạ độ chuẩn hoá</i>
+  verbatim_span  string     <i>-- đoạn text nguyên văn chứa giá trị</i>
+  table_id       string     <i>-- null nếu trích từ narrative</i>
+  row_idx        int
+  col_idx        int
+  col_header_path array&lt;string&gt;  <i>-- ["Revenue by segment","2024"] — multi-level header</i>
+  extraction_path enum      <i>-- native_text | ocr | vlm_image</i>
+}</pre>
+  <div class="callout">
+    <span class="eyebrow">Vì sao col_header_path là array</span>
+    <p>Header lồng nhau là nguồn lỗi số một của extraction bảng tài chính — đúng số nhưng gán sai năm. Lưu <b>cả đường dẫn header</b> thay vì một chuỗi phẳng khiến lỗi này <b>kiểm tra được bằng máy</b>: nếu <code>period_end</code> không khớp với phần tử cuối của <code>col_header_path</code>, gắn cờ ngay, không cần người đọc lại.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§4</span><h2>Validation gate trước khi merge vào main</h2></div>
+  <p class="prose">Chạy trên Iceberg branch. Fail ở mức <b>blocker</b> thì branch không được fast-forward.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Kiểm tra</th><th>Quy tắc</th><th>Mức</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">Groundedness</td><td><code>verbatim_span</code> phải xuất hiện trên <code>page_no</code> đã khai. String-match thuần.</td><td><span class="chip crit">Blocker</span></td></tr>
+      <tr><td class="lead">Source completeness</td><td>Mọi row có <code>value</code> non-null đều phải có <code>source_ref</code> đầy đủ.</td><td><span class="chip crit">Blocker</span></td></tr>
+      <tr><td class="lead">Accounting identity</td><td>assets = liabilities + equity · Σ segment = total · reconciliation cash flow<span class="sub">label-free, chạy được trên toàn corpus</span></td><td><span class="chip crit">Blocker</span></td></tr>
+      <tr><td class="lead">Scope arithmetic</td><td>Σ thành phần Scope 1 + 2 = tổng đã công bố, trong sai số làm tròn đã khai.</td><td><span class="chip crit">Blocker</span></td></tr>
+      <tr><td class="lead">Unit sanity</td><td>Giá trị lệch &gt; 100× so với median lịch sử cùng <code>(company_id, gri_code)</code> → gần như chắc chắn là lỗi scale.</td><td><span class="chip warn">Review</span></td></tr>
+      <tr><td class="lead">XBRL crosscheck</td><td>Với công ty có XBRL: <code>rel_delta</code> phải bằng 0 tại <code>declared_precision</code>.</td><td><span class="chip warn">Review</span></td></tr>
+      <tr><td class="lead">YoY continuity</td><td>Cột comparative năm nay = cột current năm trước. Lệch ⇒ hoặc lỗi extraction, hoặc restatement.<span class="sub">một phép kiểm, hai giá trị — nếu là restatement thì đẩy sang feature store</span></td><td><span class="chip warn">Review</span></td></tr>
+      <tr><td class="lead">Header–period khớp</td><td><code>period_end</code> phải nhất quán với <code>col_header_path</code>.</td><td><span class="chip warn">Review</span></td></tr>
+      <tr><td class="lead">GRI index đối soát</td><td><code>disclosure_status_claimed = reported</code> nhưng <code>disclosure_verified = false</code>.</td><td><span class="chip ok">Tín hiệu</span></td></tr>
+      <tr><td class="lead">MD&amp;A crosscheck</td><td>Số trong bảng vs số trong narrative.<span class="sub">false positive cao vì MD&amp;A hay trích adjusted / non-GAAP — chỉ là cờ, không phải lỗi</span></td><td><span class="chip ok">Tín hiệu</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§5</span><h2>DDL và quy tắc tiến hoá schema</h2></div>
+<pre>CREATE TABLE silver.financial_fact (
+  fact_id STRING, run_id STRING, doc_hash STRING,
+  company_id STRING, fiscal_year INT,
+  period_start DATE, period_end DATE, period_basis STRING,
+  line_item_reported STRING, line_item_canonical STRING,
+  value DECIMAL(38,6), value_raw_text STRING,
+  scale_multiplier BIGINT, scale_source STRING, currency STRING,
+  source_ref STRUCT&lt;...&gt;, groundedness_verified BOOLEAN,
+  footnote_texts ARRAY&lt;STRING&gt;, validation_flags ARRAY&lt;STRING&gt;,
+  extractor_version STRING, model_id STRING, prompt_hash STRING,
+  schema_version STRING, ingested_at TIMESTAMP
+)
+USING iceberg
+PARTITIONED BY (fiscal_year)          <i>-- KHÔNG partition theo company_id</i>
+TBLPROPERTIES (
+  'sort-order'='company_id ASC, period_end ASC',
+  'write.target-file-size-bytes'='134217728',
+  'format-version'='2'
+);</pre>
+  <ul class="plain">
+    <li><b>Chỉ thêm, không sửa.</b> Đổi nghĩa một cột đang tồn tại thì tạo cột mới và deprecate cột cũ — nếu không, snapshot cũ nói dối bạn khi time-travel.</li>
+    <li><b>Enum chỉ nới, không thu.</b> GRI ra version mới thì thêm giá trị; giá trị cũ ở lại vĩnh viễn vì snapshot cũ vẫn dùng chúng.</li>
+    <li><b><code>schema_version</code> nằm trên từng row, không phải ở table property.</b> Một bảng sẽ chứa nhiều thế hệ row cùng lúc — đó là trạng thái bình thường, không phải lỗi.</li>
+    <li><b>Backfill bằng branch, không bằng in-place update.</b> Re-extract vào branch, chạy §4, fast-forward. Snapshot cũ ở lại làm baseline để diff regression.</li>
+    <li><b>Lên lịch <code>rewrite_data_files</code>.</b> Pipeline này ghi nhiều lô nhỏ. Không compaction thì metadata phình và query chậm dần đều.</li>
+  </ul>
+</section>
+
+<footer>
+  <p>Silver layer spec cho Greenwashing Signal Pipeline — grain, provenance, validation gate và quy tắc tiến hoá schema.</p>
+  <p class="mono" style="font-size:12px">v1.0 · 15.09.2026</p>
+</footer>
+
+</div>

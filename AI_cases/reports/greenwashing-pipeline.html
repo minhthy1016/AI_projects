@@ -1,0 +1,568 @@
+<title>Greenwashing Signal Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+:root{
+  --paper:#f4f5f4;
+  --surface:#ffffff;
+  --surface-2:#e9ebea;
+  --ink:#141d1d;
+  --ink-2:#3f4c4c;
+  --ink-3:#6c7a79;
+  --rule:#d6dad9;
+  --rule-strong:#b6bdbc;
+  --accent:#1d4a56;
+  --accent-ink:#1d4a56;
+  --accent-soft:#e1ecee;
+  --flare:#a9581a;
+  --crit:#9b3128;
+  --crit-soft:#f3e2e0;
+  --warn:#83600f;
+  --warn-soft:#f3ecda;
+  --ok:#376046;
+  --ok-soft:#e2ece5;
+  --shadow:0 1px 2px rgba(20,29,29,.06),0 8px 24px -16px rgba(20,29,29,.25);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0d1315;
+    --surface:#141b1d;
+    --surface-2:#1b2427;
+    --ink:#e7ebea;
+    --ink-2:#a8b4b3;
+    --ink-3:#7a8887;
+    --rule:#283336;
+    --rule-strong:#3b494c;
+    --accent:#72b6c3;
+    --accent-ink:#8ec8d3;
+    --accent-soft:#16303a;
+    --flare:#d68c47;
+    --crit:#e08478;
+    --crit-soft:#33201d;
+    --warn:#d2a54c;
+    --warn-soft:#2e2717;
+    --ok:#7bb08f;
+    --ok-soft:#1a2b21;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0d1315;
+  --surface:#141b1d;
+  --surface-2:#1b2427;
+  --ink:#e7ebea;
+  --ink-2:#a8b4b3;
+  --ink-3:#7a8887;
+  --rule:#283336;
+  --rule-strong:#3b494c;
+  --accent:#72b6c3;
+  --accent-ink:#8ec8d3;
+  --accent-soft:#16303a;
+  --flare:#d68c47;
+  --crit:#e08478;
+  --crit-soft:#33201d;
+  --warn:#d2a54c;
+  --warn-soft:#2e2717;
+  --ok:#7bb08f;
+  --ok-soft:#1a2b21;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Source Serif 4",Georgia,"Times New Roman",serif;
+  font-size:17px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1060px;margin:0 auto;padding:0 28px 96px}
+.prose{max-width:68ch}
+
+h1,h2,h3,h4,.eyebrow,.mono,th,.chip,.stagename{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+.mono,code,.code{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+
+.eyebrow{
+  font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);
+}
+
+/* ---------- masthead ---------- */
+header.mast{border-bottom:2px solid var(--ink);padding:44px 0 24px;margin-bottom:0}
+.mast .eyebrow{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.mast .eyebrow .dot{width:5px;height:5px;border-radius:50%;background:var(--flare);display:inline-block}
+h1{
+  font-size:clamp(38px,6.2vw,62px);line-height:1.02;letter-spacing:-.025em;
+  font-weight:700;margin:14px 0 0;text-wrap:balance;
+}
+.standfirst{font-size:19px;color:var(--ink-2);max-width:60ch;margin:16px 0 0}
+
+.metastrip{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:0;border-bottom:1px solid var(--rule);margin-bottom:52px;
+}
+.metastrip div{padding:16px 20px 18px;border-right:1px solid var(--rule)}
+.metastrip div:last-child{border-right:none}
+.metastrip dt{font-family:Archivo,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin:0 0 5px}
+.metastrip dd{margin:0;font-size:15px;line-height:1.4;color:var(--ink)}
+
+/* ---------- sections ---------- */
+section{margin:0 0 72px}
+.sechead{display:flex;align-items:baseline;gap:16px;border-bottom:1px solid var(--rule-strong);padding-bottom:10px;margin-bottom:28px}
+.secnum{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--flare);font-weight:500;padding-top:4px}
+h2{font-size:clamp(25px,3.4vw,33px);line-height:1.12;letter-spacing:-.018em;font-weight:700;margin:0;text-wrap:balance}
+h3{font-size:19px;letter-spacing:-.008em;font-weight:600;margin:40px 0 12px;text-wrap:balance}
+h3:first-child{margin-top:0}
+p{margin:0 0 16px}
+a{color:var(--accent-ink)}
+strong{font-weight:600}
+code{font-size:.86em;background:var(--surface-2);padding:1px 5px;border-radius:3px;color:var(--ink)}
+
+/* ---------- verdict ---------- */
+.verdicts{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);margin:0 0 52px}
+@media(min-width:760px){.verdicts{grid-template-columns:1fr 1fr}}
+.verdict{background:var(--surface);padding:22px 24px 24px;display:flex;flex-direction:column;gap:8px}
+.verdict .tag{font-family:Archivo,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--flare)}
+.verdict h4{font-family:Archivo,sans-serif;font-size:17px;font-weight:600;margin:0;line-height:1.28;letter-spacing:-.01em;text-wrap:balance}
+.verdict p{margin:0;font-size:15px;color:var(--ink-2);line-height:1.5}
+
+/* ---------- pipeline diagram ---------- */
+.diagram{border:1px solid var(--rule);background:var(--surface);padding:24px 0 8px;margin:0 0 12px;overflow-x:auto}
+.flow{display:flex;align-items:stretch;gap:0;min-width:900px;padding:0 24px}
+.stage{flex:1;display:flex;flex-direction:column;gap:7px;padding:0 14px;border-left:1px solid var(--rule)}
+.stage:first-child{border-left:none;padding-left:0}
+.stage .layer{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.stagename{font-size:14.5px;font-weight:600;line-height:1.25;color:var(--ink)}
+.stage ul{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.stage li{font-family:"IBM Plex Mono",monospace;font-size:11px;line-height:1.45;color:var(--ink-2)}
+.stage.hot .stagename{color:var(--flare)}
+.stage.hot .layer{color:var(--flare)}
+.flowfoot{display:flex;gap:10px;align-items:flex-start;padding:18px 24px 14px;margin-top:18px;border-top:1px solid var(--rule);min-width:900px}
+.flowfoot .k{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--accent-ink);white-space:nowrap;padding-top:2px}
+.flowfoot .v{font-size:14px;color:var(--ink-2);line-height:1.45}
+.caption{font-size:13.5px;color:var(--ink-3);margin:0 0 36px;max-width:68ch}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto;border:1px solid var(--rule);background:var(--surface);margin:0 0 14px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14.5px}
+th{
+  font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);text-align:left;padding:13px 16px;border-bottom:1px solid var(--rule-strong);
+  white-space:nowrap;background:var(--surface);
+}
+td{padding:13px 16px;border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.46;color:var(--ink-2)}
+tr:last-child td{border-bottom:none}
+td.lead{color:var(--ink);font-weight:600;font-family:Archivo,sans-serif;font-size:14px}
+td .mono{font-size:12.5px;color:var(--ink-3);display:block;margin-top:3px}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- chips ---------- */
+.chip{
+  display:inline-block;font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  padding:3px 8px;border-radius:2px;white-space:nowrap;
+}
+.chip.crit{background:var(--crit-soft);color:var(--crit)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.acc{background:var(--accent-soft);color:var(--accent-ink)}
+
+/* ---------- ranked bottlenecks ---------- */
+.ranked{display:flex;flex-direction:column;gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.rank{background:var(--surface);display:grid;grid-template-columns:44px 1fr;gap:0;padding:18px 20px 20px}
+@media(min-width:820px){.rank{grid-template-columns:44px 1fr 108px}}
+.rank .n{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--ink-3);font-variant-numeric:tabular-nums;padding-top:3px}
+.rank .body h4{font-family:Archivo,sans-serif;font-size:16px;font-weight:600;margin:0 0 6px;letter-spacing:-.008em;line-height:1.3}
+.rank .body p{margin:0;font-size:15px;color:var(--ink-2);line-height:1.52;max-width:62ch}
+.rank .body p + p{margin-top:8px}
+.rank .body .fix{color:var(--ink);border-left:2px solid var(--flare);padding-left:11px;margin-top:10px;font-size:14.5px}
+.rank .sev{padding-top:4px}
+@media(max-width:819px){.rank .sev{grid-column:2;padding-top:12px}}
+
+/* ---------- ladder ---------- */
+ol.ladder{list-style:none;counter-reset:step;margin:0;padding:0;display:flex;flex-direction:column;gap:0}
+ol.ladder li{
+  counter-increment:step;display:grid;grid-template-columns:32px 1fr;gap:14px;
+  padding:14px 0;border-bottom:1px solid var(--rule);font-size:15.5px;color:var(--ink-2);
+}
+ol.ladder li:last-child{border-bottom:none}
+ol.ladder li::before{
+  content:counter(step);font-family:"IBM Plex Mono",monospace;font-size:12px;
+  color:var(--flare);font-variant-numeric:tabular-nums;padding-top:3px;
+}
+ol.ladder li b{color:var(--ink);font-weight:600;font-family:Archivo,sans-serif;font-size:15px}
+
+ul.plain{margin:0 0 16px;padding-left:20px}
+ul.plain li{margin-bottom:8px;color:var(--ink-2)}
+ul.plain li::marker{color:var(--rule-strong)}
+ul.plain li b{color:var(--ink);font-weight:600}
+
+.callout{
+  border:1px solid var(--rule);border-left:3px solid var(--accent);
+  background:var(--surface);padding:18px 22px;margin:22px 0;
+}
+.callout .eyebrow{color:var(--accent-ink);margin-bottom:6px;display:block}
+.callout p{margin:0;font-size:15.5px;color:var(--ink-2)}
+.callout p b{color:var(--ink)}
+
+footer{border-top:2px solid var(--ink);padding-top:22px;margin-top:8px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+footer p{font-size:13.5px;color:var(--ink-3);margin:0;max-width:56ch}
+
+:focus-visible{outline:2px solid var(--flare);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow"><span>Design review</span><span class="dot"></span><span>Oil &amp; Gas ESG</span><span class="dot"></span><span>15.09.2026</span></div>
+  <h1>Greenwashing Signal Pipeline</h1>
+  <p class="standfirst">Kiến trúc hạ tầng, bottleneck của tầng extraction, và cách thiết kế evaluation đủ cứng cho hệ thống đọc báo cáo tài chính &amp; ESG ngành dầu khí.</p>
+</header>
+
+<dl class="metastrip">
+  <div><dt>Corpus ước lượng</dt><dd class="num">~20–50k docs · vài chục GB</dd></div>
+  <div><dt>Chuẩn tham chiếu</dt><dd>GRI 11 — Oil &amp; Gas Sector 2021</dd></div>
+  <div><dt>Grain dữ liệu</dt><dd>Financial fact + ESG claim, tách riêng</dd></div>
+  <div><dt>Rủi ro chi phối</dt><dd>Cáo buộc sai → provenance là bắt buộc</dd></div>
+  <div><dt>Model serving</dt><dd>vLLM + Qwen3 self-host, hybrid routing</dd></div>
+</dl>
+
+<div class="verdicts">
+  <div class="verdict">
+    <span class="tag">Quyết định 01</span>
+    <h4>Đây không phải bài toán scale</h4>
+    <p>Vài chục GB. Giá trị của Iceberg ở đây là provenance, time travel và schema evolution — không phải throughput. Chọn stack theo lý do đó, đừng chọn theo kích thước tưởng tượng.</p>
+  </div>
+  <div class="verdict">
+    <span class="tag">Quyết định 02</span>
+    <h4>Một catalog of record duy nhất</h4>
+    <p>Databricks + Unity Catalog, hoặc AWS + Glue/S3 Tables. Không phải cả hai. Hai catalog song song là cách nhanh nhất để đứt lineage — thứ duy nhất khiến kết luận của bạn bảo vệ được.</p>
+  </div>
+  <div class="verdict">
+    <span class="tag">Quyết định 03</span>
+    <h4>Extraction không chạy trong Spark</h4>
+    <p>Workload IO/LLM-bound, per-document, retry nặng, bị rate-limit. Speculative execution của Spark sẽ nhân đôi LLM call và nhân đôi hoá đơn. Dùng queue + worker.</p>
+  </div>
+  <div class="verdict">
+    <span class="tag">Quyết định 04</span>
+    <h4>Không gọi nó là classifier</h4>
+    <p>Greenwashing không có ground truth. Đóng khung sản phẩm là <b>inconsistency scoring</b> có evidence link và trạng thái tranh chấp, human-in-the-loop trước khi publish.</p>
+  </div>
+</div>
+
+<section>
+  <div class="sechead"><span class="secnum">§1</span><h2>Kiến trúc: Iceberg, Databricks, AWS</h2></div>
+
+  <div class="diagram">
+    <div class="flow">
+      <div class="stage">
+        <span class="layer">Ingest</span>
+        <span class="stagename">S3 immutable</span>
+        <ul><li>key = content hash</li><li>PDF gốc, không sửa</li><li>manifest theo công ty/kỳ</li></ul>
+      </div>
+      <div class="stage hot">
+        <span class="layer">Compute · không Spark</span>
+        <span class="stagename">Extraction workers</span>
+        <ul><li>SQS → ECS Fargate</li><li>idempotency key</li><li>cache (page_hash, prompt_hash)</li></ul>
+      </div>
+      <div class="stage">
+        <span class="layer">Bronze</span>
+        <span class="stagename">Raw extraction</span>
+        <ul><li>layout + bbox + OCR conf</li><li>1 row / extraction event</li><li>extractor_version</li></ul>
+      </div>
+      <div class="stage">
+        <span class="layer">Silver A</span>
+        <span class="stagename">Financial fact</span>
+        <ul><li>line_item_canonical</li><li>value, currency, scale</li><li>sign_rule, source_ref</li></ul>
+      </div>
+      <div class="stage">
+        <span class="layer">Silver B</span>
+        <span class="stagename">ESG claim</span>
+        <ul><li>gri_code, claim_text</li><li>scope, boundary</li><li>assurance_level</li></ul>
+      </div>
+      <div class="stage">
+        <span class="layer">Gold</span>
+        <span class="stagename">Signal + evidence</span>
+        <ul><li>1 row / company-year</li><li>bảng evidence riêng</li><li>confidence, contested</li></ul>
+      </div>
+    </div>
+    <div class="flowfoot">
+      <span class="k">write-audit-publish</span>
+      <span class="v">Mỗi lần re-extraction ghi vào một <b>Iceberg branch</b>, chạy DQ check trên branch, rồi mới fast-forward vào <code>main</code>. Snapshot cũ giữ nguyên — đó chính là baseline để diff regression giữa hai phiên bản extractor.</span>
+    </div>
+  </div>
+  <p class="caption">Hai grain Silver tách rời: số định lượng và claim tự sự có vòng đời, schema và độ tin cậy khác nhau hoàn toàn. Nhồi chung là món nợ bạn sẽ trả khi build feature.</p>
+
+  <h3>Chọn stack</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Tiêu chí</th><th>AWS-native</th><th>Databricks</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">Hình dạng<span class="mono">stack tối thiểu</span></td><td>S3 Tables (managed Iceberg) + Athena + Step Functions + ECS/Batch + Bedrock</td><td>Unity Catalog + serverless SQL + job cluster + MLflow + Mosaic AI</td></tr>
+      <tr><td class="lead">Đáng chọn khi</td><td>Team 1–3 người. Không cluster để nuôi, chi phí gần tuyến tính theo query.</td><td>Bạn <em>thực sự</em> dùng MLflow để version prompt/model + track eval, và cần UC lineage cho audit.</td></tr>
+      <tr><td class="lead">Bẫy chi phí</td><td>Athena scan không partition prune; Glue crawler chạy thừa.</td><td>All-purpose cluster idle 24/7. Dùng serverless SQL + job cluster, không ngoại lệ.</td></tr>
+      <tr><td class="lead">Interop</td><td>Iceberg gốc, Databricks đọc external table được.</td><td>Bật Iceberg REST endpoint để Athena/Trino đọc — nếu không, bạn bị khoá.</td></tr>
+      <tr><td class="lead">Xử lý silver→gold</td><td colspan="2">Ở scale này <b>DuckDB / Polars / pyiceberg là đủ</b>. Spark chỉ khi thật sự cần — đừng dựng cụm cho 50 GB.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Iceberg — dùng đúng thứ đáng dùng</h3>
+  <ul class="plain">
+    <li><b>Branch + WAP.</b> Fit tự nhiên nhất cho pipeline re-extraction. Audit trước khi publish, không phải sau.</li>
+    <li><b>Time travel để diff extractor version.</b> Chạy lại corpus với model mới, diff snapshot cũ/mới theo từng field — đó chính là regression report của bạn, miễn phí.</li>
+    <li><b>Schema evolution.</b> GRI đổi, schema JSON của bạn sẽ đổi. Giữ cột <code>schema_version</code> ngay trên từng row.</li>
+    <li><b>Đừng partition theo <code>company_id</code>.</b> 300 công ty × 10 năm = rừng file nhỏ. Partition theo <code>fiscal_year</code>, sort order <code>(company_id, period)</code>, lên lịch <code>rewrite_data_files</code>. Small-file problem là cách chết phổ biến nhất của Iceberg ở scale nhỏ.</li>
+  </ul>
+
+  <h3>Bốn chỗ dễ vấp khi ghép stack</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Phản xạ thường gặp</th><th>Vì sao hỏng ở đây</th><th>Làm thay</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">Partition theo company / year / sector</td><td>300 công ty × 10 năm × sector → mỗi partition vài chục KB. Metadata phình, query chậm hơn chứ không nhanh hơn.</td><td>Partition <code>fiscal_year</code>, sort <code>(company_id, period)</code>, để hidden partitioning làm phần còn lại.</td></tr>
+      <tr><td class="lead">Bronze là S3 thuần, “không cần transaction”</td><td>Payload đúng là file, nhưng không có bảng trạng thái thì không re-run idempotent, không diff hai run, không biết tiền đi đâu.</td><td>File chứa payload + <b>một bảng Iceberg cho extraction event</b>: <span class="mono">run_id, doc_hash, page_no, model_id, prompt_hash, status, latency, cost, output_uri</span></td></tr>
+      <tr><td class="lead">Lambda fan-out theo từng PDF</td><td>Cap 15 phút, long-tail retry. Nặng hơn: trần throughput là <b>instance vLLM</b>, nên scale ra 1000 concurrent chỉ làm nghẽn queue và timeout hàng loạt.</td><td>SQS + ECS Fargate/Batch với concurrency cap khớp batch capacity của vLLM. Step Functions giữ lại ở mức document state machine.</td></tr>
+      <tr><td class="lead">UniForm để thoát lock-in</td><td>UniForm cho <b>đọc</b> qua Iceberg; format gốc vẫn là Delta và ghi vẫn qua Delta. Giảm lock-in phía consumer, không giảm phía producer.</td><td>Muốn thoát thật thì Iceberg thuần + Glue Catalog ngay từ đầu. Nessie cho branch nhiều bảng cùng lúc, nhưng phải nuôi thêm service — ở scale này Iceberg branch + một <code>run_id</code> xuyên suốt là đủ.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Model serving: vLLM + Qwen3 tự host</h3>
+  <p class="prose">Tự host là quyết định đúng về chi phí và throughput. Nhưng nói rõ một điều để khỏi ràng buộc nhầm: báo cáo tài chính và ESG đều là <b>tài liệu công bố công khai</b> — lý do self-host ở đây không phải data residency, nên đừng để lập luận “nhạy cảm” chặn việc dùng managed model cho nhánh khó.</p>
+  <ul class="plain">
+    <li><b>Bật guided decoding</b> (xgrammar / outlines trong vLLM) để ép JSON schema ngay lúc decode. Đây là accuracy miễn phí và nó xoá phần lớn nhu cầu parse-rồi-sửa phía sau.</li>
+    <li><b>Qwen3-VL hay text-only là quyết định định hình cả pipeline.</b> Sustainability report là tài liệu thiết kế — số nằm trong chart, trang xoay, infographic. Text-only nghĩa là bắt buộc có nhánh VLM/OCR riêng, không né được.</li>
+    <li><b>Hybrid routing theo confidence.</b> Qwen3 chạy ~90% trang, phần low-confidence route sang model mạnh hơn. Rẻ hơn chạy model lớn toàn bộ, trần cao hơn chạy model nhỏ toàn bộ.</li>
+    <li><b>Điều kiện để routing hoạt động</b> là mỗi field phải có confidence và quyền abstain. Không có hai thứ đó thì không biết route cái gì — thêm một lý do cho groundedness check ở §3.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§2</span><h2>Ranh giới giữa các agent skill</h2></div>
+  <p class="prose">A / B / C map đúng, nhưng ranh giới giữa chúng phải là <b>hợp đồng</b>, không phải quy ước. A xuất artifact JSON đã validate kèm <code>schema_version</code> và provenance. B chỉ đọc silver/gold — không bao giờ chạm PDF. C chỉ đọc gold + evidence index.</p>
+  <p class="prose">Một cám dỗ nên tránh ở skill A: <b>phân loại template rồi rẽ nhánh prompt</b>. Nghe hợp lý, nhưng nó tạo ra N pipeline phải nuôi và template mới là phải retrain classifier. Field-driven extraction với một canonical target schema + retrieval đúng trang vốn đã template-agnostic. Giữ few-shot theo template family làm <i>fallback</i> cho nhóm nào cứ fail, đừng đặt classifier làm tầng kiến trúc số một.</p>
+
+  <div class="callout">
+    <span class="eyebrow">Luật cứng cho skill C</span>
+    <p><b>Chatbot không được tự tính metric tài chính từ text nó retrieve được.</b> Nó gọi tool query gold table qua một metric API cố định, hoặc text-to-SQL bị giới hạn schema. Một con số bịa trong sản phẩm cáo buộc greenwashing giết cả product lẫn phòng pháp chế.</p>
+  </div>
+
+  <h3>Tín hiệu nên làm trước</h3>
+  <p class="prose">Rẻ nhất và chính xác cao nhất: <b>đối soát GRI content index</b>. Parse bảng index, đi theo page reference công ty tự khai, kiểm tra disclosure đó có thật trên trang đó không. Tỷ lệ “khai reported nhưng trang trỏ tới trống” cao đến bất ngờ, và đây là kiểm tra thuần cơ học.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Tín hiệu</th><th>Cách phát hiện</th><th>Nguồn đối chiếu</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">Baseline rebasing</td><td>Năm gốc của mục tiêu giảm phát thải đổi giữa hai kỳ báo cáo mà không restate</td><td>Sustainability report n−1 vs n</td></tr>
+      <tr><td class="lead">Intensity che absolute</td><td>Chỉ công bố tCO2e/boe trong khi tổng tuyệt đối tăng</td><td>Silver B, cùng công ty, trục thời gian</td></tr>
+      <tr><td class="lead">Divestment-as-decarb</td><td>Mức giảm phát thải khớp với tài sản đã bán trong kỳ</td><td>Thuyết minh disposal — Silver A</td></tr>
+      <tr><td class="lead">Thu hẹp Scope 3</td><td>Boundary đổi (equity share ↔ operational control) không restate số cũ</td><td>Footnote linkage</td></tr>
+      <tr><td class="lead">Claim–capital gap</td><td>Mật độ narrative về chuyển dịch năng lượng vs capex thực cho low-carbon</td><td>Silver A + Silver B</td></tr>
+      <tr><td class="lead">Assurance mỏng</td><td>Limited thay vì reasonable, và chỉ vài chỉ tiêu được đảm bảo</td><td>Assurance statement</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="caption">Label proxy khi cần huấn luyện: enforcement action (SEC climate disclosure, ACCC, ASA), litigation, restatement, điểm InfluenceMap/CDP. Không có cái nào là ground truth thật — chúng chỉ là tín hiệu yếu có kiểm chứng.</p>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§3</span><h2>Bottleneck extraction, xếp theo mức sát thương</h2></div>
+  <p class="prose" style="margin-bottom:26px">Bốn thứ thường được nêu — chunking, giới hạn context, parse, đơn vị — đều đúng, nhưng xếp sai thứ tự. Đây là thứ tự theo severity thực tế.</p>
+
+  <div class="ranked">
+
+    <div class="rank">
+      <span class="n">01</span>
+      <div class="body">
+        <h4>Sai đơn vị / scale — lỗi 1000×</h4>
+        <p>“(in millions, except per share data)” nằm ở header cách đó ba trang, hoặc trong column header, hoặc trong footnote. ESG còn tệ hơn: tCO2e / ktCO2e / MtCO2e trộn lẫn trong cùng một báo cáo.</p>
+        <p class="fix">Bắt buộc có field <code>scale_source</code> ghi lại multiplier lấy từ đâu. Đo unit-error rate <b>riêng</b>, không gộp vào accuracy.</p>
+      </div>
+      <div class="sev"><span class="chip crit">Severity cao</span></div>
+    </div>
+
+    <div class="rank">
+      <span class="n">02</span>
+      <div class="body">
+        <h4>Lệch cell–header trong bảng</h4>
+        <p>Đây mới là nguồn lỗi số một trong thực tế, không phải parse. Multi-level header (<code>FY2024 | FY2023 restated</code>), merged cell, footnote marker, column span — kết quả là đúng số nhưng gán sai năm, loại lỗi im lặng nhất.</p>
+        <p class="fix">Không chunk bảng. Detect table region bằng layout model trước, extract nguyên bảng thành HTML grid. Vượt context thì cắt theo row-group và <b>lặp lại header</b>.</p>
+      </div>
+      <div class="sev"><span class="chip crit">Severity cao</span></div>
+    </div>
+
+    <div class="rank">
+      <span class="n">03</span>
+      <div class="body">
+        <h4>Hallucination im lặng</h4>
+        <p>Model đoán một con số thay vì trả về null. Trong sản phẩm này, null tốt hơn sai.</p>
+        <p class="fix">Mỗi value phải kèm <code>source_ref</code> gồm page + <b>verbatim substring</b>, rồi post-validate substring đó có thật sự tồn tại trên trang. String-match thuần, gần như miễn phí, và là món có ROI cao nhất toàn danh sách.</p>
+      </div>
+      <div class="sev"><span class="chip crit">Severity cao</span></div>
+    </div>
+
+    <div class="rank">
+      <span class="n">04</span>
+      <div class="body">
+        <h4>Sign convention</h4>
+        <p>Ngoặc đơn là âm; “less:”; dấu gạch ngang có thể là 0 hoặc N/A — hai thứ khác nhau; outflow trong cash flow.</p>
+        <p class="fix">Lưu đồng thời <code>raw_text</code>, <code>parsed_value</code> và <code>sign_rule_applied</code>.</p>
+      </div>
+      <div class="sev"><span class="chip warn">Severity vừa</span></div>
+    </div>
+
+    <div class="rank">
+      <span class="n">05</span>
+      <div class="body">
+        <h4>Period mapping</h4>
+        <p>Fiscal year ≠ calendar year. Cột comparative đảo thứ tự giữa các công ty. Cột restated đứng cạnh cột gốc.</p>
+        <p class="fix">Dùng period object tường minh: <code>(start, end, duration, basis)</code> với basis ∈ audited / unaudited / restated.</p>
+      </div>
+      <div class="sev"><span class="chip warn">Severity vừa</span></div>
+    </div>
+
+    <div class="rank">
+      <span class="n">06</span>
+      <div class="body">
+        <h4>Canonicalization line-item</h4>
+        <p>“Revenue” / “Total revenues and other income” / “Sales and other operating revenue” là cùng một thứ. Đây là bài toán ontology, không phải bài toán extraction.</p>
+        <p class="fix">Lấy taxonomy <code>us-gaap</code> / IFRS làm canonical tag, map nhãn công ty về tag. Đây cũng chính là chỗ finetune đáng tiền nhất.</p>
+      </div>
+      <div class="sev"><span class="chip warn">Severity vừa</span></div>
+    </div>
+
+    <div class="rank">
+      <span class="n">07</span>
+      <div class="body">
+        <h4>Footnote linkage — thứ hầu hết pipeline đánh rơi</h4>
+        <p>Một con số có footnote <span class="mono">(3)</span> ghi “excludes JV operations” thì chính cái qualifier đó <b>là</b> tín hiệu greenwashing, không phải nhiễu cần loại bỏ.</p>
+        <p class="fix">Extraction phải capture liên kết footnote như một quan hệ, không chỉ trích xuất con số.</p>
+      </div>
+      <div class="sev"><span class="chip acc">Khác biệt hoá</span></div>
+    </div>
+
+    <div class="rank">
+      <span class="n">08</span>
+      <div class="body">
+        <h4>ESG report là tài liệu thiết kế, không phải văn bản</h4>
+        <p>Infographic, số nằm trong ảnh chart, trang xoay, hai cột, sidebar. Một pipeline dùng chung cho cả annual report và sustainability report là thua từ đầu.</p>
+        <p class="fix">Page-type classifier route sang ba nhánh: native text / scanned / graphic-heavy.</p>
+      </div>
+      <div class="sev"><span class="chip warn">Severity vừa</span></div>
+    </div>
+
+    <div class="rank">
+      <span class="n">09</span>
+      <div class="body">
+        <h4>Giới hạn context trên tài liệu 300 trang</h4>
+        <p>Giải bằng field-driven, không phải document-driven.</p>
+        <p class="fix">Pass 1 rẻ: dựng document map (section → page range, table inventory, vị trí GRI index). Pass 2: với mỗi target field, retrieve đúng trang rồi mới extract.</p>
+      </div>
+      <div class="sev"><span class="chip ok">Giải được</span></div>
+    </div>
+
+    <div class="rank">
+      <span class="n">10</span>
+      <div class="body">
+        <h4>Idempotency và chi phí lặp lại</h4>
+        <p>Nếu re-run tốn tiền, bạn sẽ không dám lặp eval — và không lặp eval thì không cải thiện được gì.</p>
+        <p class="fix">Hash từng page; cache LLM call theo <code>(page_hash, prompt_hash, model_id)</code>. Re-run gần như bằng không. Đây là điều kiện sống còn, không phải tối ưu.</p>
+      </div>
+      <div class="sev"><span class="chip ok">Giải được</span></div>
+    </div>
+
+  </div>
+
+  <div class="callout">
+    <span class="eyebrow">Về chunking</span>
+    <p>Chunking là vấn đề của <b>skill C</b>, không phải skill A. Cho QnA: chunk theo section kèm breadcrumb header, bảng giữ nguyên khối <i>và</i> serialize thêm bản row-per-fact, hybrid BM25 + dense (BM25 cực quan trọng cho mã GRI dạng <code>305-3</code>), và <b>metadata filter cứng</b> theo company / year / report_type. Lỗi RAG phổ biến nhất trong domain này là nhiễm chéo công ty và năm — filter phải cứng, không phải soft re-rank.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§4</span><h2>Thiết kế evaluation đủ cứng</h2></div>
+  <p class="prose">Đừng báo cáo một con số accuracy. Chia theo error class, vì chúng lệch nhau hàng bậc về mức sát thương.</p>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Error class</th><th>Đo thế nào</th><th>Mức</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">Unit / scale error<span class="mono">luôn tách riêng</span></td><td>Giá trị đúng nhưng lệch 10³ hoặc 10⁶ sau khi normalize</td><td><span class="chip crit">Blocker</span></td></tr>
+      <tr><td class="lead">Hallucination rate</td><td>% value mà verbatim substring không tồn tại trên trang đã khai</td><td><span class="chip crit">Blocker</span></td></tr>
+      <tr><td class="lead">Period misassignment</td><td>Đúng số, sai kỳ hoặc sai cột restated</td><td><span class="chip crit">Blocker</span></td></tr>
+      <tr><td class="lead">Sign error</td><td>Lệch dấu sau khi áp <code>sign_rule</code></td><td><span class="chip warn">Nặng</span></td></tr>
+      <tr><td class="lead">Field exact match</td><td>Khớp chính xác sau normalize, ở đúng precision đã khai</td><td><span class="chip warn">Nặng</span></td></tr>
+      <tr><td class="lead">Abstention precision</td><td>Khi model nói “not found”, thực sự không có bao nhiêu %</td><td><span class="chip ok">Theo dõi</span></td></tr>
+      <tr><td class="lead">Coverage</td><td>% target field extract được trên mỗi loại tài liệu</td><td><span class="chip ok">Theo dõi</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="caption">Báo cáo song song hai khung: <b>per-field</b> và <b>per-document</b> — document chỉ đúng khi <i>toàn bộ</i> critical field đúng. Con số per-document sẽ thấp đến mức khó chịu; đó mới là con số gần business truth.</p>
+  <div class="callout">
+    <span class="eyebrow">Về numeric tolerance</span>
+    <p>Đừng áp tolerance tương đối cho financial line item. Precision <b>đã được khai báo</b> trong chính tài liệu (“in millions”), nên so sánh exact tại precision đó. Một ngưỡng kiểu ±2% sẽ nuốt luôn lỗi extraction thật ở các chữ số thấp. Tolerance chỉ dành cho <b>derived ratio</b> — intensity, margin — nơi sai số làm tròn thực sự cộng dồn. Tương tự, cross-check bảng vs MD&amp;A sinh false positive liên tục vì MD&amp;A hay trích số adjusted / non-GAAP: coi mismatch là <b>cờ để review</b>, không phải lỗi.</p>
+  </div>
+
+  <h3>Gold set phải stratify theo độ khó</h3>
+  <p class="prose">Random sample sẽ toàn case dễ và cho bạn ảo giác 95%. Phân tầng theo: native-text vs scanned · độ phức tạp bảng (single / multi-level / merged) · ngôn ngữ (Na Uy, Bồ Đào Nha, Ả Rập — các NOC) · scale bất thường · có cột restated · value mang footnote qualifier · value chỉ tồn tại trong chart.</p>
+
+  <h3>Ba nguồn label gần như miễn phí</h3>
+  <ul class="plain">
+    <li><b>XBRL / iXBRL.</b> SEC 10-K và ESEF EU đều có. Vừa là ground truth quy mô lớn, vừa là training data sẵn cho bài canonicalization. Đây là shortcut lớn nhất thường bị bỏ qua.</li>
+    <li><b>Accounting identity — label-free, chạy được trên toàn corpus.</b> assets = liabilities + equity; tổng segment = total; reconciliation cash flow; Scope 1 + 2 thành phần = total. Vừa là runtime validator vừa là tín hiệu eval unsupervised.</li>
+    <li><b>Year-over-year continuity.</b> Cột prior-year của báo cáo năm nay so với cột current-year của báo cáo năm trước. Lệch nghĩa là hoặc lỗi extraction, hoặc restatement — mà restatement chính là feature greenwashing. Một phép kiểm, hai giá trị.</li>
+  </ul>
+  <p class="prose">Thêm một <b>hard-negative set</b>: những trang <i>trông như</i> chứa field nhưng không — chữ “Revenue” trong phần MD&amp;A thay vì trong income statement. Nó test precision của retrieval, chỗ mà eval thông thường không chạm tới.</p>
+
+  <h3>Đừng annotate đều tay</h3>
+  <p class="prose">Nói “thiếu ground truth nên phải annotate thủ công” chỉ đúng một nửa, và tin nguyên vẹn thì ngân sách annotation sẽ đổ sai chỗ. Phần financial line item của công ty niêm yết gần như không cần người.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Nhóm dữ liệu</th><th>Nguồn label</th><th>Chi phí người</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">Financial line item — công ty niêm yết<span class="mono">Shell · Exxon · BP · Equinor · TotalEnergies · Chevron</span></td><td>SEC XBRL và ESEF iXBRL — máy đọc được, hàng chục nghìn fact</td><td><span class="chip ok">Gần như bằng 0</span></td></tr>
+      <tr><td class="lead">Financial line item — NOC<span class="mono">PVN · Petronas · Pertamina</span></td><td>Không có XBRL tương đương → phải annotate</td><td><span class="chip warn">Có</span></td></tr>
+      <tr><td class="lead">ESG quantitative</td><td>Không có chuẩn máy đọc. CDP đối chiếu được một phần nhưng không phủ hết.</td><td><span class="chip crit">Toàn bộ</span></td></tr>
+      <tr><td class="lead">Case khó có chủ đích<span class="mono">số trong infographic · footnote qualifier · cột restated · boundary change</span></td><td>Chỉ có người. Đây là chỗ đáng dồn 100% ngân sách.</td><td><span class="chip crit">Toàn bộ</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="caption">Eval cứng không phải vì nhiều mẫu, mà vì <b>chứa đúng những case làm bạn gãy</b>. XBRL cho bạn volume nhưng toàn case dễ — nó nâng độ tin cậy thống kê, không nâng độ khó.</p>
+
+  <h3>Thứ tự ROI khi cải thiện</h3>
+  <ol class="ladder">
+    <li><b>Layout / table detection.</b> Cải thiện ở đây kéo theo mọi thứ phía sau.</li>
+    <li><b>Routing + targeted retrieval.</b> Field-driven thay vì nhồi cả tài liệu.</li>
+    <li><b>Structured output.</b> JSON schema constraint ngay lúc decode, không phải parse sau.</li>
+    <li><b>Validator + repair loop.</b> Feed lỗi validator ngược lại model, chặn ở 2 vòng.</li>
+    <li><b>Rồi mới finetune</b> — và finetune model nhỏ để bắt chước output model lớn (distillation) nhằm <i>giảm chi phí</i>, không phải để tăng accuracy.</li>
+  </ol>
+  <p class="prose" style="margin-top:22px">Chỗ finetune thật sự đáng: <b>canonicalization line-item</b> và <b>phân loại GRI disclosure</b> — hai bài classification có sẵn hàng chục nghìn label từ XBRL. Mà hãy thử embedding + kNN trước đã; nhiều khi đủ và rẻ hơn năm mươi lần.</p>
+
+  <div class="callout">
+    <span class="eyebrow">Trần eval của phần narrative</span>
+    <p>Với Silver B, đo <b>inter-annotator agreement</b> trước tiên. Nếu người với người chỉ đồng ý ở mức κ ≈ 0.6 thì trần eval của bạn là 0.6, và mọi cải thiện báo cáo được bên trên ngưỡng đó đều là nhiễu.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§5</span><h2>Làm gì trước</h2></div>
+  <ol class="ladder">
+    <li><b>Groundedness check bằng string-match.</b> Một ngày công, cắt phần lớn hallucination.</li>
+    <li><b>Cache LLM call theo page hash.</b> Mở khoá khả năng lặp eval mà không sợ hoá đơn.</li>
+    <li><b>Kéo XBRL của các công ty niêm yết.</b> Có ngay gold set quy mô lớn trước khi thuê annotator.</li>
+    <li><b>Bật accounting-identity validator.</b> Chạy label-free trên toàn corpus, ra bản đồ chất lượng thật.</li>
+    <li><b>Chốt canonical taxonomy line-item.</b> Mọi thứ downstream phụ thuộc vào nó; đổi muộn rất đắt.</li>
+    <li><b>Dựng WAP branch trên Iceberg.</b> Từ đó mọi lần re-extraction đều diff được, không còn ghi đè mù.</li>
+  </ol>
+</section>
+
+<footer>
+  <p>Review kiến trúc cho hệ thống phát hiện greenwashing từ báo cáo tài chính và ESG ngành dầu khí — chuẩn tham chiếu GRI 11 (2021).</p>
+  <p class="mono" style="font-size:12px">15.09.2026</p>
+</footer>
+
+</div>

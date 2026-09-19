@@ -1,0 +1,305 @@
+{
+ "income_statement": {
+  "revenue": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 12379.4
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 13669.9
+   }
+  ],
+  "operating_expense": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 4115.8
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 4680.5
+   }
+  ],
+  "operating_profit": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 8263.6
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 8989.4
+   }
+  ],
+  "profit_before_tax": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 8048.7
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 8764.0
+   }
+  ],
+  "income_tax_expense": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 6221.0
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 7428.3
+   }
+  ],
+  "profit_loss": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 1827.7
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 1335.7
+   }
+  ]
+ },
+ "balance_sheet": {
+  "non_current_assets": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 36028.4
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 33906.8
+   }
+  ],
+  "cash_and_cash_equivalents": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 4146.9
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 3388.4
+   },
+   {
+    "data_period": "FY2022",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 2756.0
+   }
+  ],
+  "current_assets": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 6164.5
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 5139.7
+   }
+  ],
+  "total_assets": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 42192.9
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 39046.5
+   }
+  ],
+  "total_equity": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 12691.1
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 12362.2
+   },
+   {
+    "data_period": "FY2022",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 12427.5
+   }
+  ],
+  "non_current_liabilities": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 24987.8
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 21251.5
+   }
+  ],
+  "current_liabilities": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 4514.0
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 5432.9
+   }
+  ],
+  "total_liabilities": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 29501.7
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 26684.3
+   }
+  ],
+  "total_equity_and_liabilities": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 42192.9
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 39046.5
+   }
+  ]
+ },
+ "cash_flow_statement": {
+  "operating_activities": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 6422.6
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 5407.1
+   }
+  ],
+  "investing_activities": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": -5315.0
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": -3467.9
+   }
+  ],
+  "financing_activities": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": -284.2
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": -1308.5
+   }
+  ],
+  "net_change_in_cash": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 823.4
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 630.7
+   }
+  ],
+  "effect_of_exchange_rate": [
+   {
+    "data_period": "FY2024",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": -64.8
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "USD",
+    "scale": 1000000,
+    "value": 1.7
+   }
+  ]
+ },
+ "meta": {
+  "company": "Aker BP ASA",
+  "report_period": "FY2024",
+  "report_period_end_date": "2024-12-31"
+ }
+}

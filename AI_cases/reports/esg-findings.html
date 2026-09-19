@@ -1,0 +1,297 @@
+<title>The Scope 3 Gap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+:root{
+  --paper:#f4f5f4; --surface:#ffffff; --surface-2:#e9ebea;
+  --ink:#141d1d; --ink-2:#3f4c4c; --ink-3:#6c7a79;
+  --rule:#d6dad9; --rule-strong:#b6bdbc;
+  --accent:#1d4a56; --accent-ink:#1d4a56; --accent-soft:#e1ecee;
+  --flare:#a9581a;
+  --crit:#9b3128; --crit-soft:#f3e2e0;
+  --warn:#83600f; --warn-soft:#f3ecda;
+  --ok:#376046; --ok-soft:#e2ece5;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0d1315; --surface:#141b1d; --surface-2:#1b2427;
+  --ink:#e7ebea; --ink-2:#a8b4b3; --ink-3:#7a8887;
+  --rule:#283336; --rule-strong:#3b494c;
+  --accent:#72b6c3; --accent-ink:#8ec8d3; --accent-soft:#16303a;
+  --flare:#d68c47; --crit:#e08478; --crit-soft:#33201d;
+  --warn:#d2a54c; --warn-soft:#2e2717; --ok:#7bb08f; --ok-soft:#1a2b21;
+}}
+:root[data-theme="dark"]{
+  --paper:#0d1315; --surface:#141b1d; --surface-2:#1b2427;
+  --ink:#e7ebea; --ink-2:#a8b4b3; --ink-3:#7a8887;
+  --rule:#283336; --rule-strong:#3b494c;
+  --accent:#72b6c3; --accent-ink:#8ec8d3; --accent-soft:#16303a;
+  --flare:#d68c47; --crit:#e08478; --crit-soft:#33201d;
+  --warn:#d2a54c; --warn-soft:#2e2717; --ok:#7bb08f; --ok-soft:#1a2b21;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:"Source Serif 4",Georgia,serif;font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin:0 auto;padding:0 28px 96px}
+.prose{max-width:68ch}
+h1,h2,h3,h4,.eyebrow,th,.chip{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+.mono,code{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+.eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+header.mast{border-bottom:2px solid var(--ink);padding:44px 0 24px}
+.mast .eyebrow{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.mast .eyebrow .dot{width:5px;height:5px;border-radius:50%;background:var(--flare);display:inline-block}
+h1{font-size:clamp(38px,6.2vw,62px);line-height:1.02;letter-spacing:-.025em;font-weight:700;margin:14px 0 0;text-wrap:balance}
+.standfirst{font-size:19px;color:var(--ink-2);max-width:62ch;margin:16px 0 0}
+/* ── charts ────────────────────────────────────────────────────────────── */
+.chart{margin:26px 0 8px}
+.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.chart .cl{font-family:Archivo,sans-serif;font-size:12.5px;fill:var(--ink-2)}
+.chart .cv{font-family:"Roboto Mono",monospace;font-size:12.5px;fill:var(--ink);font-weight:600}
+.chart .cvf{font-family:"Roboto Mono",monospace;font-size:11.5px;fill:#fff;font-weight:600}
+.chart .cu{font-family:Archivo,sans-serif;font-size:11px;fill:var(--ink-3)}
+.chart .cnote{font-family:Archivo,sans-serif;font-size:11.5px;fill:var(--ink-3);font-style:italic}
+.chart .cgap{font-family:Archivo,sans-serif;font-size:11px;fill:var(--crit)}
+.chart .cok{font-family:"Roboto Mono",monospace;font-size:10.5px;fill:var(--ink-3)}
+.metastrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));border-bottom:1px solid var(--rule);margin-bottom:52px}
+.metastrip div{padding:16px 20px 18px;border-right:1px solid var(--rule)}
+.metastrip div:last-child{border-right:none}
+.metastrip dt{font-family:Archivo,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin:0 0 5px}
+.metastrip dd{margin:0;font-size:15px;line-height:1.4;color:var(--ink)}
+section{margin:0 0 72px}
+.sechead{display:flex;align-items:baseline;gap:16px;border-bottom:1px solid var(--rule-strong);padding-bottom:10px;margin-bottom:26px}
+.secnum{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--flare);font-weight:500;padding-top:4px}
+h2{font-size:clamp(25px,3.4vw,33px);line-height:1.12;letter-spacing:-.018em;font-weight:700;margin:0;text-wrap:balance}
+h3{font-size:18px;font-weight:600;margin:38px 0 12px;letter-spacing:-.008em}
+h3:first-child{margin-top:0}
+p{margin:0 0 16px}
+code{font-size:.85em;background:var(--surface-2);padding:1px 5px;border-radius:3px;color:var(--ink)}
+.findings{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);margin:0 0 52px}
+@media(min-width:820px){.findings{grid-template-columns:1fr 1fr}}
+.finding{background:var(--surface);padding:22px 24px 24px;display:flex;flex-direction:column;gap:9px}
+.finding .who{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--flare)}
+.finding h4{font-family:Archivo,sans-serif;font-size:17px;font-weight:600;margin:0;line-height:1.28;letter-spacing:-.01em;text-wrap:balance}
+.finding p{margin:0;font-size:15px;color:var(--ink-2);line-height:1.5}
+.finding .figure{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--ink);background:var(--surface-2);padding:9px 12px;line-height:1.7;overflow-x:auto;white-space:pre}
+.tablewrap{overflow-x:auto;border:1px solid var(--rule);background:var(--surface);margin:0 0 14px}
+table{border-collapse:collapse;width:100%;min-width:600px;font-size:14.5px}
+th{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);text-align:left;padding:13px 16px;border-bottom:1px solid var(--rule-strong);white-space:nowrap;background:var(--surface)}
+td{padding:11px 16px;border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.45;color:var(--ink-2)}
+tr:last-child td{border-bottom:none}
+td.lead{color:var(--ink);font-weight:600;font-family:Archivo,sans-serif;font-size:14px}
+td.n{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;font-size:13px}
+td .sub{display:block;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3);margin-top:4px;white-space:normal}
+.up{color:var(--crit);font-weight:600}
+.down{color:var(--ok);font-weight:600}
+.chip{display:inline-block;font-size:9.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;padding:3px 7px;border-radius:2px;white-space:nowrap}
+.chip.crit{background:var(--crit-soft);color:var(--crit)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.acc{background:var(--accent-soft);color:var(--accent-ink)}
+.callout{border:1px solid var(--rule);border-left:3px solid var(--accent);background:var(--surface);padding:18px 22px;margin:22px 0}
+.callout .eyebrow{color:var(--accent-ink);margin-bottom:6px;display:block}
+.callout p{margin:0;font-size:15.5px;color:var(--ink-2)}
+.callout p b{color:var(--ink)}
+.caption{font-size:13.5px;color:var(--ink-3);margin:0 0 34px;max-width:68ch}
+ul.plain{margin:0 0 16px;padding-left:20px}
+ul.plain li{margin-bottom:8px;color:var(--ink-2)}
+ul.plain li::marker{color:var(--rule-strong)}
+ul.plain li b{color:var(--ink);font-weight:600}
+.flow{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--rule);background:var(--surface);margin:0 0 14px;overflow-x:auto}
+.step{flex:1;min-width:132px;padding:14px 16px;border-left:1px solid var(--rule)}
+.step:first-child{border-left:none}
+.step .k{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:4px}
+.step .v{font-family:Archivo,sans-serif;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.25}
+.step .d{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-2);margin-top:4px;display:block}
+footer{border-top:2px solid var(--ink);padding-top:22px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+footer p{font-size:13.5px;color:var(--ink-3);margin:0;max-width:56ch}
+:focus-visible{outline:2px solid var(--flare);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow"><span>ESG signal pilot</span><span class="dot"></span><span>Oil &amp; Gas</span><span class="dot"></span><span>15 Sep 2026</span></div>
+  <h1>The Scope 3 Gap</h1>
+  <p class="standfirst">Two company-years extracted from ESRS sustainability statements, with every figure traced back to a page and a verbatim string. In both companies the emissions that fall are the ones being measured, and the emissions that dominate are not.</p>
+</header>
+
+<dl class="metastrip">
+  <div><dt>Company-years</dt><dd>OMV FY2025 · Aker BP FY2024</dd></div>
+  <div><dt>Claims extracted</dt><dd class="mono">41 (31 + 10)</dd></div>
+  <div><dt>Financial layer</dt><dd>8 filers · 238/238 exact</dd></div>
+  <div><dt>Framework</dt><dd>ESRS under CSRD — not GRI</dd></div>
+  <div><dt>Ground truth</dt><dd>Same document's own XBRL</dd></div>
+</dl>
+
+<div class="findings">
+  <div class="finding">
+    <span class="who">OMV · Finding 1</span>
+    <h4>Scope 1+2 down 26%, Scope 3 up 15%</h4>
+    <div class="figure">Scope 1+2   13,920,157 → 10,286,093   −26.1%
+Scope 3    134,419,405 → 154,270,286   +14.8%
+                              t CO2e, 2019→2025</div>
+    <p>Scope 3 is <b>15× larger</b> than Scope 1+2. Total emissions rose over the period in which the company reports a reduction.</p>
+  </div>
+  <div class="finding">
+    <span class="who">OMV · Finding 2</span>
+    <h4>The Scope 3 target is anchored to a self-defined metric</h4>
+    <div class="figure">target baseline      113.7 Mt  (2019)
+company-defined      113.7 Mt  →  −19.5%
+ESRS-mandated        134.4 Mt  →  +14.8%</div>
+    <p>Both figures are published. The target is set against the one that is falling, not the one ESRS requires.</p>
+  </div>
+  <div class="finding">
+    <span class="who">Aker BP · Finding 3</span>
+    <h4>Targets cover 1% of the company's emissions</h4>
+    <div class="figure">Scope 1+2   1,250 →   853 kt   −31.8%
+Scope 3            71,458 kt   = 84×
+2030 target    625 kt · 2050 target  125 kt
+                        Scope 1+2 only</div>
+    <p>No Scope 3 baseline is disclosed and no Scope 3 target is set, so Scope 3 progress cannot be measured at all.</p>
+  </div>
+  <div class="finding">
+    <span class="who">Aker BP · Finding 4</span>
+    <h4>The headline total reconciles to the favourable basis</h4>
+    <div class="figure">scope 1        838 kt
+scope 2 location 14 kt  → total 852 ≈ 853 ✓
+scope 2 market  575 kt  → total 1,413    ✗
+
+vs 2017 baseline 1,250 kt
+  location-based   −31.8%
+  market-based     +13.0%</div>
+    <p>The reported total reconciles only with location-based Scope 2, which is <b>41× smaller</b> than the market-based figure the company also publishes.<br><span class="chip warn">Flagged for review</span></p>
+  </div>
+</div>
+
+<section>
+  <div class="sechead"><span class="secnum">§1</span><h2>How the figures were produced</h2></div>
+  <div class="flow">
+    <div class="step"><span class="k">Source</span><span class="v">ESEF iXBRL</span><span class="d">filings.xbrl.org</span></div>
+    <div class="step"><span class="k">Render</span><span class="v">Headless Chrome</span><span class="d">241 / 237 pages</span></div>
+    <div class="step"><span class="k">Structure</span><span class="v">Docling</span><span class="d">cell grid, not character offsets</span></div>
+    <div class="step"><span class="k">Extract</span><span class="v">Rule-based</span><span class="d">no LLM, per-profile</span></div>
+    <div class="step"><span class="k">Silver B</span><span class="v">esg_claim</span><span class="d">41 rows + provenance</span></div>
+    <div class="step"><span class="k">Signals</span><span class="v">Rule-based scoring</span><span class="d">evidence-linked</span></div>
+  </div>
+  <p class="caption">No sustainability report had to be sourced separately. Under CSRD the sustainability statement sits <i>inside</i> the annual report — OMV pages 29–80, Aker BP pages 33–140 of the same file already downloaded for the financial extraction.</p>
+
+  <h3>Why these documents make a good test</h3>
+  <p class="prose">The rendered PDF strips every XBRL tag and leaves only visual layout — the hard input. The <code>.json</code> shipped alongside keeps the tagged values — the label. One document therefore yields a matched pair of hard input and exact ground truth, at zero annotation cost. On the financial side this now runs across <b>all eight ESEF filers</b> in the corpus — six languages — at <b>100% exact match on every one</b>: of 238 extracted values, <b>223 are comparable</b> against the filing's own XBRL and <b>all 223 are exact</b>. The other 15 the filer never tagged, so they count in neither numerator nor denominator. Recall within each filer's declared label map ranges 82.9% (Eni) to 100% (TotalEnergies), the shortfall being almost entirely comparative-year columns absent from two-column tables.</p>
+
+  <div class="callout">
+    <span class="eyebrow">The financial layer scaled; this one did not</span>
+    <p>That asymmetry is not a matter of effort. Each ESEF filing ships its own XBRL, so the financial extraction gets an exact, free label for every figure — which is why eight filers cost little more than two. Sustainability statements ship <b>no equivalent</b>. Every ESG figure below was checked by opening the cited page by hand, so extending this section costs real annotation time. <b>113 of the project's 351 extracted rows carry no ground truth at all</b>, and all of them are on this side of the line.</p>
+  </div>
+
+  <h3>What the extraction is measured against</h3>
+  <p class="prose">Two numbers govern every claim on this page. <b>Exactness</b>: of the values pulled out, how many match the filing's own XBRL to the digit. <b>Recall</b>: of the values the filer's label map declares, how many were actually reached. They answer different questions, and reporting only the first is how a system that reads one row correctly scores 100%.</p>
+  <div class="chart"><svg viewBox="0 0 720 272" role="img" aria-label="Recall and exactness per filer"><text x="0" y="15" class="cl">TotalEnergies</text><text x="112" y="15" class="cu">Anh</text><rect x="168" y="3" width="470" height="16" rx="2" fill="var(--rule)" opacity=".5"/><rect x="168" y="3" width="470.0" height="16" rx="2" fill="var(--ok)"/><text x="647.0" y="15" class="cv">100.0%</text><text x="716" y="15" class="cok" text-anchor="end">24/24 exact</text><text x="0" y="49" class="cl">OMV</text><text x="112" y="49" class="cu">Đức</text><rect x="168" y="37" width="470" height="16" rx="2" fill="var(--rule)" opacity=".5"/><rect x="168" y="37" width="455.8" height="16" rx="2" fill="var(--ok)"/><text x="632.8" y="49" class="cv">97.0%</text><text x="716" y="49" class="cok" text-anchor="end">32/32 exact</text><text x="0" y="83" class="cl">Shell</text><text x="112" y="83" class="cu">Anh</text><rect x="168" y="71" width="470" height="16" rx="2" fill="var(--rule)" opacity=".5"/><rect x="168" y="71" width="445.3" height="16" rx="2" fill="var(--ok)"/><text x="622.3" y="83" class="cv">94.7%</text><text x="716" y="83" class="cok" text-anchor="end">36/36 exact</text><text x="0" y="117" class="cl">Aker BP</text><text x="112" y="117" class="cu">Anh</text><rect x="168" y="105" width="470" height="16" rx="2" fill="var(--rule)" opacity=".5"/><rect x="168" y="105" width="443.9" height="16" rx="2" fill="var(--ok)"/><text x="620.9" y="117" class="cv">94.4%</text><text x="716" y="117" class="cok" text-anchor="end">34/34 exact</text><text x="0" y="151" class="cl">Galp</text><text x="112" y="151" class="cu">Anh</text><rect x="168" y="139" width="470" height="16" rx="2" fill="var(--rule)" opacity=".5"/><rect x="168" y="139" width="437.6" height="16" rx="2" fill="var(--ok)"/><text x="614.6" y="151" class="cv">93.1%</text><text x="716" y="151" class="cok" text-anchor="end">27/27 exact</text><text x="0" y="185" class="cl">Repsol</text><text x="112" y="185" class="cu">Tây BN</text><rect x="168" y="173" width="470" height="16" rx="2" fill="var(--rule)" opacity=".5"/><rect x="168" y="173" width="433.8" height="16" rx="2" fill="var(--ok)"/><text x="610.8" y="185" class="cv">92.3%</text><text x="716" y="185" class="cok" text-anchor="end">26/26 exact</text><text x="0" y="219" class="cl">Equinor</text><text x="112" y="219" class="cu">Na Uy</text><rect x="168" y="207" width="470" height="16" rx="2" fill="var(--rule)" opacity=".5"/><rect x="168" y="207" width="414.7" height="16" rx="2" fill="var(--ok)"/><text x="591.7" y="219" class="cv">88.2%</text><text x="716" y="219" class="cok" text-anchor="end">15/15 exact</text><text x="0" y="253" class="cl">Eni</text><text x="112" y="253" class="cu">Ý</text><rect x="168" y="241" width="470" height="16" rx="2" fill="var(--rule)" opacity=".5"/><rect x="168" y="241" width="389.4" height="16" rx="2" fill="var(--ok)"/><text x="566.4" y="253" class="cv">82.9%</text><text x="716" y="253" class="cok" text-anchor="end">29/29 exact</text></svg></div>
+  <p class="caption">Green bar is recall within each filer's declared label map; the figure on the right is exactness. Eight filers, six languages, <b>223 of 223 comparable values exact</b>. Recall shortfalls are almost entirely comparative-year columns that the printed table does not carry.</p>
+
+  <h3>A ceiling with no floor is not a readable number</h3>
+  <p class="prose">Before trusting any of it: when a value is not found, is that because the reader missed it, or because it was never in the document? The standard answer is a <b>ceiling</b> — count how many gold values appear in the parsed text at all, before any extractor runs. But that count matches by value across the whole bag of numbers, position-free, so it needs a <b>floor</b>: score the same gold against a <i>different company's</i> filing and see what coincidence alone buys.</p>
+  <div class="chart"><svg viewBox="0 -8 720 208" role="img" aria-label="Measured ceiling against chance floor"><text x="0" y="13" class="cl">Whole filing, ~300 pages</text><text x="720" y="13" class="cnote" text-anchor="end">The 99% that looked convincing</text><rect x="0" y="24" width="564.3" height="26" rx="2" fill="var(--accent)" opacity=".22"/><rect x="0" y="24" width="495.9" height="26" rx="2" fill="var(--crit)" opacity=".62"/><line x1="495.9" y1="18" x2="495.9" y2="56" stroke="var(--crit)" stroke-width="1.5"/><text x="574.3" y="42" class="cv">99%</text><text x="247.9" y="42" class="cvf" text-anchor="middle">87%</text><text x="503.9" y="68" class="cgap">gap 12 points</text><text x="0" y="117" class="cl">Statement pages only</text><text x="720" y="117" class="cnote" text-anchor="end">Same ceiling, real signal</text><rect x="0" y="128" width="558.6" height="26" rx="2" fill="var(--accent)" opacity=".22"/><rect x="0" y="128" width="62.7" height="26" rx="2" fill="var(--crit)" opacity=".62"/><line x1="62.7" y1="122" x2="62.7" y2="160" stroke="var(--crit)" stroke-width="1.5"/><text x="568.6" y="146" class="cv">98%</text><text x="31.4" y="146" class="cvf" text-anchor="middle">11%</text><text x="70.7" y="172" class="cgap">gap 87 points</text></svg></div>
+  <p class="caption">Measured on the full ~300-page filing the ceiling reads 99% — but the floor is 87%, so almost all of it is coincidence. Narrowing to the statement pages the extractor actually sees leaves the ceiling at 98% and drops the floor to 11%. Same ceiling, an <b>86-point</b> real gap instead of 12. The two ceiling points that differ turned out to be false matches: gold records income-tax expense as <code>+1834</code> per taxonomy sign convention while the document prints <code>–1.834</code>, and somewhere in 300 pages a different <code>+1834</code> exists.</p>
+
+  <div class="callout">
+    <span class="eyebrow">Not a machine-learning result</span>
+    <p>Greenwashing has no ground truth, so nothing here is a classifier output. These are <b>inconsistency signals</b> computed by rule from normalised disclosures, each carrying a page number, a table id, a column header path and the verbatim string. Every figure below can be checked by opening the cited page. Two company-years is a pilot, not a dataset.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§2</span><h2>OMV — FY2025</h2></div>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Metric (t CO2e)</th><th>2019 base</th><th>2024</th><th>2025</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">Scope 1+2 market-based</td><td class="n">13,920,157</td><td class="n">10,769,800</td><td class="n">10,286,093</td><td class="n down">−26.1%</td></tr>
+      <tr><td class="lead">Scope 1 gross</td><td class="n">12,648,004</td><td class="n">9,778,526</td><td class="n">9,470,995</td><td class="n down">−25.1%</td></tr>
+      <tr><td class="lead">Scope 2 market-based</td><td class="n">1,272,153</td><td class="n">991,275</td><td class="n">815,098</td><td class="n down">−35.9%</td></tr>
+      <tr><td class="lead">Scope 3 — ESRS<span class="sub">all material categories</span></td><td class="n">134,419,405</td><td class="n">148,357,711</td><td class="n">154,270,286</td><td class="n up">+14.8%</td></tr>
+      <tr><td class="lead">Scope 3 — company-defined<span class="sub">[unternehmensspezifisch]</span></td><td class="n">113,696,828</td><td class="n">94,394,552</td><td class="n">91,536,655</td><td class="n down">−19.5%</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="caption">Source: Table E1-6, PDF page 67. Targets: Scope 1+2 −30% by 2030, −60% by 2040, net zero 2050, baseline 2019 = 13.9 Mt. Scope 3: −20% by 2030, −50% by 2040, baseline 2019 = 113.7 Mt.</p>
+
+  <h3>Internal consistency</h3>
+  <p class="prose">The target block (E1-4, page 64) declares a baseline of <code>13.9 Mt CO2e</code>. The emissions table (E1-6, page 67) gives <code>13,920,157 t</code> = 13.920 Mt for the same year. Two separate places in the document, same number — the disclosure reconciles with itself.</p>
+  <p class="prose">That check is not decorative. It is what caught a silent one-column offset in the first extraction run, where the 2019 baseline value had been assigned to 2024. Every figure stayed plausible; only the cross-reference revealed it.</p>
+
+  <h3>ESRS content index reconciliation</h3>
+  <p class="prose">The index on pages 124–125 claims 70 disclosure requirements are reported, each with a page reference. Reconciling every claim against where the disclosure actually appears — bracketed ESRS tags or section headings — gives <b>70 of 70 verified</b>, plus 8 incorporation-by-reference rows whose target notes all resolve.</p>
+  <div class="callout">
+    <span class="eyebrow">A clean result is a useful result</span>
+    <p>A negative finding calibrates the detector. It shows the check does not manufacture signal where none exists, which is what makes it credible when it does fire on another filer. A signal is only usable once you know its false-positive rate; on this document, after fixing six defects of my own, that rate is zero.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§3</span><h2>Aker BP — FY2024</h2></div>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Metric (t CO2e)</th><th>2017 base</th><th>2024</th><th>2030 target</th><th>2050 target</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">Scope 1+2 as reported</td><td class="n">1,250,000</td><td class="n">853,000</td><td class="n">625,000</td><td class="n">125,000</td></tr>
+      <tr><td class="lead">Scope 1 gross</td><td class="n">—</td><td class="n">838,000</td><td class="n">—</td><td class="n">—</td></tr>
+      <tr><td class="lead">Scope 2 location-based</td><td class="n">—</td><td class="n">14,000</td><td class="n">—</td><td class="n">—</td></tr>
+      <tr><td class="lead">Scope 2 market-based</td><td class="n">—</td><td class="n">575,000</td><td class="n">—</td><td class="n">—</td></tr>
+      <tr><td class="lead">Scope 3 gross indirect</td><td class="n">—</td><td class="n">71,458,000</td><td class="n">—</td><td class="n">—</td></tr>
+      <tr><td class="lead">Total GHG market-based</td><td class="n">—</td><td class="n">72,872,000</td><td class="n">—</td><td class="n">—</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="caption">Source: Table 11, PDF pages 68–69, operational-control basis. The document reports operational control and equity share side by side; only the operational-control block is shown. Units are printed as <code>1,000 t CO2e</code> per row and converted here — a factor that, if missed, is a 1000× error.</p>
+
+  <h3>The basis question</h3>
+  <p class="prose">Scope 1 (838) plus location-based Scope 2 (14) equals 852, which matches the reported total of 853 within rounding at kilotonne precision. Scope 1 plus market-based Scope 2 (575) equals 1,413, which does not. The headline total is therefore built on location-based Scope 2 — the smaller of the two figures the company publishes, by a factor of 41.</p>
+  <p class="prose">Measured on that basis, emissions fall 31.8% against the 2017 baseline. Measured on market-based Scope 2, the 2024 figure exceeds the baseline by 13.0%. The 2017 market-based value is not disclosed, so the two bases cannot be compared like for like across time — which is precisely why this is flagged for review rather than asserted as a finding.</p>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§4</span><h2>Defects found in the extractors themselves</h2></div>
+  <p class="prose">Every figure above survived a defect log of nine bugs, all of them mine. They are recorded because the failure modes generalise, and because an accusation-shaped product that is confidently wrong is worse than one that is silent.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Defect</th><th>Effect</th><th>Caught by</th></tr></thead>
+    <tbody>
+      <tr><td class="lead">Two tables on one page share a unit line<span class="sub">anchored on "In t CO2e" instead of the table title</span></td><td>Wrong header used; 2019 baseline assigned to 2024 — <b>whole table off by one column, silently</b></td><td><span class="chip ok">E1-4 ↔ E1-6 cross-check</span></td></tr>
+      <tr><td class="lead">Two target blocks on one page<span class="sub">Scope 1+2 and Scope 3 both present</span></td><td>Scope 3 baseline (113.7 Mt) attached to the Scope 1+2 target</td><td><span class="chip ok">baseline reconciliation</span></td></tr>
+      <tr><td class="lead">Centred group label used as a column boundary<span class="sub">"Equity" starts right of its own columns</span></td><td>Equity block read as operational control. <b>The scope 1 + scope 2 = total gate still passed</b>, because equity values are internally consistent</td><td><span class="chip warn">manual comparison to source</span></td></tr>
+      <tr><td class="lead">Year and "target" merged across wide whitespace</td><td>Column map shifted; targets mislabelled by year</td><td><span class="chip warn">manual comparison to source</span></td></tr>
+      <tr><td class="lead">Index anchored on a string that also occurs in prose</td><td>Content pages excluded from the search window; SBM-1 (10 tags) and E1-5 (34 tags) reported as undisclosed</td><td><span class="chip crit">would have been a false accusation</span></td></tr>
+      <tr><td class="lead">Note lookup scanned only the first six lines of a page</td><td>Anhangangabe 7 missed; three rows reported as broken cross-references</td><td><span class="chip crit">would have been a false accusation</span></td></tr>
+      <tr><td class="lead">Only bracketed tags treated as evidence of disclosure</td><td>E4-4 reported as undisclosed although it has its own section heading</td><td><span class="chip crit">would have been a false accusation</span></td></tr>
+      <tr><td class="lead">Index parser required code, title and page on one line</td><td>Coverage 60%; wrapped titles dropped</td><td><span class="chip ok">row-count audit</span></td></tr>
+      <tr><td class="lead">Report label merged two distinct statuses</td><td><code>reference_not_found</code> presented as <code>claimed_but_untagged</code></td><td><span class="chip ok">status audit</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="caption">Four of the nine would have produced a published claim that a company failed to disclose something it had in fact disclosed. The first version of the index check reported four such findings; after the fixes, zero survived.</p>
+
+  <div class="callout">
+    <span class="eyebrow">The lesson that transfers</span>
+    <p>The most dangerous defect in the set is the centred-label one, because the internal consistency gate <b>passed</b>. Equity-basis figures reconcile perfectly with each other; they are simply the wrong figures. A gate proves coherence, not correctness — the only thing that caught it was reading the source page.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><span class="secnum">§5</span><h2>Limits of this pilot</h2></div>
+  <ul class="plain">
+    <li><b>Two company-years is not a dataset.</b> Baseline rebasing, boundary changes and restatement frequency are time-series signals needing 5–10 years and enough companies to establish what is normal for the sector.</li>
+    <li><b>Page references cannot be verified here.</b> Chrome re-paginates when rendering from xhtml, so no constant offset exists between claimed and actual pages — BP-1 claims page 83 and lands on PDF 31 (−52); GOV-4 claims 97 and lands on 36 (−61). Index reconciliation therefore checks <i>whether</i> a disclosure exists, not whether it is on the page cited. Native PDFs from investor-relations pages carry the document's own pagination and would restore the stronger check.</li>
+    <li><b>Label-to-concept mapping is hand-written — and that held up worse than expected.</b> The earlier draft of this page guessed it "does not survive a third filer". Eight filers later it does survive, but the eighth cost the same hand work as the third: ~15 mapped labels each, in six languages. Worse, Shell's map <i>looked</i> correct and produced a total-assets figure <b>3.5× too large</b> (107,173 against 370,350) because Docling had shifted a row label onto the wrong values. The ground-truth comparison caught it; nothing in the extractor did. In production this belongs in the taxonomy's label linkbase.</li>
+    <li><b>One extractor, eight profiles.</b> All eight filers share a single program, but each still declares its own decimal convention, unit pattern and label map. Three failure modes only appeared once the corpus grew: a merged year header spanning a total column and a related-party sub-column (Eni — one year yielded two conflicting revenue figures, both correctly read); a print that silently clipped every value column off the right edge of the page (Galp — zero facts, the page still looked normal); and a statement split across a page break losing its heading (TotalEnergies — two tables dropped). Each is now handled fail-closed, and each was invisible at two filers.</li>
+    <li><b>Assurance level not yet captured.</b> Whether each disclosure carries limited or reasonable assurance is a field in the schema and a signal in its own right, and is not populated for either company.</li>
+    <li><b>The label map is still the binding constraint, not the parser.</b> Measured over the whole filing, OMV holds 349 tables / 10,605 numeric cells / 3,833 labelled rows and Aker BP 147 / 1,418 / 1,639. The extractor returns 34 and 32 facts. The cause is a hand-written map of <b>17 line items</b> — running over the complete document rather than a page range yields the same 34 facts, which rules out both page selection and Docling as the limit. Enough for every accounting identity and both OMV signals; far short of the filing. The fix is the taxonomy's own label linkbase, not more hand-typed labels. The eight-filer run confirms this rather than softening it: Shell leaves <b>232 tagged values</b> untouched because no label maps to them, so its 94.7% recall describes the 38 values chosen for attention, not the filing.</li>
+  </ul>
+  <p class="prose">Next in dependency order: generate label maps from the taxonomy's label linkbase instead of by hand — the one change that removes the largest architectural weakness and is a precondition for going past eight filers without doubling the risk; extend the ESG layer to the remaining six filers, accepting the manual annotation cost; pull native PDFs to restore page-level index verification; populate assurance and boundary-change fields; and only then consider proxy labels for anything resembling a model.</p>
+</section>
+
+<footer>
+  <p>ESG signal pilot for the greenwashing detection pipeline — OMV FY2025 and Aker BP FY2024, extracted from ESRS sustainability statements under CSRD.</p>
+  <p class="mono" style="font-size:12px">Updated 18.09.2026 — financial layer extended to eight ESEF filers</p>
+</footer>
+
+</div>

@@ -1,0 +1,271 @@
+{
+ "income_statement": {
+  "revenue": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 24308.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 26194.0
+   }
+  ],
+  "operating_profit": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 3110.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 4202.0
+   }
+  ],
+  "profit_before_tax": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 3047.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 4099.0
+   }
+  ],
+  "income_tax_expense": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 1834.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 2163.0
+   }
+  ],
+  "profit_loss": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 1520.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 2024.0
+   }
+  ],
+  "profit_attributable_to_nci": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 443.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 571.0
+   }
+  ]
+ },
+ "balance_sheet": {
+  "non_current_assets": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 24486.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 32679.0
+   }
+  ],
+  "cash_and_cash_equivalents": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 5077.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 6182.0
+   }
+  ],
+  "total_assets": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 46338.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 48813.0
+   }
+  ],
+  "equity_attributable_to_owners": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 16331.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 17868.0
+   }
+  ],
+  "non_controlling_interests": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 6235.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 6749.0
+   }
+  ],
+  "total_equity": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 22567.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 24617.0
+   },
+   {
+    "data_period": "FY2023",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 25369.0
+   }
+  ],
+  "non_current_liabilities": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 12735.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 14735.0
+   }
+  ],
+  "total_equity_and_liabilities": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 46338.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 48813.0
+   }
+  ]
+ },
+ "cash_flow_statement": {
+  "operating_activities": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 5215.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 5456.0
+   }
+  ],
+  "investing_activities": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": -2754.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": -3152.0
+   }
+  ],
+  "financing_activities": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": -2834.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": -3132.0
+   }
+  ],
+  "effect_of_exchange_rate": [
+   {
+    "data_period": "FY2025",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": -53.0
+   },
+   {
+    "data_period": "FY2024",
+    "unit": "EUR",
+    "scale": 1000000,
+    "value": 0.0
+   }
+  ]
+ },
+ "meta": {
+  "company": "OMV Aktiengesellschaft",
+  "report_period": "FY2025",
+  "report_period_end_date": "2025-12-31"
+ }
+}

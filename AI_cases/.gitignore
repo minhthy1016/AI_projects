@@ -1,0 +1,32 @@
+# ─── Dữ liệu ────────────────────────────────────────────────────────────────
+# data/ nặng 935 MB. Gần như toàn bộ là tài liệu TẢI VỀ hoặc SINH RA, tái tạo
+# được bằng fetch_corpus.py và docling_convert.py, nên không thuộc về git.
+# Giữ lại đúng những thứ vừa nhỏ vừa không tái tạo miễn phí được:
+#   - kết quả trích xuất (236 KB) — sản phẩm của dự án
+#   - bộ gold ESEF (10 KB) — đáp án suy từ xBRL-JSON, KHÔNG tái tạo tự động được
+#   - manifest (19 KB) — nguồn + sha256 của mọi file đã tải, tức provenance
+#   - hai file tài liệu hướng dẫn
+data/*
+!data/README.md
+!data/manifest.jsonl
+!data/extracted/
+!data/gold/
+!data/ir-pdf/
+data/ir-pdf/*
+!data/ir-pdf/TARGETS.md
+
+# Bị ignore theo quy tắc trên, liệt kê lại cho rõ vì sao:
+#   esef/ 644 MB · sec/ 179 MB · ir-pdf/ 92 MB · xbrl/ 15 MB   -> fetch_corpus.py
+#   parsed/ 3.6 MB                                             -> docling_convert.py
+#   v_*.jsonl · validation_results.jsonl                       -> validate_identities.py
+#   extraction_{clean,dirty,subtle}.jsonl                      -> make_fixture.py
+
+# ─── Python ─────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# ─── macOS ──────────────────────────────────────────────────────────────────
+.DS_Store
