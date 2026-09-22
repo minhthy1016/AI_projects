@@ -103,6 +103,7 @@ html{scroll-behavior:smooth}
   <a href="#rule">Core rule</a>
   <a href="#models">Models &amp; scoring</a>
   <a href="#format">Task format</a>
+  <a href="#scoring">Scoring</a>
   <a href="#mcp">MCP servers</a>
   <a href="#families">Task families</a>
   <a href="#quality">Quality gate</a>
@@ -196,7 +197,69 @@ task/
   golden.patch     reference solution
   golden_trace     reference MCP call sequence (documentation, not grading)
   verify.sh        tests → pipeline output vs answers → contract check</pre>
-  <p><b>Resolve rate</b> = the share of task runs where every fail-to-pass and pass-to-pass test passes. Judge scores, MCP-ablation gap, turns and tokens are reported in separate columns.</p>
+  <p><b>Resolve rate</b> = the share of task runs where every fail-to-pass and pass-to-pass test passes. Failed and incompatible runs count as 0. The full scorecard is in <a href="#scoring">Scoring</a>.</p>
+</section>
+
+<section id="scoring">
+  <h2>Scoring</h2>
+  <p class="sub">Adapted from <a href="https://www.micro1.ai/benchmark/long-extraction">micro1 LongExtractionBench</a>: 225 documents averaging 358 pages each, scored by a deterministic grader. We copy its structure and fix its two weak points.</p>
+
+  <div class="principle">
+    <strong>Keep "does it finish" separate from "is it right when it finishes."</strong>
+    <p>Their leaderboard shows why: precision is between 80% and 99.6% for every system, while recall ranges from 34% to 99.6%. AI_cases shows the same pattern: precision is 100% but filing coverage is only 11.6–44%. A patch that simply outputs fewer facts keeps precision perfect, so recall must always be scored.</p>
+  </div>
+
+  <h3>Scorecard by layer</h3>
+  <div class="tablebox"><table>
+    <thead><tr><th>Layer</th><th>Metrics</th><th>Copy from LongExtractionBench</th><th>What we change</th></tr></thead>
+    <tbody>
+      <tr><td>Headline</td><td>Unconditional resolve rate, macro-averaged over tasks, with a bootstrap 95% confidence interval; pass@k</td><td>Equal weight per item (they weight each document equally)</td><td>Failures count as 0 instead of being dropped. With only 20–25 tasks × 3 runs, results need error bars</td></tr>
+      <tr><td>Completion</td><td>Count of runs in each status: resolved / failed (by cause) / incompatible, per setup A, B and C</td><td>Their split between failed (accepted but not finished) and incompatible (refused up front), with a count for each cause</td><td>Agent-specific failure causes: turn cap reached, context full, MCP tool error or timeout, patch didn't apply, infrastructure failure</td></tr>
+      <tr><td>Accuracy</td><td>Fact precision, fact recall, value accuracy, correct-fact recall (definitions below)</td><td>Layered metrics: match rows by key first, then score cell values only on matched rows</td><td>Values compared at the filing's declared <code>decimals</code>, not after cosmetic cleanup. The recall scope is fixed by the task author, not by the agent</td></tr>
+      <tr><td>Safety</td><td>Pass-to-pass regression rate: how often a fix breaks tests that used to pass</td><td>Their "no LLM" rule for the grader</td><td>Added for code changes; LongExtractionBench has no equivalent</td></tr>
+      <tr><td>MCP</td><td>Resolve-rate gap with vs without MCP, per task</td><td>No equivalent</td><td>The metric that shows the environment actually tests MCP use</td></tr>
+      <tr><td>Cost</td><td>Turns, tokens, wall-clock time (mean, p50, p90, p95)</td><td>Their latency percentiles</td><td>Reported on all runs as well as on successes only, so an agent that gives up early doesn't look faster</td></tr>
+      <tr><td>Advisory</td><td>Judge scores for plan quality, trace quality and MCP use</td><td>No equivalent: their grader uses no LLM</td><td>Kept in separate columns, never combined into the headline, and checked against hand labels</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Accuracy metrics</h3>
+  <p>These apply to tasks whose result is a set of extracted facts. Facts are matched by key, never by row position. Each truth fact can be matched at most once, so duplicates count as extras.</p>
+<pre class="block"><span class="c"># matching key</span>
+key = (entity_LEI, concept, period_start, period_end, unit, dimensions)
+
+<span class="c"># Pred  = facts the agent's pipeline outputs, inside the task scope
+# Truth = XBRL facts inside the task scope (fixed by the task author, hidden)
+# M     = keys found in both</span>
+
+fact precision       = |M| / |Pred|        <span class="c"># penalises made-up, duplicated and extra facts</span>
+fact recall          = |M| / |Truth|       <span class="c"># penalises missed facts</span>
+value accuracy       = correct(M) / |M|    <span class="c"># value correct, given the key matched</span>
+correct-fact recall  = correct(M) / |Truth| <span class="c"># = recall × value accuracy</span>
+
+<span class="c"># value is correct when:</span>
+round(value × scale, decimals) == round(truth_value, decimals)
+<span class="c"># with decimals taken from the filing's declared precision (XBRL decimals)</span></pre>
+  <ul>
+    <li><b>Correct-fact recall is the single accuracy number to report first.</b> Value accuracy alone shares LongExtractionBench's weakness: it is measured only on facts that matched, so an agent that returns fewer, easier facts scores well on it.</li>
+    <li><b>The normaliser only fixes how a number is written.</b> It handles whitespace, thousands separators and decimal separators. It must <b>not</b> fix sign, scale or period, because those are exactly the bugs the tasks test (for example the Repsol sign convention). A normaliser that fixed them would give credit for the bug.</li>
+    <li><b>The recall scope is set by the task, not by the agent.</b> AI_cases' own <code>recall_inscope</code> uses "labels the agent declared" as the denominator, which rewards declaring fewer. In the environment, the scope is part of the hidden task definition.</li>
+    <li><b>Verifiability is reported next to precision.</b> Some facts can't be checked because the company didn't tag them in XBRL. Reporting how many can't be checked stops a result from looking better by leaving them out, as <code>trust = precision × verifiability</code> already does in AI_cases.</li>
+  </ul>
+
+  <h3>Three views of every result</h3>
+  <div class="configs">
+    <div class="cfg"><b>Unconditional</b><div>Failures count as 0. This is the headline number.</div></div>
+    <div class="cfg"><b>Conditional</b><div>Finished runs only, as LongExtractionBench reports.</div></div>
+    <div class="cfg"><b>Common subset</b><div>Only tasks every compared setup finished. The only fair head-to-head view.</div></div>
+  </div>
+  <p class="note">Why the conditional view alone misleads: on LongExtractionBench, Claude Opus 4.8 scored 92% precision on the 116 documents it finished, averaging 86 pages, while Reducto scored 99.6% on all 225, averaging 367 pages. Those numbers come from different documents and can't be compared directly.</p>
+
+  <h3>Where our answer data is stronger</h3>
+  <ul>
+    <li>LongExtractionBench's answer labels were drafted by GPT-5.5 and Claude Opus 4.7, and humans only settled disagreements. Where both models made the same mistake, the answer data inherits it. Our answer data is XBRL filed by the companies themselves; no model produced it.</li>
+    <li>They release only 50 of their 225 documents, and the sponsor came first. We should publish a public task split and keep a held-out split, and state which one each reported number comes from.</li>
+  </ul>
 </section>
 
 <section id="mcp">

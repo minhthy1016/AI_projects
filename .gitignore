@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Standalone repo (onboarding assignment)
+OB_assignment/
