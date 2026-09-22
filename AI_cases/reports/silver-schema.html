@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Fact and Claim Schema</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -91,6 +93,13 @@ td .sub{display:block;font-family:"IBM Plex Mono",monospace;font-size:11.5px;col
 .chip.ok{background:var(--ok-soft);color:var(--ok)}
 .chip.warn{background:var(--warn-soft);color:var(--warn)}
 .chip.crit{background:var(--crit-soft);color:var(--crit)}
+.chip.plan{background:transparent;color:var(--ink-3);border:1px dashed var(--rule-strong);padding:2px 6px}
+.chip.gap{background:var(--warn-soft);color:var(--warn)}
+tr.planned td{opacity:.62}
+tr.planned td.f{text-decoration:underline dotted var(--rule-strong);text-underline-offset:3px}
+.legend{display:flex;gap:18px;flex-wrap:wrap;align-items:center;font-size:13.5px;color:var(--ink-3);margin:0 0 30px}
+.legend span.item{display:inline-flex;gap:7px;align-items:center}
+@media(max-width:600px){.wrap{padding:0 16px 72px}body{font-size:16px}}
 
 pre{
   background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);
@@ -119,17 +128,23 @@ footer p{font-size:13.5px;color:var(--ink-3);margin:0;max-width:56ch}
 <div class="wrap">
 
 <header class="mast">
-  <div class="eyebrow"><span>Silver layer spec</span><span class="dot"></span><span>Greenwashing Signal Pipeline</span><span class="dot"></span><span>v1.0</span></div>
+  <div class="eyebrow"><span>Silver layer spec</span><span class="dot"></span><span>Greenwashing Signal Pipeline</span><span class="dot"></span><span>v1.1</span></div>
   <h1>Fact and Claim Schema</h1>
-  <p class="standfirst">Hai bảng Iceberg ở tầng Silver: <b>financial_fact</b> cho số định lượng trong báo cáo tài chính, <b>esg_claim</b> cho disclosure theo GRI. Grain khác nhau, vòng đời khác nhau, không gộp.</p>
+  <p class="standfirst">Hai bảng Iceberg ở tầng Silver: <b>financial_fact</b> cho số định lượng trong báo cáo tài chính, <b>esg_claim</b> cho disclosure bền vững (ESRS, GRI, …). Grain khác nhau, vòng đời khác nhau, không gộp.</p>
 </header>
 
 <dl class="metastrip">
   <div><dt>Silver A grain</dt><dd>1 row = 1 ô số trong báo cáo</dd></div>
   <div><dt>Silver B grain</dt><dd>1 row = 1 disclosure / claim</dd></div>
-  <div><dt>Partition</dt><dd class="mono">fiscal_year</dd></div>
-  <div><dt>Sort order</dt><dd class="mono">(company_id, period_end)</dd></div>
+  <div><dt>Partition · sort</dt><dd class="mono">fiscal_year · (company_id, period_end)</dd></div>
+  <div><dt>Nguồn sự thật</dt><dd class="mono">contracts/*.json</dd></div>
 </dl>
+
+<div class="legend">
+  <span class="item"><span class="chip req">Bắt buộc</span> nằm trong <code>required</code> của contract</span>
+  <span class="item"><span class="chip plan">Chưa có</span> thiết kế, chưa vào contract</span>
+  <span class="item"><span class="chip ok">Sửa ở 1.1</span> lệch contract đã sửa — xem §6</span>
+</div>
 
 <section>
   <div class="sechead"><span class="secnum">§0</span><h2>Ba nguyên tắc chi phối mọi field</h2></div>
@@ -142,20 +157,21 @@ footer p{font-size:13.5px;color:var(--ink-3);margin:0;max-width:56ch}
 
 <section>
   <div class="sechead"><span class="secnum">§1</span><h2>Silver A — financial_fact</h2></div>
-  <p class="prose">Grain: <b>một ô số trong một bảng của một tài liệu</b>. Không phải một dòng báo cáo, không phải một công ty-năm. Chọn grain nhỏ nhất vì mọi thứ khác đều aggregate lên được, còn chiều ngược lại thì không.</p>
+  <p class="prose">Grain: <b>một ô số trong một bảng của một tài liệu</b>. Không phải một dòng báo cáo, không phải một công ty-năm. Chọn grain nhỏ nhất vì mọi thứ khác đều aggregate lên được, còn chiều ngược lại thì không. Contract: <code>contracts/extraction_contract.json</code>, 22 trường bắt buộc.</p>
 
   <div class="tablewrap">
     <div class="grouprow"><span class="gname">Identity</span><span class="gnote">khoá và truy nguyên</span></div>
     <table>
       <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
       <tbody>
-        <tr><td class="f">fact_id</td><td class="t">string</td><td><span class="chip key">PK</span> Hash tất định của <span class="mono">(doc_hash, page_no, table_id, row_idx, col_idx)</span> — cùng một ô luôn ra cùng id, nên re-run là idempotent.</td></tr>
+        <tr><td class="f">fact_id</td><td class="t">string</td><td><span class="chip key">PK</span> <span class="chip req">Bắt buộc</span> Hash tất định của <span class="mono">(doc_hash, page_no, table_id, row_idx, col_idx)</span> — cùng một ô luôn ra cùng id, nên re-run là idempotent.</td></tr>
         <tr><td class="f">run_id</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> ID của extraction run. Đây là thứ cho phép diff hai lần chạy và rollback theo lô.</td></tr>
-        <tr><td class="f">doc_hash</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> SHA-256 của PDF gốc. Cũng chính là key trên S3 Bronze.</td></tr>
-        <tr><td class="f">company_id</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> LEI nếu có, fallback id nội bộ. Đừng dùng tên làm khoá.</td></tr>
-        <tr><td class="f">company_name_reported</td><td class="t">string</td><td>Tên như in trên tài liệu. Giữ để audit việc map entity.</td></tr>
-        <tr><td class="f">report_type</td><td class="t">enum</td><td><span class="mono">annual_report · form_10k · form_20f · interim · sustainability · integrated</span></td></tr>
-        <tr><td class="f">statement</td><td class="t">enum</td><td><span class="mono">income_statement · balance_sheet · cash_flow · equity · segment_note · other_note</span></td></tr>
+        <tr><td class="f">doc_hash</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> SHA-256 của PDF gốc (<span class="mono">^[0-9a-f]{64}$</span>). Cũng chính là key trên S3 Bronze.</td></tr>
+        <tr><td class="f">company_id</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> LEI nếu có, fallback id nội bộ (vd <span class="mono">CIK0000034088</span>). Đừng dùng tên làm khoá.</td></tr>
+        <tr><td class="f">statement</td><td class="t">enum</td><td><span class="chip req">Bắt buộc</span> <span class="mono">income_statement · balance_sheet · cash_flow · equity · segment_note · other_note</span></td></tr>
+        <tr><td class="f">section_source</td><td class="t">enum?</td><td><span class="mono">heading · profile_page_map · continuation</span> — cách extractor xác định <code>statement</code>. <i>continuation</i> = bảng bị ngắt trang, kế thừa báo cáo của bảng trước. Vào contract từ 1.1.</td></tr>
+        <tr class="planned"><td class="f">company_name_reported</td><td class="t">string</td><td><span class="chip plan">Chưa có</span> Tên như in trên tài liệu. Giữ để audit việc map entity.</td></tr>
+        <tr class="planned"><td class="f">report_type</td><td class="t">enum</td><td><span class="chip plan">Chưa có</span> <span class="mono">annual_report · form_10k · form_20f · interim · sustainability · integrated</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -166,11 +182,11 @@ footer p{font-size:13.5px;color:var(--ink-3);margin:0;max-width:56ch}
       <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
       <tbody>
         <tr><td class="f">line_item_reported</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> Nhãn nguyên văn: <i>“Sales and other operating revenue”</i>.</td></tr>
-        <tr><td class="f">line_item_canonical</td><td class="t">string</td><td>Tag chuẩn: <span class="mono">us-gaap:Revenues</span>. Nullable — thà để trống còn hơn map ẩu.</td></tr>
-        <tr><td class="f">canonical_taxonomy</td><td class="t">enum</td><td><span class="mono">us-gaap · ifrs-full · internal</span></td></tr>
-        <tr><td class="f">mapping_confidence</td><td class="t">float</td><td>Điểm của bước canonicalization, <b>tách riêng</b> khỏi confidence của bước đọc số. Hai bước độc lập, sai độc lập.</td></tr>
-        <tr><td class="f">statement_depth</td><td class="t">int</td><td>Cấp thụt đầu dòng trong bảng. Cần để dựng lại quan hệ tổng–thành phần cho checksum.</td></tr>
-        <tr><td class="f">parent_fact_id</td><td class="t">string</td><td>Dòng tổng mà dòng này đóng góp vào. Nullable.</td></tr>
+        <tr><td class="f">line_item_canonical</td><td class="t">string?</td><td>Tag chuẩn: <span class="mono">us-gaap:Revenues</span>, <span class="mono">ifrs-full:Revenue</span>. Nullable — thà để trống còn hơn map ẩu. Row không có canonical bị cổng §4 loại khỏi kiểm tra đẳng thức.</td></tr>
+        <tr><td class="f">canonical_taxonomy</td><td class="t">enum?</td><td><span class="mono">us-gaap · ifrs-full · internal</span></td></tr>
+        <tr><td class="f">mapping_confidence</td><td class="t">float?</td><td>0–1. Điểm của bước canonicalization, <b>tách riêng</b> khỏi confidence của bước đọc số. Hai bước độc lập, sai độc lập.</td></tr>
+        <tr class="planned"><td class="f">statement_depth</td><td class="t">int</td><td><span class="chip plan">Chưa có</span> Cấp thụt đầu dòng trong bảng. Cần để dựng lại quan hệ tổng–thành phần cho checksum.</td></tr>
+        <tr class="planned"><td class="f">parent_fact_id</td><td class="t">string</td><td><span class="chip plan">Chưa có</span> Dòng tổng mà dòng này đóng góp vào.</td></tr>
       </tbody>
     </table>
   </div>
@@ -180,12 +196,12 @@ footer p{font-size:13.5px;color:var(--ink-3);margin:0;max-width:56ch}
     <table>
       <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
       <tbody>
-        <tr><td class="f">period_start</td><td class="t">date</td><td><span class="chip req">Bắt buộc</span> Không lưu “FY2024” dạng chuỗi — nó vô nghĩa khi so giữa các công ty.</td></tr>
+        <tr><td class="f">period_start</td><td class="t">date?</td><td><span class="chip req">Bắt buộc</span> Không lưu “FY2024” dạng chuỗi — nó vô nghĩa khi so giữa các công ty. Fact <b>tại một thời điểm</b> (bảng cân đối) không có ngày bắt đầu: để <code>null</code> (95/238 row). Key vẫn bắt buộc có mặt.</td></tr>
         <tr><td class="f">period_end</td><td class="t">date</td><td><span class="chip req">Bắt buộc</span></td></tr>
-        <tr><td class="f">period_duration_months</td><td class="t">int</td><td>3 · 6 · 12. Bắt được cả trường hợp năm tài chính chuyển đổi bị rút ngắn.</td></tr>
-        <tr><td class="f">period_basis</td><td class="t">enum</td><td><span class="chip req">Bắt buộc</span> <span class="mono">audited · unaudited · restated · pro_forma</span> — bỏ cột này là mất luôn tín hiệu restatement.</td></tr>
+        <tr><td class="f">period_duration_months</td><td class="t">int?</td><td>3 · 6 · 12. Bắt được cả trường hợp năm tài chính chuyển đổi bị rút ngắn.</td></tr>
+        <tr><td class="f">period_basis</td><td class="t">enum</td><td><span class="chip req">Bắt buộc</span> <span class="mono">audited · unaudited · restated · pro_forma</span> — bỏ cột này là mất luôn tín hiệu restatement. <span class="mono">restated</span> tự sinh cờ <code>restated</code> (không chặn merge).</td></tr>
         <tr><td class="f">is_comparative</td><td class="t">boolean</td><td>Cột so sánh kỳ trước nằm trong báo cáo kỳ này. Chính là nguyên liệu cho YoY continuity check.</td></tr>
-        <tr><td class="f">fiscal_year</td><td class="t">int</td><td><span class="chip key">Partition</span> Suy ra từ <code>period_end</code>.</td></tr>
+        <tr class="planned"><td class="f">fiscal_year</td><td class="t">int</td><td><span class="chip key">Partition</span> <span class="chip plan">Chưa có</span> Suy ra từ <code>period_end</code> lúc ghi vào Iceberg — không nằm trong contract extraction.</td></tr>
       </tbody>
     </table>
   </div>
@@ -196,14 +212,15 @@ footer p{font-size:13.5px;color:var(--ink-3);margin:0;max-width:56ch}
       <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
       <tbody>
         <tr><td class="f">value_raw_text</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> Nguyên văn như in: <span class="mono">"(1,234)"</span>. Không bao giờ ghi đè.</td></tr>
-        <tr><td class="f">value</td><td class="t">decimal(38,6)</td><td><span class="chip req">Bắt buộc</span> Đã áp scale và sign. <b>Không dùng float</b> — sai số nhị phân trên số tiền là lỗi không thể bào chữa.</td></tr>
-        <tr><td class="f">declared_precision</td><td class="t">int</td><td>Số chữ số có nghĩa mà tài liệu tự khai. Đây là ngưỡng so sánh khi eval — không phải tolerance tự đặt.</td></tr>
+        <tr><td class="f">value</td><td class="t">decimal(38,6)?</td><td><span class="chip req">Bắt buộc</span> Key phải có mặt, được <code>null</code>. Đã áp scale và sign. <b>Không dùng float</b> ở Iceberg — sai số nhị phân trên số tiền là lỗi không thể bào chữa.</td></tr>
+        <tr><td class="f">decimal_separator</td><td class="t">enum</td><td><span class="chip req">Bắt buộc</span> <span class="mono">. · ,</span> — <span class="mono">24.308</span> là 24308 ở châu Âu. Thiếu trường này thì mọi kiểm tra số học trên tài liệu châu Âu sai đúng 1000×. Corpus hiện tại: 110 row <span class="mono">,</span> · 128 row <span class="mono">.</span></td></tr>
+        <tr><td class="f">declared_precision</td><td class="t">int?</td><td>Số chữ số có nghĩa mà tài liệu tự khai (XBRL <span class="mono">decimals</span>, vd <span class="mono">-6</span>). Đây là ngưỡng so sánh khi eval — không phải tolerance tự đặt.</td></tr>
         <tr><td class="f">scale_multiplier</td><td class="t">int</td><td><span class="chip req">Bắt buộc</span> <span class="mono">1 · 1e3 · 1e6 · 1e9</span></td></tr>
-        <tr><td class="f">scale_source</td><td class="t">enum</td><td><span class="chip crit">Critical</span> <span class="mono">statement_header · column_header · footnote · row_label · inferred</span> — <b>inferred phải bị coi là mùi lỗi</b> và gắn cờ review.</td></tr>
-        <tr><td class="f">scale_source_ref</td><td class="t">struct</td><td>Trỏ tới đúng trang và đoạn text chứa câu khai scale. Thường nằm cách đó vài trang.</td></tr>
-        <tr><td class="f">currency</td><td class="t">string</td><td>ISO 4217. Oil &amp; gas trộn USD / NOK / EUR trong cùng một tài liệu là chuyện thường.</td></tr>
-        <tr><td class="f">currency_source</td><td class="t">enum</td><td>Cùng bộ giá trị với <code>scale_source</code>.</td></tr>
-        <tr><td class="f">sign_rule_applied</td><td class="t">enum</td><td><span class="mono">as_printed · parenthesis_negative · less_prefix · outflow_negative</span></td></tr>
+        <tr><td class="f">scale_source</td><td class="t">enum</td><td><span class="chip req">Bắt buộc</span> <span class="chip crit">Critical</span> <span class="mono">statement_header · column_header · footnote · row_label · document_uniform · inferred</span> — <b>inferred phải bị coi là mùi lỗi</b> và gắn cờ review.<span class="sub">document_uniform: cả tài liệu khai đúng một cặp scale/tiền tệ, dùng khi caption đơn vị rơi sang trang khác với bảng</span></td></tr>
+        <tr class="planned"><td class="f">scale_source_ref</td><td class="t">struct</td><td><span class="chip plan">Chưa có</span> Trỏ tới đúng trang và đoạn text chứa câu khai scale. Thường nằm cách đó vài trang.</td></tr>
+        <tr><td class="f">currency</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> ISO 4217 (<span class="mono">^[A-Z]{3}$</span>). Oil &amp; gas trộn USD / NOK / EUR trong cùng một tài liệu là chuyện thường.</td></tr>
+        <tr><td class="f">currency_source</td><td class="t">enum?</td><td>Cùng bộ giá trị với <code>scale_source</code>.</td></tr>
+        <tr><td class="f">sign_rule_applied</td><td class="t">enum</td><td><span class="chip req">Bắt buộc</span> <span class="mono">as_printed · parenthesis_negative · less_prefix · outflow_negative · taxonomy_balance</span><span class="sub">taxonomy_balance: dấu theo balance type của taxonomy, không theo dấu in — IFRS coi thuế thu nhập là chi phí DƯƠNG, báo cáo Đức in nó như khoản trừ</span></td></tr>
         <tr><td class="f">is_nil</td><td class="t">boolean</td><td>Phân biệt <b>dấu gạch ngang = 0</b> với <b>không công bố</b>. Hai thứ này khác nhau và pipeline hay gộp làm một.</td></tr>
       </tbody>
     </table>
@@ -215,35 +232,56 @@ footer p{font-size:13.5px;color:var(--ink-3);margin:0;max-width:56ch}
       <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
       <tbody>
         <tr><td class="f">source_ref</td><td class="t">struct</td><td><span class="chip req">Bắt buộc</span> Xem §3. Không nullable, không ngoại lệ.</td></tr>
-        <tr><td class="f">groundedness_verified</td><td class="t">boolean</td><td><span class="chip crit">Gate</span> <code>verbatim_span</code> có thật sự xuất hiện trên trang đã khai hay không. <b>false thì không được merge vào main.</b></td></tr>
-        <tr><td class="f">footnote_refs</td><td class="t">array&lt;string&gt;</td><td>Các marker gắn với ô này: <span class="mono">["(3)", "*"]</span></td></tr>
-        <tr><td class="f">footnote_texts</td><td class="t">array&lt;string&gt;</td><td>Nội dung nguyên văn. <i>“excludes JV operations”</i> làm đổi hoàn toàn nghĩa của con số — đây chính là feature, không phải metadata.</td></tr>
-        <tr><td class="f">extraction_confidence</td><td class="t">float</td><td>Điểm của bước đọc số. Là đầu vào cho hybrid routing sang model mạnh hơn.</td></tr>
-        <tr><td class="f">xbrl_crosscheck</td><td class="t">struct</td><td><span class="mono">{matched: bool, xbrl_value: decimal, rel_delta: double}</span> — null với công ty không có XBRL. Đây là ground truth miễn phí cho công ty niêm yết.</td></tr>
-        <tr><td class="f">validation_flags</td><td class="t">array&lt;string&gt;</td><td><span class="mono">identity_break · yoy_discontinuity · mda_mismatch · scale_inferred · unit_outlier</span></td></tr>
+        <tr><td class="f">groundedness_verified</td><td class="t">boolean</td><td><span class="chip req">Bắt buộc</span> <span class="chip crit">Gate</span> <code>verbatim_span</code> có thật sự xuất hiện trên trang đã khai hay không. <b>Khác true thì không được merge vào main.</b></td></tr>
+        <tr><td class="f">footnote_refs</td><td class="t">array&lt;string&gt;?</td><td>Các marker gắn với ô này: <span class="mono">["(3)", "*"]</span></td></tr>
+        <tr><td class="f">footnote_texts</td><td class="t">array&lt;string&gt;?</td><td>Nội dung nguyên văn. <i>“excludes JV operations”</i> làm đổi hoàn toàn nghĩa của con số — đây chính là feature, không phải metadata.</td></tr>
+        <tr><td class="f">extraction_confidence</td><td class="t">float?</td><td>0–1. Điểm của bước đọc số. Là đầu vào cho hybrid routing sang model mạnh hơn.</td></tr>
+        <tr class="planned"><td class="f">xbrl_crosscheck</td><td class="t">struct</td><td><span class="chip plan">Chưa có</span> <span class="mono">{matched, xbrl_value, rel_delta}</span>. Hiện chạy offline bằng <code>validation/compare_to_truth.py</code> (223/223 khớp), chưa ghi ngược vào row.</td></tr>
+        <tr><td class="f">validation_flags</td><td class="t">array&lt;string&gt;?</td><td>Ghi lúc extract: <span class="mono">restated</span>. Cờ cổng §4 do <code>gate_extraction()</code> sinh: <span class="mono">missing_source_ref · groundedness_failed · hallucinated_span · scale_arithmetic_mismatch[:1000x] · header_period_mismatch · scale_inferred</span></td></tr>
       </tbody>
     </table>
   </div>
-  <p class="caption">Ba cột cuối cùng của mỗi bảng đều giống nhau và bắt buộc: <code>extractor_version</code>, <code>model_id</code>, <code>prompt_hash</code>, <code>schema_version</code>, <code>ingested_at</code>.</p>
+
+  <div class="tablewrap">
+    <div class="grouprow"><span class="gname">Lineage</span><span class="gnote">giống nhau ở cả hai bảng</span></div>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td class="f">extractor_version</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> <span class="mono">doc-extract@2.0.0-docling</span></td></tr>
+        <tr><td class="f">model_id</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span></td></tr>
+        <tr><td class="f">prompt_hash</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> Ở Silver B thì nullable — extractor theo luật không có prompt.</td></tr>
+        <tr><td class="f">schema_version</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> <span class="mono">1.1</span> từ 19.09.2026 ở cả hai bảng.</td></tr>
+        <tr class="planned"><td class="f">ingested_at</td><td class="t">timestamp</td><td><span class="chip plan">Chưa có</span> Gán lúc ghi vào Iceberg, không thuộc output extraction.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="caption"><span class="mono">?</span> sau type = nullable trong contract.</p>
 </section>
 
 <section>
   <div class="sechead"><span class="secnum">§2</span><h2>Silver B — esg_claim</h2></div>
-  <p class="prose">Grain: <b>một disclosure hoặc một claim</b>. Khác Silver A ở chỗ giá trị có thể <i>không phải là số</i> — một mục tiêu, một câu mô tả phương pháp, hay một ô trong GRI content index đều là claim hợp lệ.</p>
+  <p class="prose">Grain: <b>một disclosure hoặc một claim</b>. Khác Silver A ở chỗ giá trị có thể <i>không phải là số</i> — một mục tiêu, một câu mô tả phương pháp, hay một ô trong content index đều là claim hợp lệ. Contract riêng: <code>contracts/esg_contract.json</code> — dùng chung sẽ buộc esg_claim mang những trường vô nghĩa (<code>statement</code>, <code>sign_rule_applied</code>) và bỏ mất những trường quyết định (<code>scope</code>, <code>boundary</code>, <code>baseline_year</code>).</p>
 
   <div class="tablewrap">
-    <div class="grouprow"><span class="gname">GRI mapping</span><span class="gnote">version drift là chuyện chắc chắn xảy ra</span></div>
+    <div class="grouprow"><span class="gname">Identity &amp; framework</span><span class="gnote">corpus 2026 trộn nhiều khung — không hardcode GRI</span></div>
     <table>
       <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
       <tbody>
-        <tr><td class="f">claim_id</td><td class="t">string</td><td><span class="chip key">PK</span> Hash của <span class="mono">(doc_hash, page_no, gri_code, claim_ordinal)</span></td></tr>
-        <tr><td class="f">gri_standard_version</td><td class="t">enum</td><td><span class="chip req">Bắt buộc</span> <span class="mono">GRI-2016 · GRI-2021 · GRI-11-2021</span> — cùng một chỉ tiêu đổi cách disclose giữa các version, nên tuyệt đối không hardcode.</td></tr>
-        <tr><td class="f">gri_code</td><td class="t">string</td><td>Mã đã chuẩn hoá: <span class="mono">305-1</span>, <span class="mono">11.1.5</span></td></tr>
-        <tr><td class="f">gri_code_reported</td><td class="t">string</td><td>Mã <b>công ty tự khai</b> trong content index. Lệch với <code>gri_code</code> là tín hiệu.</td></tr>
-        <tr><td class="f">disclosure_status_claimed</td><td class="t">enum</td><td><span class="mono">reported · partially_reported · omitted · not_applicable</span> — lấy từ content index.</td></tr>
-        <tr><td class="f">disclosure_verified</td><td class="t">boolean</td><td><span class="chip crit">Tín hiệu</span> Đi theo page reference công ty khai và kiểm tra disclosure có thật trên trang đó. <b>claimed = reported nhưng verified = false</b> là tín hiệu rẻ và chính xác cao nhất trong toàn hệ thống.</td></tr>
-        <tr><td class="f">omission_reason</td><td class="t">string</td><td>GRI yêu cầu nêu lý do khi omit. Không nêu, hoặc nêu mơ hồ, cũng là tín hiệu.</td></tr>
-        <tr><td class="f">claim_type</td><td class="t">enum</td><td><span class="mono">quantitative · target · narrative · methodology</span></td></tr>
+        <tr><td class="f">claim_id</td><td class="t">string</td><td><span class="chip key">PK</span> <span class="chip req">Bắt buộc</span> Hash của <span class="mono">(doc_hash, page_no, gri_code, claim_ordinal)</span></td></tr>
+        <tr><td class="f">run_id</td><td class="t">string</td><td>Không bắt buộc ở Silver B.</td></tr>
+        <tr><td class="f">doc_hash</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span></td></tr>
+        <tr><td class="f">company_id</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> LEI nếu có.</td></tr>
+        <tr><td class="f">report_year</td><td class="t">int</td><td><span class="chip req">Bắt buộc</span></td></tr>
+        <tr><td class="f">framework</td><td class="t">enum</td><td><span class="chip req">Bắt buộc</span> <span class="mono">ESRS · GRI · IFRS-S · TCFD · other</span> — EU lớn đã chuyển sang ESRS theo CSRD. Toàn bộ 40 row hiện có là <span class="mono">ESRS</span>.</td></tr>
+        <tr><td class="f">framework_version</td><td class="t">string?</td><td></td></tr>
+        <tr><td class="f">gri_standard_version</td><td class="t">string?</td><td>Chỉ dùng khi <span class="mono">framework = GRI</span>: <span class="mono">GRI-2016 · GRI-2021 · GRI-11-2021</span>. Cùng một chỉ tiêu đổi cách disclose giữa các version.</td></tr>
+        <tr><td class="f">gri_code</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> Mã disclosure theo framework: <span class="mono">E1-6</span>, <span class="mono">305-1</span>, <span class="mono">11.1.5</span>. Tên field giữ lại vì lý do lịch sử.</td></tr>
+        <tr><td class="f">gri_code_reported</td><td class="t">string?</td><td>Mã / nhãn <b>công ty tự khai</b> trong content index. Lệch với <code>gri_code</code> là tín hiệu.</td></tr>
+        <tr><td class="f">disclosure_status_claimed</td><td class="t">enum?</td><td><span class="mono">reported · partially_reported · omitted · not_applicable</span> — lấy từ content index.</td></tr>
+        <tr><td class="f">disclosure_verified</td><td class="t">boolean?</td><td><span class="chip crit">Tín hiệu</span> Đi theo page reference công ty khai và kiểm tra disclosure có thật trên trang đó. <b>claimed = reported nhưng verified = false</b> là tín hiệu rẻ và chính xác cao nhất trong toàn hệ thống.</td></tr>
+        <tr><td class="f">omission_reason</td><td class="t">string?</td><td>Khung báo cáo yêu cầu nêu lý do khi omit. Không nêu, hoặc nêu mơ hồ, cũng là tín hiệu.</td></tr>
+        <tr><td class="f">claim_type</td><td class="t">enum</td><td><span class="chip req">Bắt buộc</span> <span class="mono">quantitative · target · narrative · methodology</span></td></tr>
+        <tr><td class="f">claim_text</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> Nguyên văn. Với <span class="mono">claim_type = narrative</span> thì đây là toàn bộ nội dung.</td></tr>
       </tbody>
     </table>
   </div>
@@ -253,13 +291,17 @@ footer p{font-size:13.5px;color:var(--ink-3);margin:0;max-width:56ch}
     <table>
       <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
       <tbody>
-        <tr><td class="f">value</td><td class="t">decimal(38,6)</td><td>Đã quy về <code>unit_canonical</code>.</td></tr>
-        <tr><td class="f">value_raw_text</td><td class="t">string</td><td>Nguyên văn, giữ nguyên.</td></tr>
-        <tr><td class="f">unit_reported</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> Như in: <span class="mono">"ktCO2e"</span>, <span class="mono">"kg CO2e/boe"</span></td></tr>
-        <tr><td class="f">unit_canonical</td><td class="t">enum</td><td><span class="chip crit">Critical</span> <span class="mono">tCO2e · tCO2e_per_boe · tCO2e_per_musd_revenue · m3_water · t_waste · pct</span></td></tr>
-        <tr><td class="f">unit_conversion_factor</td><td class="t">decimal</td><td>Lưu tường minh. Nhầm giữa tCO2e / ktCO2e / MtCO2e là lỗi 1000× — cùng loại với lỗi scale ở Silver A.</td></tr>
-        <tr><td class="f">is_intensity_metric</td><td class="t">boolean</td><td>Cờ trực tiếp cho tín hiệu <i>“chỉ công bố intensity trong khi absolute tăng”</i>.</td></tr>
-        <tr><td class="f">denominator_basis</td><td class="t">string</td><td>Với intensity: mẫu số là gì (boe sản xuất, doanh thu, nhân sự). Đổi mẫu số giữa các năm cũng là một cách làm đẹp số.</td></tr>
+        <tr><td class="f">value</td><td class="t">decimal(38,6)?</td><td>Đã quy về <code>unit_canonical</code>.</td></tr>
+        <tr><td class="f">value_raw_text</td><td class="t">string?</td><td>Nguyên văn, giữ nguyên.</td></tr>
+        <tr><td class="f">unit_reported</td><td class="t">string?</td><td>Như in: <span class="mono">"ktCO2e"</span>, <span class="mono">"kg CO2e/boe"</span>. Nullable trong contract vì narrative / target có thể không có đơn vị.</td></tr>
+        <tr><td class="f">unit_canonical</td><td class="t">enum?</td><td><span class="chip crit">Critical</span> <span class="mono">tCO2e · tCO2e_per_boe · tCO2e_per_musd_revenue · m3_water · t_waste · pct · MWh</span></td></tr>
+        <tr><td class="f">unit_conversion_factor</td><td class="t">decimal?</td><td>Lưu tường minh. Nhầm giữa tCO2e / ktCO2e / MtCO2e là lỗi 1000× — cùng loại với lỗi scale ở Silver A.</td></tr>
+        <tr><td class="f">decimal_separator</td><td class="t">enum?</td><td><span class="mono">. · ,</span> — như Silver A.</td></tr>
+        <tr><td class="f">is_intensity_metric</td><td class="t">boolean?</td><td>Cờ trực tiếp cho tín hiệu <i>“chỉ công bố intensity trong khi absolute tăng”</i>.</td></tr>
+        <tr><td class="f">denominator_basis</td><td class="t">string?</td><td>Với intensity: mẫu số là gì (boe sản xuất, doanh thu, nhân sự). Đổi mẫu số giữa các năm cũng là một cách làm đẹp số.</td></tr>
+        <tr><td class="f">period_end</td><td class="t">date?</td><td><b>Phải null khi <span class="mono">claim_type = target</span></b> — mục tiêu là cam kết, không có kỳ báo cáo. Contract thực thi bằng <span class="mono">allOf / if-then</span>, không chỉ ghi trong mô tả.</td></tr>
+        <tr><td class="f">is_subtotal</td><td class="t">boolean?</td><td>Dòng tổng trong bảng phát thải — cần để không cộng trùng.</td></tr>
+        <tr><td class="f">is_company_specific</td><td class="t">boolean?</td><td><span class="chip crit">Tín hiệu</span> Chỉ tiêu công ty tự định nghĩa cạnh chỉ tiêu bắt buộc. Neo mục tiêu vào cái tự định nghĩa → <span class="mono">target_anchored_to_company_specific_metric</span>.</td></tr>
       </tbody>
     </table>
   </div>
@@ -269,14 +311,18 @@ footer p{font-size:13.5px;color:var(--ink-3);margin:0;max-width:56ch}
     <table>
       <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
       <tbody>
-        <tr><td class="f">scope</td><td class="t">enum</td><td><span class="mono">scope_1 · scope_2_location · scope_2_market · scope_3 · combined · not_applicable</span> — tách location và market based, gộp là mất tín hiệu.</td></tr>
-        <tr><td class="f">scope3_categories</td><td class="t">array&lt;int&gt;</td><td>1–15 theo GHG Protocol. Với oil &amp; gas, <b>category 11 (use of sold products)</b> là phần lớn phát thải — thiếu nó thì con số Scope 3 gần như vô nghĩa.</td></tr>
-        <tr><td class="f">boundary</td><td class="t">enum</td><td><span class="mono">equity_share · operational_control · financial_control · unspecified</span></td></tr>
-        <tr><td class="f">boundary_changed_vs_prior</td><td class="t">boolean</td><td><span class="chip crit">Tín hiệu</span> Đổi boundary mà không restate số cũ là thủ pháp kinh điển.</td></tr>
-        <tr><td class="f">baseline_year</td><td class="t">int</td><td></td></tr>
-        <tr><td class="f">baseline_year_changed_vs_prior</td><td class="t">boolean</td><td><span class="chip crit">Tín hiệu</span> Rebasing năm gốc để phần trăm giảm trông đẹp hơn.</td></tr>
-        <tr><td class="f">offsets_included</td><td class="t">boolean</td><td>Kèm <code>value_gross</code> và <code>value_net</code> khi tách được. Khoảng cách giữa hai số là mức độ phụ thuộc offset.</td></tr>
-        <tr><td class="f">is_restated</td><td class="t">boolean</td><td>Kèm <code>restated_from_value</code>. Tần suất restate tự nó là feature.</td></tr>
+        <tr><td class="f">scope</td><td class="t">enum?</td><td><span class="mono">scope_1 · scope_2_location · scope_2_market · scope_3 · combined_1_2_market · combined_1_2_reported · total_location · total_market · not_applicable</span><span class="sub">tách location và market based, gộp là mất tín hiệu; combined_1_2_reported = tổng 1+2 như công ty in, không rõ phương pháp</span></td></tr>
+        <tr><td class="f">scope3_categories</td><td class="t">array&lt;int&gt;?</td><td>1–15 theo GHG Protocol. Với oil &amp; gas, <b>category 11 (use of sold products)</b> là phần lớn phát thải — thiếu nó thì con số Scope 3 gần như vô nghĩa.</td></tr>
+        <tr><td class="f">boundary</td><td class="t">enum?</td><td><span class="mono">equity_share · operational_control · financial_control · unspecified</span></td></tr>
+        <tr><td class="f">boundary_changed_vs_prior</td><td class="t">boolean?</td><td><span class="chip crit">Tín hiệu</span> Đổi boundary mà không restate số cũ là thủ pháp kinh điển. Extractor hiện ghi <code>null</code> — cần hai kỳ liền nhau.</td></tr>
+        <tr><td class="f">in_scope_text</td><td class="t">string?</td><td>Nguyên văn phần công ty khai là <b>được tính</b>.</td></tr>
+        <tr><td class="f">out_of_scope_text</td><td class="t">string?</td><td>Nguyên văn phần <b>bị loại</b>. Thường là chỗ đáng đọc nhất.</td></tr>
+        <tr><td class="f">baseline_year</td><td class="t">int?</td><td></td></tr>
+        <tr><td class="f">baseline_value_mt</td><td class="t">float?</td><td>Giá trị năm gốc (Mt CO2e) mà khối mục tiêu tự khai. Đối chiếu với bảng phát thải cùng năm → tín hiệu <span class="mono">baseline_mismatch</span>.</td></tr>
+        <tr><td class="f">is_baseline_column</td><td class="t">boolean?</td><td>Giá trị lấy từ cột năm gốc của bảng, không phải kỳ hiện tại.</td></tr>
+        <tr class="planned"><td class="f">baseline_year_changed_vs_prior</td><td class="t">boolean</td><td><span class="chip plan">Chưa có</span> Rebasing năm gốc để phần trăm giảm trông đẹp hơn.</td></tr>
+        <tr><td class="f">offsets_included</td><td class="t">boolean?</td><td>Thiết kế kèm <code>value_gross</code> / <code>value_net</code> <span class="chip plan">Chưa có</span> — khoảng cách giữa hai số là mức độ phụ thuộc offset.</td></tr>
+        <tr><td class="f">is_restated</td><td class="t">boolean?</td><td>Tần suất restate tự nó là feature. <code>restated_from_value</code> <span class="chip plan">Chưa có</span>.</td></tr>
       </tbody>
     </table>
   </div>
@@ -286,14 +332,26 @@ footer p{font-size:13.5px;color:var(--ink-3);margin:0;max-width:56ch}
     <table>
       <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
       <tbody>
-        <tr><td class="f">target_year</td><td class="t">int</td><td>Chỉ với <span class="mono">claim_type = target</span></td></tr>
-        <tr><td class="f">target_type</td><td class="t">enum</td><td><span class="mono">absolute · intensity · net_zero · carbon_neutral</span> — <i>carbon neutral</i> và <i>net zero</i> không đồng nghĩa, đừng gộp.</td></tr>
-        <tr><td class="f">interim_target_present</td><td class="t">boolean</td><td>Mục tiêu 2050 không có mốc trung gian nào là mục tiêu không ai phải chịu trách nhiệm.</td></tr>
-        <tr><td class="f">target_covers_scope3</td><td class="t">boolean</td><td>Với oil &amp; gas đây gần như là câu hỏi duy nhất đáng hỏi về một mục tiêu.</td></tr>
-        <tr><td class="f">assurance_level</td><td class="t">enum</td><td><span class="mono">none · limited · reasonable</span></td></tr>
-        <tr><td class="f">assurance_provider</td><td class="t">string</td><td></td></tr>
-        <tr><td class="f">assurance_covers_this_claim</td><td class="t">boolean</td><td>Assurance thường chỉ phủ vài chỉ tiêu chứ không phủ cả báo cáo. Gán ở mức claim, không gán ở mức tài liệu.</td></tr>
-        <tr><td class="f">claim_text</td><td class="t">string</td><td><span class="chip req">Bắt buộc</span> Nguyên văn. Với <span class="mono">claim_type = narrative</span> thì đây là toàn bộ nội dung.</td></tr>
+        <tr><td class="f">target_year</td><td class="t">int?</td><td>Chỉ với <span class="mono">claim_type = target</span>. Null <b>khi và chỉ khi</b> không đọc được nhãn năm — kèm cờ <span class="mono">year_label_missing</span>. Tuyệt đối không suy ra năm.</td></tr>
+        <tr><td class="f">target_type</td><td class="t">enum?</td><td><span class="mono">absolute · intensity · net_zero · carbon_neutral</span> — <i>carbon neutral</i> và <i>net zero</i> không đồng nghĩa, đừng gộp.</td></tr>
+        <tr><td class="f">interim_target_present</td><td class="t">boolean?</td><td>Mục tiêu 2050 không có mốc trung gian nào là mục tiêu không ai phải chịu trách nhiệm.</td></tr>
+        <tr><td class="f">target_covers_scope3</td><td class="t">boolean?</td><td>Với oil &amp; gas đây gần như là câu hỏi duy nhất đáng hỏi về một mục tiêu.</td></tr>
+        <tr><td class="f">assurance_level</td><td class="t">enum?</td><td><span class="mono">none · limited · reasonable</span></td></tr>
+        <tr class="planned"><td class="f">assurance_provider</td><td class="t">string</td><td><span class="chip plan">Chưa có</span></td></tr>
+        <tr><td class="f">assurance_covers_this_claim</td><td class="t">boolean?</td><td>Assurance thường chỉ phủ vài chỉ tiêu chứ không phủ cả báo cáo. Gán ở mức claim, không gán ở mức tài liệu.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tablewrap">
+    <div class="grouprow"><span class="gname">Provenance</span><span class="gnote">lineage giống §1</span></div>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td class="f">source_ref</td><td class="t">struct</td><td><span class="chip req">Bắt buộc</span> Cùng struct với Silver A, xem §3.</td></tr>
+        <tr><td class="f">groundedness_verified</td><td class="t">boolean</td><td><span class="chip req">Bắt buộc</span> <span class="chip crit">Gate</span></td></tr>
+        <tr><td class="f">confidence</td><td class="t">float?</td><td>0–1. Một điểm duy nhất — Silver B không tách đọc / map.</td></tr>
+        <tr><td class="f">validation_flags</td><td class="t">array&lt;string&gt;?</td><td><span class="mono">year_label_missing · description_not_found · restated · boundary_changed</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -301,40 +359,44 @@ footer p{font-size:13.5px;color:var(--ink-3);margin:0;max-width:56ch}
 
 <section>
   <div class="sechead"><span class="secnum">§3</span><h2>source_ref — struct dùng chung</h2></div>
-  <p class="prose">Cùng một định nghĩa cho cả hai bảng. Đây là thứ biến hệ thống từ “một model nói vậy” thành “có thể mở đúng trang ra đối chiếu”.</p>
+  <p class="prose">Cùng một định nghĩa cho cả hai bảng. Đây là thứ biến hệ thống từ “một model nói vậy” thành “có thể mở đúng trang ra đối chiếu”. Bắt buộc: <code>page_no</code>, <code>verbatim_span</code>, <code>extraction_path</code>; còn lại nullable.</p>
 <pre><b>struct source_ref</b> {
-  page_no        int        <i>-- 1-indexed, theo PDF gốc</i>
-  bbox           array&lt;double&gt;   <i>-- [x0,y0,x1,y1] toạ độ chuẩn hoá</i>
-  verbatim_span  string     <i>-- đoạn text nguyên văn chứa giá trị</i>
-  table_id       string     <i>-- null nếu trích từ narrative</i>
-  row_idx        int
-  col_idx        int
-  col_header_path array&lt;string&gt;  <i>-- ["Revenue by segment","2024"] — multi-level header</i>
-  extraction_path enum      <i>-- native_text | ocr | vlm_image</i>
+  <b>page_no</b>         int              <i>-- bắt buộc · ≥ 1, 1-indexed theo PDF gốc</i>
+  <b>verbatim_span</b>   string           <i>-- bắt buộc · đoạn text nguyên văn chứa giá trị</i>
+  <b>extraction_path</b> enum             <i>-- bắt buộc · native_text | ocr | vlm_image</i>
+  bbox            array&lt;double&gt;?   <i>-- [x0,y0,x1,y1], đúng 4 số, gốc trên-trái, y0 &lt; y1</i>
+  table_id        string?          <i>-- null nếu trích từ narrative</i>
+  row_idx         int?
+  col_idx         int?
+  col_header_path array&lt;string&gt;?   <i>-- ["Revenue by segment","2024"] — multi-level header</i>
 }</pre>
   <div class="callout">
     <span class="eyebrow">Vì sao col_header_path là array</span>
-    <p>Header lồng nhau là nguồn lỗi số một của extraction bảng tài chính — đúng số nhưng gán sai năm. Lưu <b>cả đường dẫn header</b> thay vì một chuỗi phẳng khiến lỗi này <b>kiểm tra được bằng máy</b>: nếu <code>period_end</code> không khớp với phần tử cuối của <code>col_header_path</code>, gắn cờ ngay, không cần người đọc lại.</p>
+    <p>Header lồng nhau là nguồn lỗi số một của extraction bảng tài chính — đúng số nhưng gán sai năm. Lưu <b>cả đường dẫn header</b> thay vì một chuỗi phẳng khiến lỗi này <b>kiểm tra được bằng máy</b>: nếu đường dẫn chứa một năm mà năm của <code>period_end</code> không có trong đó, cổng gắn <code>header_period_mismatch</code> ngay, không cần người đọc lại.</p>
   </div>
 </section>
 
 <section>
   <div class="sechead"><span class="secnum">§4</span><h2>Validation gate trước khi merge vào main</h2></div>
-  <p class="prose">Chạy trên Iceberg branch. Fail ở mức <b>blocker</b> thì branch không được fast-forward.</p>
+  <p class="prose">Chạy trên Iceberg branch. Fail ở mức <b>blocker</b> thì branch không được fast-forward. Cổng row-level là <code>gate_extraction()</code> trong <code>validation/validate_identities.py</code>: mọi cờ đều chặn, trừ <code>scale_inferred</code> và <code>restated</code>.</p>
   <div class="tablewrap">
   <table>
-    <thead><tr><th>Kiểm tra</th><th>Quy tắc</th><th>Mức</th></tr></thead>
+    <thead><tr><th>Kiểm tra</th><th>Quy tắc</th><th>Mức</th><th>Trạng thái</th></tr></thead>
     <tbody>
-      <tr><td class="lead">Groundedness</td><td><code>verbatim_span</code> phải xuất hiện trên <code>page_no</code> đã khai. String-match thuần.</td><td><span class="chip crit">Blocker</span></td></tr>
-      <tr><td class="lead">Source completeness</td><td>Mọi row có <code>value</code> non-null đều phải có <code>source_ref</code> đầy đủ.</td><td><span class="chip crit">Blocker</span></td></tr>
-      <tr><td class="lead">Accounting identity</td><td>assets = liabilities + equity · Σ segment = total · reconciliation cash flow<span class="sub">label-free, chạy được trên toàn corpus</span></td><td><span class="chip crit">Blocker</span></td></tr>
-      <tr><td class="lead">Scope arithmetic</td><td>Σ thành phần Scope 1 + 2 = tổng đã công bố, trong sai số làm tròn đã khai.</td><td><span class="chip crit">Blocker</span></td></tr>
-      <tr><td class="lead">Unit sanity</td><td>Giá trị lệch &gt; 100× so với median lịch sử cùng <code>(company_id, gri_code)</code> → gần như chắc chắn là lỗi scale.</td><td><span class="chip warn">Review</span></td></tr>
-      <tr><td class="lead">XBRL crosscheck</td><td>Với công ty có XBRL: <code>rel_delta</code> phải bằng 0 tại <code>declared_precision</code>.</td><td><span class="chip warn">Review</span></td></tr>
-      <tr><td class="lead">YoY continuity</td><td>Cột comparative năm nay = cột current năm trước. Lệch ⇒ hoặc lỗi extraction, hoặc restatement.<span class="sub">một phép kiểm, hai giá trị — nếu là restatement thì đẩy sang feature store</span></td><td><span class="chip warn">Review</span></td></tr>
-      <tr><td class="lead">Header–period khớp</td><td><code>period_end</code> phải nhất quán với <code>col_header_path</code>.</td><td><span class="chip warn">Review</span></td></tr>
-      <tr><td class="lead">GRI index đối soát</td><td><code>disclosure_status_claimed = reported</code> nhưng <code>disclosure_verified = false</code>.</td><td><span class="chip ok">Tín hiệu</span></td></tr>
-      <tr><td class="lead">MD&amp;A crosscheck</td><td>Số trong bảng vs số trong narrative.<span class="sub">false positive cao vì MD&amp;A hay trích adjusted / non-GAAP — chỉ là cờ, không phải lỗi</span></td><td><span class="chip ok">Tín hiệu</span></td></tr>
+      <tr><td class="lead">Groundedness</td><td><code>groundedness_verified</code> phải là true; khi có text tài liệu thì <code>verbatim_span</code> được string-match lại — không tin cờ model tự khai.<span class="sub">groundedness_failed · hallucinated_span</span></td><td><span class="chip crit">Blocker</span></td><td><span class="chip ok">Đã chạy</span></td></tr>
+      <tr><td class="lead">Source completeness</td><td><code>source_ref</code> phải có <code>page_no</code> và <code>verbatim_span</code>.<span class="sub">missing_source_ref</span></td><td><span class="chip crit">Blocker</span></td><td><span class="chip ok">Đã chạy</span></td></tr>
+      <tr><td class="lead">Scale arithmetic</td><td><code>value_raw_text</code> × <code>scale_multiplier</code> × dấu theo <code>sign_rule_applied</code> phải ra đúng <code>value</code> (±0,5). Lệch đúng 1000× / 1e6× được ghi kèm tỉ lệ.<span class="sub">scale_arithmetic_mismatch[:1000x] — đọc số theo decimal_separator</span></td><td><span class="chip crit">Blocker</span></td><td><span class="chip ok">Đã chạy</span></td></tr>
+      <tr><td class="lead">Header–period khớp</td><td>Năm trong <code>col_header_path</code> phải khớp năm của <code>period_end</code>.<span class="sub">header_period_mismatch</span></td><td><span class="chip crit">Blocker</span></td><td><span class="chip ok">Đã chạy</span></td></tr>
+      <tr><td class="lead">Accounting identity</td><td>assets = liabilities + equity · Σ segment = total · reconciliation cash flow<span class="sub">label-free; adapter companyfacts | ixbrl | esef | extraction — 0 FAIL trên cả 8 công ty</span></td><td><span class="chip crit">Blocker</span></td><td><span class="chip ok">Đã chạy</span></td></tr>
+      <tr><td class="lead">Scale inferred</td><td><code>scale_source = inferred</code>.<span class="sub">scale_inferred</span></td><td><span class="chip warn">Review</span></td><td><span class="chip ok">Đã chạy</span></td></tr>
+      <tr><td class="lead">Restated</td><td><code>period_basis = restated</code> — không phải lỗi, đẩy sang feature store.<span class="sub">restated</span></td><td><span class="chip warn">Review</span></td><td><span class="chip ok">Đã chạy</span></td></tr>
+      <tr><td class="lead">XBRL crosscheck</td><td>Với công ty có XBRL: khớp tại <code>declared_precision</code>.<span class="sub">validation/compare_to_truth.py — offline, 223/223; chưa thành cờ trên row</span></td><td><span class="chip warn">Review</span></td><td><span class="chip warn">Offline</span></td></tr>
+      <tr><td class="lead">ESRS / GRI index đối soát</td><td><code>disclosure_status_claimed = reported</code> nhưng trang khai không có disclosure.<span class="sub">extraction/esrs_index_check.py → reference_not_found · 70/70 với OMV</span></td><td><span class="chip ok">Tín hiệu</span></td><td><span class="chip ok">Đã chạy</span></td></tr>
+      <tr><td class="lead">Baseline consistency</td><td>Năm gốc khai ở khối mục tiêu (E1-4) phải khớp bảng phát thải (E1-6).<span class="sub">signals/compute_signals.py → baseline_mismatch</span></td><td><span class="chip ok">Tín hiệu</span></td><td><span class="chip ok">Đã chạy</span></td></tr>
+      <tr><td class="lead">Scope arithmetic</td><td>Σ thành phần Scope 1 + 2 = tổng đã công bố, trong sai số làm tròn đã khai.</td><td><span class="chip crit">Blocker</span></td><td><span class="chip plan">Chưa có</span></td></tr>
+      <tr><td class="lead">Unit sanity</td><td>Giá trị lệch &gt; 100× so với median lịch sử cùng <code>(company_id, gri_code)</code> → gần như chắc chắn là lỗi scale.</td><td><span class="chip warn">Review</span></td><td><span class="chip plan">Chưa có</span></td></tr>
+      <tr><td class="lead">YoY continuity</td><td>Cột comparative năm nay = cột current năm trước. Lệch ⇒ hoặc lỗi extraction, hoặc restatement.<span class="sub">có detect_restatements() cho iXBRL; chưa chạy trên output extraction</span></td><td><span class="chip warn">Review</span></td><td><span class="chip plan">Chưa có</span></td></tr>
+      <tr><td class="lead">MD&amp;A crosscheck</td><td>Số trong bảng vs số trong narrative.<span class="sub">false positive cao vì MD&amp;A hay trích adjusted / non-GAAP — chỉ là cờ, không phải lỗi</span></td><td><span class="chip ok">Tín hiệu</span></td><td><span class="chip plan">Chưa có</span></td></tr>
     </tbody>
   </table>
   </div>
@@ -344,11 +406,12 @@ footer p{font-size:13.5px;color:var(--ink-3);margin:0;max-width:56ch}
   <div class="sechead"><span class="secnum">§5</span><h2>DDL và quy tắc tiến hoá schema</h2></div>
 <pre>CREATE TABLE silver.financial_fact (
   fact_id STRING, run_id STRING, doc_hash STRING,
-  company_id STRING, fiscal_year INT,
+  company_id STRING, statement STRING, fiscal_year INT,
   period_start DATE, period_end DATE, period_basis STRING,
   line_item_reported STRING, line_item_canonical STRING,
-  value DECIMAL(38,6), value_raw_text STRING,
-  scale_multiplier BIGINT, scale_source STRING, currency STRING,
+  value DECIMAL(38,6), value_raw_text STRING, decimal_separator STRING,
+  scale_multiplier BIGINT, scale_source STRING,
+  currency STRING, sign_rule_applied STRING,
   source_ref STRUCT&lt;...&gt;, groundedness_verified BOOLEAN,
   footnote_texts ARRAY&lt;STRING&gt;, validation_flags ARRAY&lt;STRING&gt;,
   extractor_version STRING, model_id STRING, prompt_hash STRING,
@@ -363,16 +426,33 @@ TBLPROPERTIES (
 );</pre>
   <ul class="plain">
     <li><b>Chỉ thêm, không sửa.</b> Đổi nghĩa một cột đang tồn tại thì tạo cột mới và deprecate cột cũ — nếu không, snapshot cũ nói dối bạn khi time-travel.</li>
-    <li><b>Enum chỉ nới, không thu.</b> GRI ra version mới thì thêm giá trị; giá trị cũ ở lại vĩnh viễn vì snapshot cũ vẫn dùng chúng.</li>
+    <li><b>Enum chỉ nới, không thu.</b> Khung báo cáo ra version mới thì thêm giá trị; giá trị cũ ở lại vĩnh viễn vì snapshot cũ vẫn dùng chúng. <span class="mono">taxonomy_balance</span>, <span class="mono">MWh</span> và các giá trị <span class="mono">combined_1_2_*</span> / <span class="mono">total_*</span> của <code>scope</code> đều vào theo cách này.</li>
     <li><b><code>schema_version</code> nằm trên từng row, không phải ở table property.</b> Một bảng sẽ chứa nhiều thế hệ row cùng lúc — đó là trạng thái bình thường, không phải lỗi.</li>
     <li><b>Backfill bằng branch, không bằng in-place update.</b> Re-extract vào branch, chạy §4, fast-forward. Snapshot cũ ở lại làm baseline để diff regression.</li>
     <li><b>Lên lịch <code>rewrite_data_files</code>.</b> Pipeline này ghi nhiều lô nhỏ. Không compaction thì metadata phình và query chậm dần đều.</li>
   </ul>
 </section>
 
+<section>
+  <div class="sechead"><span class="secnum">§6</span><h2>Output thật lệch contract</h2></div>
+  <p class="prose">Validate đầy đủ (JSON Schema 2020-12) 238 row Silver A trong <code>data/extracted/</code> với <code>extraction_contract.json</code> ngày 19.09.2026. Cả bốn chỗ lệch đã sửa ở <b>schema_version 1.1</b>: sau khi chạy lại, 238/238 row Silver A và 40/40 row Silver B hợp lệ. Mọi trường ngoài <code>bbox</code> giống hệt bản cũ; hardness report và dấu hiệu không đổi.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Field</th><th>Contract 1.0</th><th>Output thật</th><th>Trạng thái</th></tr></thead>
+    <tbody>
+      <tr><td class="f">period_start</td><td><span class="mono">type: string</span></td><td><code>null</code> ở 95/238 row — fact tại một thời điểm</td><td><span class="chip ok">Sửa ở 1.1</span> <span class="mono">["string","null"]</span>, key vẫn bắt buộc</td></tr>
+      <tr><td class="f">scale_source</td><td>không có <span class="mono">document_uniform</span></td><td><span class="mono">document_uniform</span> ở 15 row</td><td><span class="chip ok">Sửa ở 1.1</span> thêm vào cả <code>currency_source</code></td></tr>
+      <tr><td class="f">section_source</td><td>không có</td><td>mọi row: <span class="mono">heading · profile_page_map · continuation</span></td><td><span class="chip ok">Sửa ở 1.1</span> enum nullable</td></tr>
+      <tr><td class="f">source_ref.bbox</td><td>đúng 4 số</td><td>5 phần tử: <span class="mono">[l, t, r, b, "BOTTOMLEFT"]</span> — gốc toạ độ của Docling lọt vào mảng</td><td><span class="chip ok">Sửa ở 1.1</span> chuyển về TOPLEFT 4 số <b>chỉ ở đầu ra</b> (<code>shared/bbox.py</code>); tầng parse giữ nguyên BOTTOMLEFT vì logic ghép tiêu đề–bảng cần nó. Silver B cũng vậy.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="caption">Fixture <code>data/extraction_*.jsonl</code> (57 row) sinh trước khi có <code>decimal_separator</code> nên thiếu trường bắt buộc này. Các field đánh dấu <span class="chip plan">Chưa có</span> ở §1–§2 không phải lệch: chúng là thiết kế, chưa được đưa vào contract. </p>
+</section>
+
 <footer>
-  <p>Silver layer spec cho Greenwashing Signal Pipeline — grain, provenance, validation gate và quy tắc tiến hoá schema.</p>
-  <p class="mono" style="font-size:12px">v1.0 · 15.09.2026</p>
+  <p>Silver layer spec cho Greenwashing Signal Pipeline — grain, provenance, validation gate và quy tắc tiến hoá schema. Đồng bộ với <span class="mono">contracts/</span> và <span class="mono">validation/validate_identities.py</span>.</p>
+  <p class="mono" style="font-size:12px">v1.1 · 19.09.2026 · v1.0 · 15.09.2026</p>
 </footer>
 
 </div>

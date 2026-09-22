@@ -1,0 +1,412 @@
+<title>Filings MCP Environments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#F5F7F9; --surface:#FFFFFF; --ink:#15202B; --muted:#586676; --rule:#DAE0E6;
+  --accent:#0E6B66; --accent-soft:#E2F0EE; --amber:#9A6414; --amber-soft:#F6ECDC;
+  --red:#A23B3B; --red-soft:#F5E3E3; --code:#EEF2F5;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F151B; --surface:#161F28; --ink:#E4E9EE; --muted:#95A3B1; --rule:#2A3643;
+    --accent:#5CC2B9; --accent-soft:#16312F; --amber:#E0A955; --amber-soft:#33291A;
+    --red:#E58A8A; --red-soft:#3A2224; --code:#1D2833;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F151B; --surface:#161F28; --ink:#E4E9EE; --muted:#95A3B1; --rule:#2A3643;
+  --accent:#5CC2B9; --accent-soft:#16312F; --amber:#E0A955; --amber-soft:#33291A;
+  --red:#E58A8A; --red-soft:#3A2224; --code:#1D2833;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font:15.5px/1.62 var(--sans);padding-inline:16px;padding-block:0 64px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:200px minmax(0,1fr);gap:48px}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;padding-top:56px;font-size:13px}
+nav.toc p{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:5px 0 5px 12px;border-left:2px solid var(--rule)}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--accent);border-left-color:var(--accent);outline:none}
+main{min-width:0;max-width:800px}
+header{padding-block:56px 28px;border-bottom:1px solid var(--rule);margin-bottom:8px}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+h1{font:650 clamp(30px,4.4vw,42px)/1.12 var(--serif);margin:0 0 14px;text-wrap:balance;letter-spacing:-.01em}
+.lede{font-size:17px;color:var(--muted);max-width:64ch;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:20px;font:13px/1.4 var(--mono);color:var(--muted)}
+.meta b{color:var(--ink);font-weight:500}
+section{padding-top:44px}
+h2{font:650 25px/1.25 var(--serif);margin:0 0 6px;text-wrap:balance}
+h2 + .sub{color:var(--muted);margin:0 0 20px;max-width:64ch}
+h3{font:600 15px/1.4 var(--sans);margin:28px 0 10px}
+p,li{max-width:68ch}
+ul{padding-left:20px;margin:8px 0}
+li{margin:4px 0}
+code{font:13px/1.4 var(--mono);background:var(--code);padding:1px 5px;border-radius:3px}
+.principle{background:var(--accent-soft);border-radius:6px;padding:20px 22px;margin:20px 0}
+.principle strong{display:block;font:600 17px/1.45 var(--serif);margin-bottom:6px}
+.principle p{margin:0}
+.tablebox{overflow-x:auto;margin:14px 0;border:1px solid var(--rule);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;vertical-align:top;padding:10px 14px;border-bottom:1px solid var(--rule)}
+th{font:500 11.5px/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--ground)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:500}
+.num{font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font:500 11px/1.6 var(--mono);padding:0 7px;border-radius:3px;white-space:nowrap}
+.t-build{background:var(--accent-soft);color:var(--accent)}
+.t-adopt{background:var(--code);color:var(--muted)}
+.t-later{background:var(--amber-soft);color:var(--amber)}
+.t-no{background:var(--red-soft);color:var(--red)}
+pre.block{font:13px/1.55 var(--mono);background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px 18px;overflow-x:auto;margin:14px 0}
+pre.block .c{color:var(--muted)}
+.roles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.role{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px}
+.role .k{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.role .m{font:600 16px/1.3 var(--serif);margin:8px 0 6px}
+.role p{margin:0;font-size:13.5px;color:var(--muted)}
+.configs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.cfg{border-top:3px solid var(--accent);background:var(--surface);padding:14px 16px;border-radius:0 0 6px 6px}
+.cfg b{font:600 13px/1 var(--mono);color:var(--accent)}
+.cfg div{margin-top:6px;font-size:14px}
+.gate{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:14px 0;padding:0;list-style:none}
+.gate li{margin:0;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:12px 14px;font-size:14px}
+.gate li b{display:block;font:500 12px/1.3 var(--mono);color:var(--accent);margin-bottom:3px}
+.timeline{display:grid;gap:0;margin:18px 0;border-left:2px solid var(--rule);padding-left:0}
+.month{position:relative;padding:0 0 28px 26px}
+.month::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--ground);border:2px solid var(--accent)}
+.month .when{font:500 12px/1 var(--mono);color:var(--muted);letter-spacing:.04em}
+.month h3{margin:6px 0 8px;font:600 18px/1.3 var(--serif)}
+.month .exit{margin-top:10px;font-size:14px;background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:10px 14px}
+.month .exit b{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-right:8px}
+.note{font-size:13.5px;color:var(--muted)}
+.risk td:first-child{color:var(--ink)}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:860px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:0}
+  nav.toc{display:none}
+  .roles,.configs{grid-template-columns:minmax(0,1fr)}
+  header{padding-block:36px 24px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Contents">
+  <p>Contents</p>
+  <a href="#base">What we start from</a>
+  <a href="#rule">Core rule</a>
+  <a href="#models">Models &amp; scoring</a>
+  <a href="#format">Task format</a>
+  <a href="#scoring">Scoring</a>
+  <a href="#mcp">MCP servers</a>
+  <a href="#families">Task families</a>
+  <a href="#quality">Quality gate</a>
+  <a href="#codebases">Open-source codebases</a>
+  <a href="#timeline">3-month timeline</a>
+  <a href="#risks">Risks</a>
+</nav>
+
+<main>
+<header>
+  <p class="eyebrow">Plan · Sep 22 – Dec 20, 2026</p>
+  <h1>RL environments for MCP-driven software engineering</h1>
+  <p class="lede">Reproducible, SWE-bench-style environments that test whether an agent can fix, extend, refactor and speed up a real financial-filings pipeline, when the information it needs can only be found through MCP tools.</p>
+  <div class="meta">
+    <span>Base repo <b>AI_cases</b> (Greenwashing Signal Pipeline)</span>
+    <span>Format <b>SWE-bench + resolve rate</b></span>
+    <span>Target <b>20–25 validated tasks</b></span>
+  </div>
+</header>
+
+<section id="base">
+  <h2>What we start from</h2>
+  <p class="sub">AI_cases is a real working pipeline with a lot of machine-checkable answer data. That is what makes it a good environment base.</p>
+  <div class="tablebox"><table>
+    <thead><tr><th>What exists</th><th>Why it matters for RL environments</th></tr></thead>
+    <tbody>
+      <tr><td>About 6.5k lines of Python across ingest → parse → extract → validate → signals</td><td>Realistic existing code to work in, not toy problems</td></tr>
+      <tr><td>XBRL/ESEF answer data for 8 companies in 6 languages</td><td>Every extracted number can be checked by machine, with no human labelling</td></tr>
+      <tr><td class="num">195 unit tests; the README says every fixed bug has a regression test</td><td>Each test can seed a task: put the bug back and the test becomes the fail-to-pass check</td></tr>
+      <tr><td>Known open problems: Repsol cash-flow signs, Shell rows with the wrong label, OMV discontinued-ops and hybrid-capital lines, Galp iXBRL without row structure</td><td>Ready-made, real bug-fix and feature tasks</td></tr>
+      <tr><td>Existing verifiers: <code>compare_to_truth</code>, <code>validate_identities</code>, <code>coverage_esef</code>, JSON Schema contracts</td><td>Deterministic checks beyond unit tests</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Blockers to fix first</h3>
+  <ul>
+    <li>The code depends on the Fabrion venv for Docling and lxml.</li>
+    <li><code>data/</code> is 935 MB and mostly gitignored, so we need a small frozen fixture bundle.</li>
+    <li><code>data/gold/</code> is committed to git, so the answers would sit on disk where the agent can read them. It must be removed from the agent image.</li>
+    <li>The Python version (3.14 in <code>__pycache__</code>) needs pinning inside the image.</li>
+  </ul>
+</section>
+
+<section id="rule">
+  <h2>Core rule</h2>
+  <div class="principle">
+    <strong>The information needed to solve each task can only be found through MCP tools. The repo and visible tests are never enough.</strong>
+    <p>Example: fixing OMV's <code>profit_after_tax</code> identity requires finding <code>ProfitLossFromDiscontinuedOperations</code> through the XBRL MCP server. It is not in the repo.</p>
+  </div>
+  <p>Every task is checked by <b>running it with MCP access removed</b>. The solve rate should fall to about 0. If it doesn't, the task isn't testing MCP use and gets rewritten. Scoring stays deterministic: the grader decides, and tool-call traces are for diagnosis only, not reward.</p>
+</section>
+
+<section id="models">
+  <h2>Models &amp; scoring</h2>
+  <p class="sub">A deterministic resolve rate decides pass or fail. The LLM judge adds separate scores next to it and never overrides it.</p>
+  <div class="roles">
+    <div class="role"><div class="k">Planner</div><div class="m">Claude Sonnet 4.5</div><p>Reads the issue, plans the MCP discovery and the fix. Scored on plan quality (judge, advisory).</p></div>
+    <div class="role"><div class="k">Executor</div><div class="m">gpt-oss-120b</div><p>Edits code and runs tests. Scored on resolve rate. Turn budget 80–100.</p></div>
+    <div class="role"><div class="k">Judge</div><div class="m">Larger model</div><p>Scores trace quality, whether MCP use was sensible and whether the plan was followed. Advisory only.</p></div>
+  </div>
+  <h3>Every task runs in three setups</h3>
+  <div class="configs">
+    <div class="cfg"><b>A</b><div>gpt-oss-120b alone</div></div>
+    <div class="cfg"><b>B</b><div>Sonnet 4.5 alone</div></div>
+    <div class="cfg"><b>C</b><div>Sonnet plans → gpt-oss executes</div></div>
+  </div>
+  <p>The difference between C and A is the <b>value of planning</b>. The difference between runs with and without MCP is the <b>value of MCP use</b>. Both are reported alongside the resolve rate.</p>
+  <h3>Decide early</h3>
+  <ul>
+    <li><b>Keep the judge separate from the planner.</b> If Sonnet writes the plan and a Claude model also judges it, the judge tends to favour its own style. Use a different model family, or check the judge against about 30 traces labelled by hand before trusting it.</li>
+    <li><b>Pin exact model IDs</b> for every run. Newer models exist (Sonnet 5 is current), so the model ID string must be fixed for results to be reproducible.</li>
+    <li><b>Run each setup at least 3 times.</b> One run is not evidence. Earlier dbt experiments showed the same model swinging between results depending on the environment.</li>
+  </ul>
+</section>
+
+<section id="format">
+  <h2>Task format</h2>
+  <p class="sub">SWE-bench instance fields, plus three extra fields for MCP and anti-cheating.</p>
+<pre class="block"><span class="c"># SWE-bench fields</span>
+instance_id  repo  base_commit  problem_statement
+patch  test_patch  FAIL_TO_PASS  PASS_TO_PASS
+
+<span class="c"># extra fields</span>
+mcp_servers            <span class="c"># which servers are mounted for this task</span>
+mcp_required_evidence  <span class="c"># facts only reachable via MCP (for the no-MCP check)</span>
+heldout_variant        <span class="c"># hidden test on a different company / period</span>
+
+<span class="c"># on disk</span>
+task/
+  task.yaml        repo commit, image digest, MCP manifest, prompt, family, difficulty
+  hidden_tests/    fail-to-pass + pass-to-pass, never mounted for the agent
+  golden.patch     reference solution
+  golden_trace     reference MCP call sequence (documentation, not grading)
+  verify.sh        tests → pipeline output vs answers → contract check</pre>
+  <p><b>Resolve rate</b> = the share of task runs where every fail-to-pass and pass-to-pass test passes. Failed and incompatible runs count as 0. The full scorecard is in <a href="#scoring">Scoring</a>.</p>
+</section>
+
+<section id="scoring">
+  <h2>Scoring</h2>
+  <p class="sub">Adapted from <a href="https://www.micro1.ai/benchmark/long-extraction">micro1 LongExtractionBench</a>: 225 documents averaging 358 pages each, scored by a deterministic grader. We copy its structure and fix its two weak points.</p>
+
+  <div class="principle">
+    <strong>Keep "does it finish" separate from "is it right when it finishes."</strong>
+    <p>Their leaderboard shows why: precision is between 80% and 99.6% for every system, while recall ranges from 34% to 99.6%. AI_cases shows the same pattern: precision is 100% but filing coverage is only 11.6–44%. A patch that simply outputs fewer facts keeps precision perfect, so recall must always be scored.</p>
+  </div>
+
+  <h3>Scorecard by layer</h3>
+  <div class="tablebox"><table>
+    <thead><tr><th>Layer</th><th>Metrics</th><th>Copy from LongExtractionBench</th><th>What we change</th></tr></thead>
+    <tbody>
+      <tr><td>Headline</td><td>Unconditional resolve rate, macro-averaged over tasks, with a bootstrap 95% confidence interval; pass@k</td><td>Equal weight per item (they weight each document equally)</td><td>Failures count as 0 instead of being dropped. With only 20–25 tasks × 3 runs, results need error bars</td></tr>
+      <tr><td>Completion</td><td>Count of runs in each status: resolved / failed (by cause) / incompatible, per setup A, B and C</td><td>Their split between failed (accepted but not finished) and incompatible (refused up front), with a count for each cause</td><td>Agent-specific failure causes: turn cap reached, context full, MCP tool error or timeout, patch didn't apply, infrastructure failure</td></tr>
+      <tr><td>Accuracy</td><td>Fact precision, fact recall, value accuracy, correct-fact recall (definitions below)</td><td>Layered metrics: match rows by key first, then score cell values only on matched rows</td><td>Values compared at the filing's declared <code>decimals</code>, not after cosmetic cleanup. The recall scope is fixed by the task author, not by the agent</td></tr>
+      <tr><td>Safety</td><td>Pass-to-pass regression rate: how often a fix breaks tests that used to pass</td><td>Their "no LLM" rule for the grader</td><td>Added for code changes; LongExtractionBench has no equivalent</td></tr>
+      <tr><td>MCP</td><td>Resolve-rate gap with vs without MCP, per task</td><td>No equivalent</td><td>The metric that shows the environment actually tests MCP use</td></tr>
+      <tr><td>Cost</td><td>Turns, tokens, wall-clock time (mean, p50, p90, p95)</td><td>Their latency percentiles</td><td>Reported on all runs as well as on successes only, so an agent that gives up early doesn't look faster</td></tr>
+      <tr><td>Advisory</td><td>Judge scores for plan quality, trace quality and MCP use</td><td>No equivalent: their grader uses no LLM</td><td>Kept in separate columns, never combined into the headline, and checked against hand labels</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Accuracy metrics</h3>
+  <p>These apply to tasks whose result is a set of extracted facts. Facts are matched by key, never by row position. Each truth fact can be matched at most once, so duplicates count as extras.</p>
+<pre class="block"><span class="c"># matching key</span>
+key = (entity_LEI, concept, period_start, period_end, unit, dimensions)
+
+<span class="c"># Pred  = facts the agent's pipeline outputs, inside the task scope
+# Truth = XBRL facts inside the task scope (fixed by the task author, hidden)
+# M     = keys found in both</span>
+
+fact precision       = |M| / |Pred|        <span class="c"># penalises made-up, duplicated and extra facts</span>
+fact recall          = |M| / |Truth|       <span class="c"># penalises missed facts</span>
+value accuracy       = correct(M) / |M|    <span class="c"># value correct, given the key matched</span>
+correct-fact recall  = correct(M) / |Truth| <span class="c"># = recall × value accuracy</span>
+
+<span class="c"># value is correct when:</span>
+round(value × scale, decimals) == round(truth_value, decimals)
+<span class="c"># with decimals taken from the filing's declared precision (XBRL decimals)</span></pre>
+  <ul>
+    <li><b>Correct-fact recall is the single accuracy number to report first.</b> Value accuracy alone shares LongExtractionBench's weakness: it is measured only on facts that matched, so an agent that returns fewer, easier facts scores well on it.</li>
+    <li><b>The normaliser only fixes how a number is written.</b> It handles whitespace, thousands separators and decimal separators. It must <b>not</b> fix sign, scale or period, because those are exactly the bugs the tasks test (for example the Repsol sign convention). A normaliser that fixed them would give credit for the bug.</li>
+    <li><b>The recall scope is set by the task, not by the agent.</b> AI_cases' own <code>recall_inscope</code> uses "labels the agent declared" as the denominator, which rewards declaring fewer. In the environment, the scope is part of the hidden task definition.</li>
+    <li><b>Verifiability is reported next to precision.</b> Some facts can't be checked because the company didn't tag them in XBRL. Reporting how many can't be checked stops a result from looking better by leaving them out, as <code>trust = precision × verifiability</code> already does in AI_cases.</li>
+  </ul>
+
+  <h3>Three views of every result</h3>
+  <div class="configs">
+    <div class="cfg"><b>Unconditional</b><div>Failures count as 0. This is the headline number.</div></div>
+    <div class="cfg"><b>Conditional</b><div>Finished runs only, as LongExtractionBench reports.</div></div>
+    <div class="cfg"><b>Common subset</b><div>Only tasks every compared setup finished. The only fair head-to-head view.</div></div>
+  </div>
+  <p class="note">Why the conditional view alone misleads: on LongExtractionBench, Claude Opus 4.8 scored 92% precision on the 116 documents it finished, averaging 86 pages, while Reducto scored 99.6% on all 225, averaging 367 pages. Those numbers come from different documents and can't be compared directly.</p>
+
+  <h3>Where our answer data is stronger</h3>
+  <ul>
+    <li>LongExtractionBench's answer labels were drafted by GPT-5.5 and Claude Opus 4.7, and humans only settled disagreements. Where both models made the same mistake, the answer data inherits it. Our answer data is XBRL filed by the companies themselves; no model produced it.</li>
+    <li>They release only 50 of their 225 documents, and the sponsor came first. We should publish a public task split and keep a held-out split, and state which one each reported number comes from.</li>
+  </ul>
+</section>
+
+<section id="mcp">
+  <h2>MCP servers</h2>
+  <p class="sub">All open source, run in docker-compose with pinned versions, frozen data and no internet.</p>
+  <div class="tablebox"><table>
+    <thead><tr><th>Server</th><th>Status</th><th>What it does for the project</th></tr></thead>
+    <tbody>
+      <tr><td><code>xbrl-facts</code><br><span class="note">official Python MCP SDK / FastMCP, optionally Arelle</span></td><td><span class="tag t-build">we build</span></td><td>Main source of discovery. <code>search_concepts</code>, <code>get_fact(entity, concept, period)</code>, <code>get_sign</code>/<code>decimals</code>, <code>list_filings</code>. Serves frozen xBRL-JSON so it answers the same way every run. Community SEC-EDGAR MCP servers call the live API, so they're only a reference.</td></tr>
+      <tr><td>Docling MCP<br><span class="note">docling-project/docling-mcp</span></td><td><span class="tag t-adopt">adopt</span></td><td>Access to parsed documents: convert, get page, find table, get cell with its position box. Runs on pre-parsed JSON, so the image doesn't need Docling.</td></tr>
+      <tr><td><code>page-vision</code><br><span class="note">vLLM + Granite-Docling / Qwen-VL, PyMuPDF</span></td><td><span class="tag t-later">month 3</span></td><td><code>render_page</code> gives a page image; <code>vlm_parse</code> returns the cached VLM output. This is the parse-from-page-images backend.</td></tr>
+      <tr><td>Git MCP<br><span class="note">mcp-server-git, modelcontextprotocol/servers</span></td><td><span class="tag t-adopt">adopt</span></td><td>log, diff and blame, so the agent can find the commit that introduced a bug.</td></tr>
+      <tr><td>Gitea + <code>gitea-mcp</code></td><td><span class="tag t-adopt">adopt</span></td><td>Local, offline GitHub for issues and pull requests. Bug reports live as issues, so the task text is only a pointer to the issue. <code>github-mcp-server</code> needs the live API, so it's for demos only.</td></tr>
+      <tr><td>DuckDB MCP<br><span class="note">motherduckdb/mcp-server-motherduck, or Google's MCP Toolbox for Databases</span></td><td><span class="tag t-adopt">adopt</span></td><td>SQL over extracted facts and <code>validation_results</code>, for performance and data-quality tasks. The old reference sqlite server is archived.</td></tr>
+      <tr><td>Filesystem MCP<br><span class="note">official reference server</span></td><td><span class="tag t-adopt">adopt</span></td><td>Read-only access to the fixture corpus, limited to allowed paths. Cannot see <code>hidden_tests/</code> or gold data.</td></tr>
+      <tr><td>Logging proxy<br><span class="note">own, or start from mcp-proxy</span></td><td><span class="tag t-build">we build</span></td><td>Sits between agent and servers, records every call to a trace file, feeds the judge and the no-MCP check, and can replay recorded responses.</td></tr>
+      <tr><td>MCP Inspector</td><td><span class="tag t-adopt">tooling</span></td><td>For debugging and testing our own servers.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Deliberately left out</h3>
+  <div class="tablebox"><table>
+    <tbody>
+      <tr><td><span class="tag t-no">no</span> OpenMetadata / DataFabric MCPs</td><td>Run on an employer's cluster, need live tokens, can't be reproduced or shared.</td></tr>
+      <tr><td><span class="tag t-no">no</span> Fetch, browser, search</td><td>Need the live internet: results aren't deterministic and the agent could look up answers online.</td></tr>
+      <tr><td><span class="tag t-no">no</span> Sequential-thinking, memory</td><td>Planning is the planner's job, and that is what we measure.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="families">
+  <h2>Task families</h2>
+  <p class="sub">Seeded from real open problems in AI_cases.</p>
+  <div class="tablebox"><table>
+    <thead><tr><th>Family</th><th>Seed tasks</th><th>MCP discovery needed</th></tr></thead>
+    <tbody>
+      <tr><td>Bug fix</td><td>Repsol cash-flow sign convention (4 errors); Shell rows where Docling attached the wrong label; OMV hybrid-capital line; recreated bugs from the 195 regression tests</td><td>Sign attributes and concepts from <code>xbrl-facts</code>; cell positions from Docling MCP</td></tr>
+      <tr><td>Feature</td><td>Galp label-map fallback when the iXBRL has no row structure; assurance-level extraction; a 9th company profile</td><td>Finding concepts and labels for a filing the agent hasn't seen</td></tr>
+      <tr><td>Refactor</td><td>Split <code>validate_identities.py</code> (916 lines, 4 adapters) and <code>doc_extract.py</code> (742 lines)</td><td>Mostly local. Check: pipeline output is byte-for-byte identical on the fixtures</td></tr>
+      <tr><td>Performance</td><td>Streaming parse in <code>build_label_map</code> for the 115 MB Repsol iXBRL</td><td>Checked by peak memory (<code>tracemalloc</code>) and parse-pass count, not wall-clock time</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Guarding against reward hacking</h3>
+  <ul>
+    <li>Hidden tests run on a <b>different company or period</b> than the one in the prompt, so hard-coded answers fail.</li>
+    <li><code>tests/</code> and <code>contracts/</code> are hashed to detect tampering.</li>
+    <li>Gold data is removed from the image.</li>
+    <li>Every task must fail three negative controls: a no-op patch, deleting the tests, and a hard-coded answer.</li>
+  </ul>
+</section>
+
+<section id="quality">
+  <h2>Quality gate</h2>
+  <p class="sub">Quality per task over volume. A task counts only when it passes every item below.</p>
+  <ul class="gate">
+    <li><b>golden passes</b>The golden patch resolves the task from a clean image.</li>
+    <li><b>controls fail</b>No-op, test-deletion and hard-coded patches all fail.</li>
+    <li><b>held-out variant</b>A hidden test on a different company or period.</li>
+    <li><b>MCP necessity</b>Solve rate falls to about 0 without MCP access.</li>
+    <li><b>n ≥ 3</b>At least 3 runs per model setup.</li>
+    <li><b>reproducible</b>Two clean runs give identical verify results.</li>
+    <li><b>human review</b>Reviewed by hand, especially tasks at 0% or 100%.</li>
+    <li><b>difficulty band</b>Solve rate between 10% and 70% across setups.</li>
+  </ul>
+</section>
+
+<section id="codebases">
+  <h2>Open-source codebases</h2>
+  <h3>Evaluation harness and task generation</h3>
+  <div class="tablebox"><table>
+    <thead><tr><th>Project</th><th>How we'd use it</th></tr></thead>
+    <tbody>
+      <tr><td>SWE-bench harness</td><td>Format, Docker-based evaluation and resolve-rate scoring. Adopt as is.</td></tr>
+      <tr><td>SWE-smith</td><td>Creates tasks by injecting bugs. Adapt it for the month-2 bug-injection pipeline.</td></tr>
+      <tr><td>mini-swe-agent / SWE-agent</td><td>Simple scaffold for the gpt-oss-120b executor.</td></tr>
+      <tr><td>OpenHands</td><td>Agent runtime with native MCP support. Good fit for setup C.</td></tr>
+      <tr><td>Opik or Langfuse</td><td>Traces and dashboards.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Reference MCP benchmarks to study for task design and verifiers: MCPMark, MCP-Universe (Salesforce), MCP-Bench. Not checked yet; confirm names and current state before relying on them.</p>
+  <h3>Target codebases for tasks</h3>
+  <div class="tablebox"><table>
+    <thead><tr><th>Repo</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td>AI_cases</td><td>Main repo: our own code, with the richest answer data.</td></tr>
+      <tr><td>Arelle</td><td>Large, real XBRL processor with a public issue history. Real bug-fix tasks that need <code>xbrl-facts</code>.</td></tr>
+      <tr><td>edgartools</td><td>Active SEC filings library. Good demo target because anyone can install it.</td></tr>
+      <tr><td>Docling</td><td>Parsing bugs; links naturally to the page-image work.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Together they show that tasks carry over from our own code to public codebases, which matters more than task count.</p>
+</section>
+
+<section id="timeline">
+  <h2>3-month timeline</h2>
+  <div class="timeline">
+    <div class="month">
+      <div class="when">Month 1 · Sep 22 – Oct 19</div>
+      <h3>One complete working slice</h3>
+      <ul>
+        <li>Remove the Fabrion dependency; pin Python; freeze a git snapshot of AI_cases.</li>
+        <li>Build the fixture bundle (8 companies, statement pages only, pre-parsed JSON, about 50 MB) and the Docker image, with gold data removed.</li>
+        <li>Set up <code>xbrl-facts</code>, Docling MCP, Filesystem MCP and the logging proxy.</li>
+        <li>Adopt the SWE-bench harness. Write 5 pilot tasks with golden patches.</li>
+        <li>Run setups A, B and C, 3 times each, plus the no-MCP check.</li>
+      </ul>
+      <div class="exit"><b>Exit</b>5 tasks pass the full quality gate.</div>
+    </div>
+    <div class="month">
+      <div class="when">Month 2 · Oct 20 – Nov 16</div>
+      <h3>More servers, more tasks</h3>
+      <ul>
+        <li>Add Gitea + <code>gitea-mcp</code>, Git MCP and DuckDB MCP.</li>
+        <li>Adapt SWE-smith for bug injection: reverse a fix, keep it only if one of the 195 tests flips from pass to fail, then wrap it into a task.</li>
+        <li>Bring in the LLM judge and check it against about 30 hand-labelled traces.</li>
+        <li>Add 3–5 tasks on Arelle or edgartools.</li>
+      </ul>
+      <div class="exit"><b>Exit</b>About 15 validated tasks; judge agreement with human labels measured.</div>
+    </div>
+    <div class="month">
+      <div class="when">Month 3 · Nov 17 – Dec 20</div>
+      <h3>Calibrate, add page-image parsing, write up</h3>
+      <ul>
+        <li>Calibrate difficulty with pass@k. Keep tasks in the 10–70% band; review every 0% task by hand.</li>
+        <li>Add <code>page-vision</code> on vLLM, with each page's VLM output cached and frozen per model version. Build tasks that run the same bug on the Docling parse and the VLM parse.</li>
+        <li>Build a leaderboard of the three setups, including the planning gain and the no-MCP results.</li>
+        <li>Write the POC documentation.</li>
+      </ul>
+      <div class="exit"><b>Exit</b>20–25 validated tasks, leaderboard and write-up.</div>
+    </div>
+  </div>
+</section>
+
+<section id="risks">
+  <h2>Risks</h2>
+  <div class="tablebox"><table class="risk">
+    <thead><tr><th>Risk</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td>Performance tasks flaking on timing</td><td>Measure memory and operation counts, not wall-clock time.</td></tr>
+      <tr><td>Tasks secretly solvable without MCP</td><td>The no-MCP check is a gate every task must pass.</td></tr>
+      <tr><td>VLM output not deterministic</td><td>Cache and freeze parses per model version; serve the cache.</td></tr>
+      <tr><td>Judge favouring its own model family</td><td>Different family from the planner, checked against hand labels.</td></tr>
+      <tr><td>One domain being too narrow</td><td>Add public codebases (Arelle, edgartools, Docling), never employer code.</td></tr>
+      <tr><td>Writing golden patches is slow</td><td>The bug-injection pipeline provides most of the volume.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>Plan only: no code has been written or changed yet. Source: <code>AI_cases/next_move/rl-environments-plan.html</code>.</footer>
+</main>
+</div>

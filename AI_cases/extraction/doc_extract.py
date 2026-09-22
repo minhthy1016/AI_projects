@@ -27,6 +27,7 @@ import argparse, hashlib, json, pathlib, re, sys
 from decimal import Decimal
 
 from parsing import docling_io
+from shared import bbox as bbox_norm
 from shared.numbers import is_number_token, parse_number as _parse_number
 from shared.tables import YEAR_BARE as YEAR_CELL, header_columns
 
@@ -694,7 +695,7 @@ def extract(parsed_path, company_id, profile, label_map=None):
                     "validation_flags": ["restated"] if pb == "restated" else [],
                     "extractor_version": f"doc-extract@2.0.0-docling",
                     "model_id": f"docling-{d['meta']['parser_version']}",
-                    "prompt_hash": "-", "schema_version": "1.0",
+                    "prompt_hash": "-", "schema_version": "1.1",
                 })
                 stats["hit"] += 1
                 emitted += 1
@@ -719,6 +720,10 @@ def extract(parsed_path, company_id, profile, label_map=None):
           f"{stats.get('cont', 0)} bảng tiếp nối kế thừa báo cáo, "
           f"{stats.get('no_section', 0)} bảng bỏ vì không rõ thuộc báo cáo nào, "
           f"{stats.get('no_scale', 0)} bảng bỏ vì không xác định được đơn vị", file=sys.stderr)
+    # Chuyển bbox về TOPLEFT 4 số CHỈ ở đầu ra — section_for() ở trên cần hệ
+    # BOTTOMLEFT gốc của Docling, xem shared/bbox.py.
+    if bbox_norm.normalize_rows(rows, bbox_norm.page_heights(parsed_path)):
+        print("    [doc-extract v2] có bbox không chuyển được hệ toạ độ -> null", file=sys.stderr)
     return rows
 
 if __name__ == "__main__":

@@ -22,11 +22,19 @@ bền vững không có file đối chứng như báo cáo tài chính. Chưa ph
 | Trần đo được — số liệu có mặt trong phần đã parse | **97,5%** (158/162; **98,8%** = 160/162 nếu tính 2 ca lệch quy ước dấu) |
 | Nền ngẫu nhiên của phép đo trần | 11% → khoảng cách thật **86 điểm** |
 | Dữ liệu đã trích | 351 dòng / 13 file (238 tài chính · 113 môi trường & tín hiệu) |
-| Tuân thủ hợp đồng dữ liệu | 0 thiếu trường, 0 sai enum |
-| Đẳng thức kế toán | 0 FAIL ở cả 8. Aker BP 6/6 · Shell 6/6 · Eni 6/6 · Galp 4/4 · Repsol 2/2 · OMV 4/8 (4 ca đã định danh) · Equinor và TotalEnergies chưa đủ trường để chạy phép nào |
-| Dấu hiệu tìm được | 2 (OMV), 2 (Aker BP) — đều có bằng chứng truy được |
-| Unit test | 187, tất cả pass |
+| Tuân thủ hợp đồng dữ liệu | Validate đủ JSON Schema (schema 1.1): 238/238 dòng tài chính · 40/40 dòng môi trường, 0 lỗi |
+| Đẳng thức kế toán | 0 FAIL ở 7/8. Aker BP 6/6 · Shell 6/6 · Eni 6/6 · Galp 4/4 · Repsol 2/2 · **OMV 4/8** · Equinor và TotalEnergies chưa đủ trường để chạy phép nào. 4 FAIL của OMV đều khớp đúng một dòng mà phép kiểm không có — xem dưới bảng |
+| Dấu hiệu tìm được | 2 (OMV), 1 (Aker BP) — đều có bằng chứng truy được |
+| Unit test | 195, tất cả pass |
 | Bảng tên gọi sinh từ iXBRL | 7/8 công ty · **592 nhãn** thay cho 91 dòng viết tay · 814 fact, **99,1%** đúng |
+
+**4 FAIL của OMV không phải lỗi đọc số.** Cả bốn chênh đúng bằng một dòng in trên trang 148
+mà phép kiểm chưa tính tới:
+
+| Phép kiểm | 2024 | 2025 | Dòng bị thiếu |
+|---|---:|---:|---|
+| `profit_after_tax` | −88 Mio | −307 Mio | *Jahresüberschuss aus aufgegebenen Geschäftsbereichen* — lãi hoạt động đã ngừng; profile `omv-de` chưa lấy `ProfitLossFromDiscontinuedOperations` nên biến thể có discontinued không chạy được |
+| `net_income_split` | −64 Mio | −60 Mio | *davon den Hybridkapitalbesitzern zuzurechnen* — phần của chủ trái phiếu hybrid; phép kiểm chỉ có cổ đông mẹ + thiểu số |
 
 Chi tiết trong [`reports/ho-so-du-an.md`](reports/ho-so-du-an.md) và
 [`reports/ho-so-du-an.html`](reports/ho-so-du-an.html) (có biểu đồ).
@@ -182,6 +190,7 @@ script không còn là gốc dự án.
 | `parsing/docling_io.py` | Đọc `DoclingDocument` **không cần cài Docling** — tách phụ thuộc nặng khỏi các tầng sau |
 | `shared/text_match_locale.py` | Đọc số theo cách viết từng nước (`24.308` = 24308 ở châu Âu) |
 | `shared/paths.py` | Neo mọi đường dẫn vào gốc dự án, không vào thư mục chứa script |
+| `shared/bbox.py` | Chuyển `source_ref.bbox` về gốc trên-trái, 4 số — **chỉ ở đầu ra**, tầng parse giữ hệ BOTTOMLEFT của Docling vì logic ghép tiêu đề–bảng cần nó |
 | `contracts/extraction_contract.json` | Hợp đồng cho Silver A (`financial_fact`) — 22 trường bắt buộc |
 | `contracts/esg_contract.json` | Hợp đồng cho Silver B (`esg_claim`) — grain khác nên không dùng chung |
 
@@ -194,7 +203,7 @@ script không còn là gốc dự án.
 | `validation/coverage_esef.py` | Trần recall **kèm nền ngẫu nhiên** — trần không có nền là con số không đọc được. Chạy độc lập, gold nằm ở `data/gold/` |
 | `validation/make_fixture.py` | Sinh dữ liệu có lỗi cố ý để test chính bộ kiểm chứng |
 | `validation/hardness_report.py` | **Bảng điểm độ khó + độ tin cậy, xuất CSV** — một dòng mỗi tài liệu, để nạp vào công cụ vẽ biểu đồ |
-| `tests/` | 187 unit test — mỗi lỗi đã sửa đều có một test hồi quy |
+| `tests/` | 195 unit test — mỗi lỗi đã sửa đều có một test hồi quy |
 | `validation/run_coverage_patched.py` | Chạy `make coverage` của Fabrion với bộ đọc số đã sửa, **không đụng repo đó** |
 
 ### Nối sang bộ đo chất lượng

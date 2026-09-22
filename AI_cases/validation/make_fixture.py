@@ -8,7 +8,7 @@ validator, thứ mà bộ eval nào cũng cần nhưng hay bị bỏ qua: nếu 
 validator bắt được gì, con số PASS của nó không có ý nghĩa.
 
     python3 make_fixture.py                 # bản sạch
-    python3 make_fixture.py --defect all    # tiêm đủ 6 lớp lỗi
+    python3 make_fixture.py --defect all    # tiêm đủ 7 lớp lỗi
 """
 import argparse, hashlib, json, pathlib
 from decimal import Decimal
@@ -90,6 +90,7 @@ def build(year=2025, defects=()):
             "value_raw_text": raw, "value": val, "declared_precision": -6,
             "scale_multiplier": 1_000_000, "scale_source": "statement_header",
             "currency": "USD", "currency_source": "statement_header",
+            "decimal_separator": ".",
             "sign_rule_applied": "parenthesis_negative" if neg else "as_printed",
             "is_nil": False,
             "source_ref": {
@@ -101,7 +102,7 @@ def build(year=2025, defects=()):
             "groundedness_verified": True, "extraction_confidence": 0.96,
             "footnote_refs": [], "footnote_texts": [], "validation_flags": [],
             "extractor_version": "doc-extract@0.3.1", "model_id": "qwen3-vl-32b",
-            "prompt_hash": "b7f21c04", "schema_version": "1.0",
+            "prompt_hash": "b7f21c04", "schema_version": "1.1",
         }
         rows.append(row)
 
